@@ -24,8 +24,8 @@ import {
   RouterProvider,
   Navigate // <-- 1. Importa Navigate
 } from 'react-router-dom';
-import Login from './pages/Login';
-import Home from './pages/Home';
+import Login from './pages/login';
+import Home from './pages/home';
 
 const router = createBrowserRouter([
   {
