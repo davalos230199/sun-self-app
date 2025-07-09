@@ -127,6 +127,7 @@ app.get('/api/registros/today', authMiddleware, async (req, res) => {
 });
 
 app.post('/api/registros', authMiddleware, async (req, res) => {
+   console.log('>>> Petición recibida en /api/registros'); 
   try {
     const { id: userId } = req.user; // Obtenemos el ID del usuario desde el token
     const { mente, emocion, cuerpo } = req.body; // Recibimos el estado de los orbes
@@ -139,12 +140,12 @@ app.post('/api/registros', authMiddleware, async (req, res) => {
       .from('registros')
       .insert([{
         user_id: userId,
-        mente_estado: mente.seleccion,
-        mente_comentario: mente.comentario,
-        emocion_estado: emocion.seleccion,
-        emocion_comentario: emocion.comentario,
-        cuerpo_estado: cuerpo.seleccion,
-        cuerpo_comentario: cuerpo.comentario,
+        mente_estat: mente.seleccion,
+        mente_coment: mente.comentario,
+        emocion_estat: emocion.seleccion,
+        emocion_coment: emocion.comentario,
+        cuerpo_estat: cuerpo.seleccion,
+        cuerpo_coment: cuerpo.comentario,
       }]);
 
     if (error) throw error;
@@ -161,68 +162,3 @@ app.listen(PORT, () => {
   console.log(`Backend escuchando en http://localhost:${PORT}`);
 });
 
-
-
-
-
-
-
-
-/*// Cargamos variables del archivo .env
-require('dotenv').config();
-
-// Importamos los módulos necesarios
-const express = require('express');
-const cors = require('cors');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-// Middleware de autenticación para rutas protegidas
-const authMiddleware = require('./auth');
-
-
-// Inicializamos la app
-const app = express();
-const PORT = process.env.PORT || 4000;
-
-// Middleware
-app.use(cors()); // Permite que el frontend se conecte
-app.use(express.json()); // Para leer JSON en el body de los requests
-
-// Usuario hardcodeado (como si viniera de una base de datos)
-const users = [
-  {
-    id: 1,
-    username: 'danilo',
-    password: bcrypt.hashSync('1234', 8) // Contraseña hasheada
-  }
-];
-
-// Ruta de login
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-
-  const user = users.find(u => u.username === username);
-  if (!user) return res.status(401).json({ message: 'Usuario no encontrado' });
-
-  const valid = bcrypt.compareSync(password, user.password);
-  if (!valid) return res.status(401).json({ message: 'Contraseña incorrecta' });
-
-  // Creamos un token si está todo ok
-  const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET, {
-    expiresIn: '1h'
-  });
-
-  res.json({ token });
-});
-
-
-// Ruta protegida de ejemplo
-app.get('/me', authMiddleware, (req, res) => {
-  res.json({ user: req.user });
-});
-
-// Iniciar el servidor
-app.listen(PORT, () => {
-  console.log(`Backend escuchando en http://localhost:${PORT}`);
-});
-*/
