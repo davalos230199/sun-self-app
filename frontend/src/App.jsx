@@ -1,24 +1,3 @@
-/*import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Login from './pages/Login';
-import Home from './pages/Home';
-
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/home" element={<Home />} />
-      </Routes>
-    </BrowserRouter>
-  );
-}
-
-export default App;
-*/
-
-
-// frontend/src/App.jsx
-
 import {
   createBrowserRouter,
   RouterProvider,
@@ -27,6 +6,7 @@ import {
 import Login from './pages/login';
 import Home from './pages/home';
 import LoginScene from './pages/loginscene'; // <-- Importa el nuevo componente
+import Tracking from './pages/tracking'; // <-- Importa la nueva página
 
 const router = createBrowserRouter([
   {
@@ -42,7 +22,11 @@ const router = createBrowserRouter([
   {
     path: '/home',
     element: <Home />
-  }
+  },
+  { // <-- ruta de tracking
+      path: '/tracking',
+      element: <Tracking />
+    }
 ]);
 
 function App() {

@@ -157,6 +157,33 @@ app.post('/api/registros', authMiddleware, async (req, res) => {
   }
 });
 
+
+// RUTA PARA OBTENER TODO EL HISTORIAL DE UN USUARIO
+app.get('/api/registros', authMiddleware, async (req, res) => {
+  try {
+    const { id: userId } = req.user; // Obtenemos el ID del usuario del token
+    // Esto nos mostrará en los logs de Render qué ID está buscando.
+    console.log(`Buscando registros para el user_id: ${userId}`);
+    // --------------------
+    
+    // Buscamos todos los registros del usuario
+    const { data, error } = await supabase
+      .from('registros')
+      .select('*') // Seleccionamos todas las columnas
+      .eq('user_id', userId) // Solo del usuario que hace la petición
+      .order('created_at', { ascending: false }); // Ordenados del más nuevo al más viejo
+
+    if (error) throw error;
+
+    res.json(data); // Enviamos el array de registros
+
+  } catch (err) {
+    // Añadimos un log para ver el error en Render si algo falla
+    console.error("Error en GET /api/registros:", err);
+    res.status(500).json({ error: 'Error al obtener los registros' });
+  }
+});
+
 // --- INICIAR EL SERVIDOR ---
 app.listen(PORT, () => {
   console.log(`Backend escuchando en http://localhost:${PORT}`);

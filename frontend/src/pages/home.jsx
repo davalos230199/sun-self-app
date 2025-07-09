@@ -186,7 +186,7 @@ useEffect(() => {
           <button onClick={handleGuardar}>Guardar estado</button>
         </>
       )}
-      
+      <button onClick={() => navigate('/tracking')}>Ver mi historial</button>
       <button onClick={handleLogout} style={{ marginTop: '20px' }}>
         Cerrar Sesión
       </button>

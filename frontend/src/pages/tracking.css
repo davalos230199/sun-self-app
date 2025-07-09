@@ -1,0 +1,45 @@
+/* EN: frontend/src/pages/Tracking.css */
+.tracking-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    text-align: center;
+}
+.registros-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.registro-card {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    border: 1px solid var(--color-border);
+    box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.05);
+    text-align: left;
+}
+.registro-card h4 {
+    font-family: var(--font-title);
+    font-size: 1.8rem;
+    margin: 0 0 15px 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+.registro-card p {
+    margin: 5px 0;
+}
+.back-button {
+    margin-top: 30px;
+    padding: 10px 25px;
+    border: 2px solid var(--color-ink);
+    border-radius: 30px;
+    background-color: transparent;
+    color: var(--color-ink);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.back-button:hover {
+    background-color: var(--color-ink);
+    color: white;
+}
