@@ -8,30 +8,37 @@ import Home from './pages/home';
 import LoginScene from './pages/loginscene'; // <-- Importa el nuevo componente
 import Tracking from './pages/tracking'; // <-- Importa la nueva página
 import Couch from './pages/couch'; // <-- Importa la nueva página del couchIA
+import ProtectedRoute from './components/protectedroute'; // <-- 1. Importa el guardián
 
 const router = createBrowserRouter([
   {
-    // 2. Ruta raíz que redirige a /login
     path: '/',
     element: <Navigate to="/login" replace />
   },
-
   {
     path: '/login',
-    element: <LoginScene /> // <-- Usa LoginScene aquí
+    element: <LoginScene />
   },
   {
-    path: '/home',
-    element: <Home />
-  },
-  { // <-- ruta de tracking
-      path: '/tracking',
-      element: <Tracking />
-    },
-    {
-  path: '/couch',
-  element: <Couch />
-}
+    // 2. Esta es la ruta "protegida"
+    path: '/',
+    element: <ProtectedRoute />,
+    children: [
+      // 3. Todas estas rutas ahora están protegidas por el guardián
+      {
+        path: '/home',
+        element: <Home />
+      },
+      {
+        path: '/tracking',
+        element: <Tracking />
+      },
+      {
+        path: '/couch',
+        element: <Couch />
+      }
+    ]
+  }
 ]);
 
 function App() {
@@ -39,7 +46,6 @@ function App() {
 }
 
 export default App;
-
 
 
 
