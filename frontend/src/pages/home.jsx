@@ -106,15 +106,29 @@ useEffect(() => {
     return '⛅ Nublado con momentos de claridad';
   };
 
-  const handleGuardar = () => {
-    // Aquí irá la lógica para guardar en la base de datos
-    console.log("Guardando estado:", estados);
-    
-    localStorage.setItem('estadoDia', JSON.stringify(estados));
+ const handleGuardar = async () => {
+  const token = localStorage.getItem('token');
+  if (!token) return; // Si no hay token, no hacer nada
+
+  try {
+    const api = axios.create({
+      baseURL: import.meta.env.VITE_API_URL,
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    // Enviamos el estado actual al nuevo endpoint
+    await api.post('/api/registros', estados);
+
+    // Si la llamada es exitosa, actualizamos la UI como antes
     setFraseDelDia(generarFrase(estados));
     setClimaVisual(determinarClima(estados));
     setEstadoFinalizado(true);
-  };
+
+  } catch (error) {
+    console.error("Error al guardar el estado:", error);
+    alert("Hubo un problema al guardar tu estado. Inténtalo de nuevo.");
+  }
+};
 
   // --- FUNCIÓN DE LOGOUT CORREGIDA ---
   // La movemos aquí, al nivel principal del componente

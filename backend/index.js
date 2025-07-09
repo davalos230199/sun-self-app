@@ -126,6 +126,35 @@ app.get('/api/registros/today', authMiddleware, async (req, res) => {
   }
 });
 
+app.post('/api/registros', authMiddleware, async (req, res) => {
+  try {
+    const { id: userId } = req.user; // Obtenemos el ID del usuario desde el token
+    const { mente, emocion, cuerpo } = req.body; // Recibimos el estado de los orbes
+
+    if (!mente?.seleccion || !emocion?.seleccion || !cuerpo?.seleccion) {
+      return res.status(400).json({ error: 'Se requiere la selección de todos los orbes.' });
+    }
+
+    const { data, error } = await supabase
+      .from('registros')
+      .insert([{
+        user_id: userId,
+        mente_estado: mente.seleccion,
+        mente_comentario: mente.comentario,
+        emocion_estado: emocion.seleccion,
+        emocion_comentario: emocion.comentario,
+        cuerpo_estado: cuerpo.seleccion,
+        cuerpo_comentario: cuerpo.comentario,
+      }]);
+
+    if (error) throw error;
+
+    res.status(201).json({ message: 'Registro guardado con éxito', registro: data });
+
+  } catch (err) {
+    res.status(500).json({ error: 'Error al guardar el registro' });
+  }
+});
 
 // --- INICIAR EL SERVIDOR ---
 app.listen(PORT, () => {
