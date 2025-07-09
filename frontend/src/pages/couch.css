@@ -1,0 +1,56 @@
+.couch-container {
+    width: 100%;
+    max-width: 700px;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.1);
+    margin: 40px auto;
+}
+.chat-window {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.mensaje {
+    padding: 10px 15px;
+    border-radius: 20px;
+    max-width: 70%;
+}
+.mensaje.ia {
+    background-color: #f1f0f0;
+    align-self: flex-start;
+}
+.mensaje.user {
+    background-color: var(--color-accent);
+    color: white;
+    align-self: flex-end;
+}
+.input-area {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid var(--color-border);
+}
+.input-area input {
+    flex-grow: 1;
+    border: none;
+    padding: 10px;
+    font-size: 1rem;
+}
+.input-area input:focus {
+    outline: none;
+}
+.input-area button {
+    border: none;
+    background: var(--color-accent);
+    color: white;
+    padding: 0 20px;
+    border-radius: 20px;
+    cursor: pointer;
+}

@@ -153,9 +153,7 @@ useEffect(() => {
           <h3>Tu estado de hoy:</h3>
           <div style={{ fontSize: '2rem', margin: '12px 0' }}>{climaVisual}</div>
           <p style={{ fontStyle: 'italic' }}>{fraseDelDia}</p>
-              <button onClick={() => setEstadoFinalizado(false)} style={{marginTop: '10px'}}>
-                 Registrar otro día
-              </button>
+          <button onClick={() => setEstadoFinalizado(false)} style={{marginTop: '10px'}}>  Registrar otro día</button>
           <button onClick={() => navigate('/couch')}>Hablar con el Couch</button>
         </>
       ) : (

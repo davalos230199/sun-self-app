@@ -7,6 +7,7 @@ import Login from './pages/login';
 import Home from './pages/home';
 import LoginScene from './pages/loginscene'; // <-- Importa el nuevo componente
 import Tracking from './pages/tracking'; // <-- Importa la nueva página
+import Couch from './pages/couch'; // <-- Importa la nueva página del couchIA
 
 const router = createBrowserRouter([
   {
@@ -26,7 +27,11 @@ const router = createBrowserRouter([
   { // <-- ruta de tracking
       path: '/tracking',
       element: <Tracking />
-    }
+    },
+    {
+  path: '/couch',
+  element: <Couch />
+}
 ]);
 
 function App() {
