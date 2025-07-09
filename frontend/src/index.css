@@ -1,67 +1,88 @@
+/* frontend/src/index.css - Estilo "Journal Íntimo" */
+
+/* 1. Importar las nuevas fuentes de Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Lora:wght@400;600&display=swap');
+
+/* 2. Nuevas variables de Color y Tipografía */
+:root {
+  --font-title: 'Caveat', cursive;
+  --font-body: 'Lora', serif;
+
+  --color-paper: #FDF6E3;
+  --color-ink: #4A4A4A;
+  --color-accent: #FFA07A; /* Coral Suave */
+  --color-border: #D3D3D3;
+}
+
+/* 3. Estilos Base con textura de papel */
 body {
-  font-family: sans-serif;
   margin: 0;
-  background-color: #f5f5f5;
-  color: #333;
+  font-family: var(--font-body);
+  background-color: var(--color-paper);
+  /* Textura sutil de papel de fondo */
+  background-image: url('https://www.transparenttextures.com/patterns/notebook-dark.png');
+  color: var(--color-ink);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 
-form, .home-container {
-  max-width: 400px;
-  margin: 80px auto;
-  padding: 24px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+/* 4. Estilos para los títulos con la fuente de "escritura a mano" */
+h2, h3 {
+  font-family: var(--font-title);
+  color: var(--color-ink);
+  font-size: 2.5rem; /* Un poco más grande para que la fuente luzca */
+  font-weight: 700;
+  margin-bottom: 25px;
 }
 
-h2 {
-  margin-bottom: 16px;
-}
-
-input, textarea {
+/* 5. Contenedor principal que simula una hoja de papel */
+form {
+  background-color: white;
+  padding: 40px 50px;
+  border-radius: 5px;
+  border: 1px solid var(--color-border);
+  box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.1);
   width: 100%;
-  padding: 12px;
-  margin-top: 8px;
-  margin-bottom: 16px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 16px;
+  max-width: 450px;
+  text-align: center;
 }
 
-button {
-  padding: 10px 20px;
-  background: #0077ff;
-  color: white;
+/* 6. Estilos de inputs y botones para que coincidan */
+input {
+  width: calc(100% - 22px);
+  padding: 12px 10px;
+  margin-bottom: 20px;
   border: none;
-  border-radius: 6px;
+  border-bottom: 2px solid var(--color-border);
+  background-color: transparent;
+  font-family: var(--font-body);
   font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+input:focus {
+  outline: none;
+  border-bottom-color: var(--color-accent);
+}
+
+button[type="submit"] {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid var(--color-ink);
+  border-radius: 30px; /* Botones más redondos y amigables */
+  background-color: var(--color-accent);
+  color: white;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
 }
 
-button:hover {
-  background: #005fd0;
-}
-
-.orbe {
-  margin-top: 24px;
-  padding: 16px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background: #fafafa;
-}
-
-.orbe h3 {
-  margin-bottom: 8px;
-}
-
-.orbe-buttons button {
-  margin-right: 8px;
-  margin-bottom: 8px;
-  background: #eee;
-  color: #333;
-}
-
-.orbe-buttons button.selected {
-  background: #0077ff;
+button[type="submit"]:hover {
+  background-color: var(--color-ink);
   color: white;
 }
