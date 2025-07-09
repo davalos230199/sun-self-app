@@ -22,7 +22,8 @@ export default function Home() {
       return; // Salimos temprano si no hay token
     }
 
-    axios.get('http://localhost:4000/me', {
+    const apiUrl = import.meta.env.VITE_API_URL;
+      axios.get(`${apiUrl}/me`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => setUser(res.data.user))

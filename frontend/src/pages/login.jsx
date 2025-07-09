@@ -18,7 +18,9 @@ export default function Login() {
 
     try {
       // Enviamos el objeto 'form' que ahora contiene { email, password }
-      const res = await axios.post('http://localhost:4000/login', form);
+      // DESPUÉS:
+      const apiUrl = import.meta.env.VITE_API_URL;
+      const res = await axios.post(`${apiUrl}/login`, form);
       localStorage.setItem('token', res.data.token);
       navigate('/home');
     } catch (err) {
