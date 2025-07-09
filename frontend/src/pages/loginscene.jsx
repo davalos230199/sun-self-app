@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Login from './login';
-import './LoginScene.css';
+import './loginscene.css';
 
 export default function LoginScene() {
   const [isOpen, setIsOpen] = useState(false);
