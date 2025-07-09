@@ -1,0 +1,80 @@
+/* frontend/src/pages/LoginScene.css */
+
+.scene-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100vh;
+  /* La perspectiva es clave para el efecto 3D */
+  perspective: 1500px;
+}
+
+/* Reemplaza tu .notebook actual con este en LoginScene.css */
+
+/* En LoginScene.css */
+.notebook {
+  width: 800px;
+  height: 550px;
+  position: relative;
+  transition: transform 1.2s ease-in-out;
+  transform-style: preserve-3d;
+
+  /* CAMBIO: El estado inicial se mueve 200px a la IZQUIERDA */
+  transform: translateX(-200px); 
+}
+
+/* Esta es una REGLA NUEVA que debes agregar */
+
+/* En LoginScene.css */
+.notebook.open {
+  /* CAMBIO: Al abrirse, vuelve a su posición central (0px) */
+  transform: translateX(0);
+}
+
+.notebook-cover {
+  position: absolute;
+  width: 50%;
+  height: 100%;
+  right: 0; /* <--- AÑADE ESTA LÍNEA */
+  top: 0;   /* <--- AÑADE ESTA LÍNEA (para asegurar alineación vertical) */
+  background-color: #8B4513; /* Un color de tapa de cuero */
+  border: 2px solid #5a2d0c;
+  border-radius: 0 10px 10px 0;
+  
+  /* Punto de giro a la izquierda, como un libro real */
+  transform-origin: left center;
+  transition: transform 1.2s ease-in-out;
+  cursor: pointer;
+  z-index: 10;
+  
+  /* Pequeños detalles para que parezca una tapa */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #f0e6d2;
+  font-family: var(--font-title);
+  font-size: 3rem;
+}
+
+.notebook-page {
+  position: absolute;
+  width: 50%;
+  height: 100%;
+  background-color: white;
+  right: 0;
+  top: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 0 10px 10px 0;
+}
+
+/* --- ESTADOS DE LA ANIMACIÓN --- */
+
+/* Cuando el cuaderno está abierto... */
+.notebook.open .notebook-cover {
+  /* La tapa se abre 180 grados */
+  transform: rotateY(-180deg);
+}

@@ -26,6 +26,7 @@ import {
 } from 'react-router-dom';
 import Login from './pages/login';
 import Home from './pages/home';
+import LoginScene from './pages/loginscene'; // <-- Importa el nuevo componente
 
 const router = createBrowserRouter([
   {
@@ -33,10 +34,10 @@ const router = createBrowserRouter([
     path: '/',
     element: <Navigate to="/login" replace />
   },
+
   {
-    // 3. Ruta de login explícita
     path: '/login',
-    element: <Login />
+    element: <LoginScene /> // <-- Usa LoginScene aquí
   },
   {
     path: '/home',
