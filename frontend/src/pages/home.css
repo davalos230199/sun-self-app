@@ -1,0 +1,68 @@
+/* frontend/src/pages/Home.css */
+
+.home-container {
+  background-color: white;
+  padding: 40px 50px;
+  border-radius: 5px;
+  border: 1px solid var(--color-border);
+  box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+  transition: all 0.5s ease;
+}
+
+.home-container h2 {
+    font-size: 3rem;
+    margin-top: 0;
+}
+
+.orbe {
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.orbe h3 {
+    font-size: 2.2rem;
+    margin: 0 0 15px 0;
+    border-bottom: 2px solid var(--color-paper);
+}
+
+.orbe-buttons button {
+    border: 2px solid var(--color-border);
+    background-color: transparent;
+    border-radius: 20px;
+    padding: 8px 20px;
+    margin: 0 5px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.orbe-buttons button:hover {
+    transform: translateY(-2px);
+}
+
+.orbe-buttons button.selected {
+    border-color: var(--color-accent);
+    background-color: var(--color-accent);
+    color: white;
+}
+
+textarea {
+    width: calc(100% - 20px);
+    margin-top: 15px;
+    border: none;
+    border-left: 2px solid var(--color-border);
+    padding: 10px;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    background-color: #fafafa;
+    resize: vertical;
+}
+
+textarea:focus {
+    outline: none;
+    border-left-color: var(--color-accent);
+}

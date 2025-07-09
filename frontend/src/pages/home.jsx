@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import './home.css';
 
 export default function Home() {
   const [user, setUser] = useState(null);
@@ -15,23 +16,57 @@ export default function Home() {
   const [climaVisual, setClimaVisual] = useState('');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/');
-      return; // Salimos temprano si no hay token
-    }
+useEffect(() => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    navigate('/login');
+    return;
+  }
 
-    const apiUrl = import.meta.env.VITE_API_URL;
-      axios.get(`${apiUrl}/me`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => setUser(res.data.user))
-      .catch(() => {
-        localStorage.removeItem('token');
-        navigate('/');
-      });
-  }, [navigate]); // Añadimos navigate a las dependencias del useEffect
+  // Creamos una instancia de axios con la configuración base
+  const api = axios.create({
+    baseURL: import.meta.env.VITE_API_URL,
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+
+  const cargarDatos = async () => {
+    try {
+      // 1. Verificamos que el token sea válido y obtenemos el usuario
+      const userResponse = await api.get('/me');
+      setUser(userResponse.data.user);
+
+      // 2. INTENTAMOS obtener el registro de hoy, pero sin que rompa todo si falla
+      try {
+        const registroResponse = await api.get('/api/registros/today');
+        const registroDeHoy = registroResponse.data.registro;
+
+        if (registroDeHoy) {
+          // Si encontramos un registro, configuramos la vista "finalizada"
+          const estadosGuardados = {
+            mente: { seleccion: registroDeHoy.mente_estado, comentario: registroDeHoy.mente_comentario },
+            emocion: { seleccion: registroDeHoy.emocion_estado, comentario: registroDeHoy.emocion_comentario },
+            cuerpo: { seleccion: registroDeHoy.cuerpo_estado, comentario: registroDeHoy.cuerpo_comentario }
+          };
+          setEstados(estadosGuardados);
+          setFraseDelDia(generarFrase(estadosGuardados));
+          setClimaVisual(determinarClima(estadosGuardados));
+          setEstadoFinalizado(true);
+        }
+      } catch (error) {
+        // Si esta segunda llamada falla, solo lo mostramos en la consola y seguimos.
+        // NO expulsamos al usuario.
+        console.error("No se pudo verificar el registro de hoy, mostrando página nueva:", error);
+      }
+
+    } catch (error) {
+      // Si la llamada a /me falla, el token es inválido y SÍ debemos expulsar.
+      localStorage.removeItem('token');
+      navigate('/login');
+    }
+  };
+
+  cargarDatos();
+}, [navigate]); // Añadimos navigate a las dependencias del useEffect
 
   const handleSeleccion = (orbe, valor) => {
     setEstados(prev => ({

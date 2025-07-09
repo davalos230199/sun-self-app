@@ -100,6 +100,33 @@ app.get('/me', authMiddleware, (req, res) => {
   res.json({ user: req.user });
 });
 
+// RUTA PARA VERIFICAR SI HAY REGISTRO HOY
+app.get('/api/registros/today', authMiddleware, async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+
+    // Buscamos un registro del usuario actual que sea de hoy
+    const today = new Date().toISOString().slice(0, 10); // Formato YYYY-MM-DD
+
+    const { data, error } = await supabase
+      .from('registros')
+      .select('*')
+      .eq('user_id', userId)
+      .gte('created_at', `${today}T00:00:00.000Z`)
+      .lte('created_at', `${today}T23:59:59.999Z`)
+      .limit(1);
+
+    if (error) throw error;
+
+    // Si encontramos un registro, lo enviamos. Si no, enviamos null.
+    res.json({ registro: data.length > 0 ? data[0] : null });
+
+  } catch (err) {
+    res.status(500).json({ error: 'Error al verificar el registro de hoy' });
+  }
+});
+
+
 // --- INICIAR EL SERVIDOR ---
 app.listen(PORT, () => {
   console.log(`Backend escuchando en http://localhost:${PORT}`);
