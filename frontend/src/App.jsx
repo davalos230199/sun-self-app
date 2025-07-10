@@ -3,7 +3,7 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import Login from './pages/Login'; // <-- Directo a Login
 import Register from './pages/Register'; // <-- Directo a Register
 import Home from './pages/home';
-import Tracking from './pages/tracking';
+import Tracking from './pages/Tracking';
 import Sunny from './pages/Sunny';
 import Settings from './pages/Settings'; // <-- Importamos la nueva página
 import ProtectedRoute from './components/protectedroute';
