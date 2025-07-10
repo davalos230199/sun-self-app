@@ -1,12 +1,12 @@
-
+// frontend/src/pages/Login.jsx
 import { useState } from 'react';
-import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom'; // <-- Añade Link aquí
+import { useNavigate, Link } from 'react-router-dom';
+// 1. Importamos la función específica que necesitamos de nuestro nuevo módulo.
+import api from '../services/api';
 
 export default function Login() {
-
-  // Estado inicial ahora usa 'email' en lugar de 'username'
-  const [form, setForm] = useState({ email: '', password: '' }); // <-- CAMBIO
+  const [form, setForm] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -15,42 +15,39 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setError('');
     try {
-      // Enviamos el objeto 'form' que ahora contiene { email, password }
-      // DESPUÉS:
-      const apiUrl = import.meta.env.VITE_API_URL;
-      const res = await axios.post(`${apiUrl}/api/auth/login`, form);
+      // 2. Usamos la nueva función del servicio. ¡Más limpio y declarativo!
+      const res = await api.login(form);
       localStorage.setItem('token', res.data.token);
       navigate('/home');
     } catch (err) {
-      // Mensaje de error más específico
-      alert('Email o contraseña incorrectos.'); // <-- CAMBIO (Opcional, pero mejor)
+      setError('Credenciales incorrectas. Inténtalo de nuevo.');
+      console.error("Error en el login:", err);
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>Iniciar sesión</h2>
+      <h2>Iniciar Sesión</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
       <input
-        name="email" // <-- CAMBIO
-        type="email" // <-- CAMBIO (Mejor para la semántica HTML)
-        placeholder="Email" // <-- CAMBIO
-        value={form.email} // <-- CAMBIO
+        type="email"
+        name="email"
+        placeholder="Email"
         onChange={handleChange}
+        required
       />
       <input
-        name="password"
         type="password"
+        name="password"
         placeholder="Contraseña"
-        value={form.password}
         onChange={handleChange}
+        required
       />
       <button type="submit">Entrar</button>
-      
-      {/* AÑADE ESTE PÁRRAFO CON EL LINK */}
-      <p style={{ marginTop: '20px' }}>
-        ¿No tienes una cuenta? <Link to="/register">Crea una aquí</Link>
+      <p>
+        ¿No tienes cuenta? <Link to="/register">Regístrate</Link>
       </p>
     </form>
   );

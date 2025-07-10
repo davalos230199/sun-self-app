@@ -1,32 +1,19 @@
 // frontend/src/pages/Sunny.jsx
 import { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './Sunny.css'; // Usaremos un archivo CSS para los estilos
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-});
-
-api.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`;
-  }
-  return config;
-});
+// 1. Importamos nuestro agente centralizado. ¡Adiós axios!
+import api from '../services/api';
+import './Sunny.css';
 
 export default function Sunny() {
   const [messages, setMessages] = useState([
-    // Mensaje inicial de Sunny
     { sender: 'sunny', text: 'Soy un espejo. Reflejá algo en mí.' }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const messagesEndRef = useRef(null); // Ref para auto-scroll
+  const messagesEndRef = useRef(null);
 
-  // Efecto para hacer scroll hacia abajo con cada nuevo mensaje
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -36,20 +23,18 @@ export default function Sunny() {
     if (!input.trim()) return;
 
     const userMessage = { sender: 'user', text: input };
-    // 1. Agregamos el mensaje del usuario (solo una vez)
     setMessages(prev => [...prev, userMessage]);
     setLoading(true);
-    setInput(''); // Limpiamos el input al instante
+    setInput('');
 
     try {
-      const response = await api.post('/api/sunny', { message: input });
+      // 2. Usamos la nueva función de nuestro servicio. ¡Limpio y claro!
+      const response = await api.postToSunny(input);
       const sunnyMessage = { sender: 'sunny', text: response.data.reply };
-      // 2. AQUÍ ESTÁ EL ARREGLO: Ahora solo agregamos la respuesta de Sunny
       setMessages(prev => [...prev, sunnyMessage]);
     } catch (error) {
       console.error("Error al hablar con Sunny:", error);
       const errorMessage = { sender: 'sunny', text: 'Lo siento, no me siento muy conversador ahora mismo.' };
-      // 3. Y aquí solo agregamos el mensaje de error
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setLoading(false);
@@ -77,7 +62,6 @@ export default function Sunny() {
             </div>
           </div>
         )}
-        {/* Elemento invisible para guiar el scroll */}
         <div ref={messagesEndRef} />
       </div>
       <form onSubmit={handleSend} className="chat-form">

@@ -1,7 +1,8 @@
 // frontend/src/pages/Register.jsx
 
 import { useState } from 'react';
-import axios from 'axios';
+// 1. Cambiamos el import. Adiós axios, hola nuestro agente 'api'.
+import api from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
 
 export default function Register() {
@@ -25,8 +26,9 @@ export default function Register() {
     }
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL;
-      await axios.post(`${apiUrl}/register`, form);
+      // 2. Usamos la nueva función de nuestro servicio.
+      // Es más limpio y no necesitamos construir la URL.
+      await api.register(form);
 
       setSuccess('¡Usuario creado con éxito! Redirigiendo al login...');
 
@@ -35,6 +37,7 @@ export default function Register() {
       }, 2000);
 
     } catch (err) {
+      // El error que viene del backend ahora es más consistente.
       setError(err.response?.data?.error || 'Error al crear el usuario.');
     }
   };
@@ -49,6 +52,7 @@ export default function Register() {
         placeholder="Tu email"
         value={form.email}
         onChange={handleChange}
+        required
       />
       <input
         name="password"
@@ -56,6 +60,7 @@ export default function Register() {
         placeholder="Crea una contraseña"
         value={form.password}
         onChange={handleChange}
+        required
       />
       <button type="submit">Registrarme</button>
 

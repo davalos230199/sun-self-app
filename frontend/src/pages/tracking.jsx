@@ -1,39 +1,38 @@
-// EN: frontend/src/pages/Tracking.jsx
+// frontend/src/pages/Tracking.jsx
 
 import { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import './tracking.css'; // Importamos el CSS
+import { useNavigate, useOutletContext } from 'react-router-dom';
+// 1. ADIÓS a axios. Ahora importamos nuestro agente central.
+import api from '../services/api';
+import './tracking.css'; // Asumo que tienes este archivo de estilos
 
 export default function Tracking() {
+  // Recibimos el usuario del guardián, por si lo necesitamos en el futuro.
+  const { user } = useOutletContext(); 
   const [registros, setRegistros] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
+    // La comprobación de 'user' es una buena práctica.
+    if (!user) return;
 
     const fetchRegistros = async () => {
       try {
-        const api = axios.create({
-          baseURL: import.meta.env.VITE_API_URL,
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const response = await api.get('/api/registros');
+        // 2. LA MAGIA: En lugar de usar axios, llamamos a la función de nuestro agente.
+        // Es más corto, más claro y no necesitamos saber la URL.
+        const response = await api.getRegistros();
         setRegistros(response.data);
       } catch (error) {
         console.error("Error al cargar el historial:", error);
+        // Podríamos mostrar un mensaje de error al usuario aquí.
       } finally {
         setLoading(false);
       }
     };
 
     fetchRegistros();
-  }, [navigate]);
+  }, [user]); // El efecto se ejecuta cuando el guardián nos da el usuario.
 
   if (loading) {
     return <div className="tracking-container">Cargando tu historial...</div>;
@@ -47,9 +46,9 @@ export default function Tracking() {
           {registros.map((registro) => (
             <div key={registro.id} className="registro-card">
               <h4>{new Date(registro.created_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</h4>
-              <p><strong>Mente:</strong> {registro.mente_estat} - <em>{registro.mente_coment}</em></p>
-              <p><strong>Emoción:</strong> {registro.emocion_estat} - <em>{registro.emocion_coment}</em></p>
-              <p><strong>Cuerpo:</strong> {registro.cuerpo_estat} - <em>{registro.cuerpo_coment}</em></p>
+              <p><strong>Mente:</strong> {registro.mente_estat} - <em>{registro.mente_coment || 'Sin comentario'}</em></p>
+              <p><strong>Emoción:</strong> {registro.emocion_estat} - <em>{registro.emocion_coment || 'Sin comentario'}</em></p>
+              <p><strong>Cuerpo:</strong> {registro.cuerpo_estat} - <em>{registro.cuerpo_coment || 'Sin comentario'}</em></p>
             </div>
           ))}
         </div>

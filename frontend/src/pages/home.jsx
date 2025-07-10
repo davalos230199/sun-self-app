@@ -1,29 +1,17 @@
 // frontend/src/pages/home.jsx
 import { useEffect, useState, useCallback } from 'react';
-import axios from 'axios';
-// 1. Importamos el hook que nos permite recibir datos del "guardián"
+// 1. Importamos nuestro nuevo módulo de API centralizado
+import api from '../services/api';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import './home.css';
 
-// La instancia de API sigue siendo una buena práctica
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-});
-
-// El interceptor también, para añadir el token automáticamente
-api.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`;
-  }
-  return config;
-});
+// 2. ¡ADIÓS! Ya no necesitamos crear una instancia de axios aquí.
+// const api = axios.create({ ... }); // <--- ELIMINADO
+// api.interceptors.request.use(...); // <--- ELIMINADO
 
 export default function Home() {
-  // 2. ¡ADIÓS al estado local del usuario! Ahora lo recibimos directamente.
   const { user } = useOutletContext();
 
-  // El resto de los estados permanecen igual
   const [estados, setEstados] = useState({
     mente: { seleccion: '', comentario: '' },
     emocion: { seleccion: '', comentario: '' },
@@ -36,7 +24,6 @@ export default function Home() {
 
   // Las funciones de useCallback permanecen igual
   const generarFrase = useCallback((e) => {
-    // ... (sin cambios aquí)
     const m = e.mente.seleccion;
     const emo = e.emocion.seleccion;
     const c = e.cuerpo.seleccion;
@@ -47,7 +34,6 @@ export default function Home() {
   }, []);
 
   const determinarClima = useCallback((e) => {
-    // ... (sin cambios aquí)
     const valores = [e.mente.seleccion, e.emocion.seleccion, e.cuerpo.seleccion];
     const puntaje = valores.reduce((acc, val) => {
       if (val === 'alto') return acc + 1;
@@ -59,16 +45,14 @@ export default function Home() {
     return '⛅ Nublado con momentos de claridad';
   }, []);
 
-  // 3. ELIMINAMOS por completo el useEffect que verificaba al usuario. ¡Ya no es necesario!
-
-  // 4. Solo conservamos el useEffect que carga el registro del día.
+  // El useEffect que carga el registro del día
   useEffect(() => {
-    // La comprobación de 'user' es una seguridad extra.
     if (!user) return;
 
     const cargarRegistroDelDia = async () => {
       try {
-        const registroResponse = await api.get('/api/registros/today');
+        // 3. Usamos la nueva función de nuestro servicio de API. ¡Más legible!
+        const registroResponse = await api.getRegistroDeHoy();
         const registroDeHoy = registroResponse.data.registro;
 
         if (registroDeHoy) {
@@ -88,18 +72,13 @@ export default function Home() {
     };
 
     cargarRegistroDelDia();
-  }, [user, navigate, generarFrase, determinarClima]); // Ahora solo depende de 'user' y las otras funciones
+  }, [user, navigate, generarFrase, determinarClima]);
 
-  // Los manejadores de eventos no cambian
-  const handleSeleccion = (orbe, valor) => {
-    setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], seleccion: valor } }));
-  };
-  const handleComentario = (orbe, valor) => {
-    setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], comentario: valor } }));
-  };
+  // Los manejadores de eventos ahora usan las funciones del servicio
   const handleGuardar = async () => {
     try {
-      await api.post('/api/registros', estados);
+      // 4. Usamos la nueva función para guardar.
+      await api.saveRegistro(estados);
       setFraseDelDia(generarFrase(estados));
       setClimaVisual(determinarClima(estados));
       setEstadoFinalizado(true);
@@ -107,17 +86,22 @@ export default function Home() {
       console.error("Error al guardar el estado:", error);
     }
   };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
   };
 
-  // 5. ELIMINAMOS el estado de carga. El guardián ya lo maneja.
-  // if (!user) { return <div className="home-container">Cargando...</div>; }
+  // El resto de los manejadores no cambian
+  const handleSeleccion = (orbe, valor) => {
+    setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], seleccion: valor } }));
+  };
+  const handleComentario = (orbe, valor) => {
+    setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], comentario: valor } }));
+  };
 
   return (
     <div className="home-container">
-      {/* 6. El 'user' viene directamente del contexto, ¡qué limpio! */}
       <h2>Hola, {user.email}</h2>
 
       {estadoFinalizado ? (
