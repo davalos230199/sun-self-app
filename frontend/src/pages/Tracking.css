@@ -1,24 +1,41 @@
 /* frontend/src/pages/Tracking.css */
+
+/* CLAVE: Hacemos que el contenedor principal sea un layout de flexbox vertical. */
 .tracking-container {
     width: 100%;
-    max-width: 700px; /* Un ancho máximo para el contenido */
+    max-width: 700px;
     margin: 0 auto;
-}
-.registros-list {
+    height: 100%; /* Ocupa toda la altura disponible */
     display: flex;
     flex-direction: column;
-    gap: 20px;
 }
+
+/* El PageHeader (que ya tiene flex-shrink: 0) se mantendrá fijo arriba. */
+
+/* CLAVE: Hacemos que el área de la lista ocupe todo el espacio sobrante y tenga su propio scroll. */
+.registros-list-scrollable {
+    flex-grow: 1; /* Ocupa todo el espacio vertical disponible */
+    overflow-y: auto; /* Muestra la barra de scroll SÓLO si es necesario */
+    padding-right: 10px; /* Espacio para que la barra de scroll no se pegue al contenido */
+}
+
 .registro-card {
     background-color: white;
     padding: 20px;
-    border-radius: 5px;
+    border-radius: 8px;
     border: 1px solid var(--color-borde-suave);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     text-align: left;
-    /* CLAVE: Evita que el contenido interno cause overflow */
     overflow-wrap: break-word;
+    margin-bottom: 15px; /* Espacio entre tarjetas */
 }
-.registro-card h4 { font-size: 1.5rem; margin: 0 0 15px 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-.registro-card p { margin: 5px 0; }
-.back-button { margin-top: 30px; }
+.registro-card h4 {
+    font-size: 1.5rem;
+    margin: 0 0 15px 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+.registro-card p {
+    margin: 5px 0;
+    line-height: 1.5; /* Mejora la legibilidad */
+}
