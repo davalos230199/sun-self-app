@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './Sunny.css'; // Usaremos un archivo CSS para los estilos
+import './sunny.css'; // Usaremos un archivo CSS para los estilos
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
