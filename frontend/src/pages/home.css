@@ -1,65 +1,49 @@
 /* frontend/src/pages/home.css */
 .home-content {
   width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
   height: 100%; /* Ocupa toda la altura del content-area */
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column; /* Organiza los elementos verticalmente */
 }
 
 .formulario-estado {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  max-width: 500px;
-  height: 100%; /* Ocupa toda la altura del contenedor padre */
-  max-height: 90vh; /* Un máximo para que no se pegue a los bordes */
+  height: 100%;
 }
 
 .form-header {
-  flex-shrink: 0; /* Evita que el header se encoja */
+  flex-shrink: 0; /* No se encoge */
   text-align: center;
 }
 .form-header h2 { font-size: 2rem; }
 .form-header p { font-size: 1.1rem; color: #666; margin-bottom: 15px; }
 
-/* CLAVE: Este es el contenedor que tendrá scroll si es necesario */
 .orbes-container {
-  flex-grow: 1; /* Ocupa todo el espacio vertical disponible */
-  overflow-y: auto; /* Muestra la barra de scroll SÓLO si hace falta */
-  padding: 0 10px; /* Un poco de padding para que no se pegue al borde */
-  margin: 0 -10px; /* Compensa el padding para mantener el alineamiento */
+  flex-grow: 1; /* Ocupa todo el espacio sobrante */
+  overflow-y: auto; /* Y tiene su propio scroll si es necesario */
+  padding: 5px;
 }
 
 .orbe { margin-bottom: 15px; }
 .orbe h3 { font-size: 1.2rem; text-transform: capitalize; margin-bottom: 8px; border-bottom: 1px solid var(--color-borde-suave); padding-bottom: 5px; }
 .orbe-buttons { display: flex; gap: 8px; margin-bottom: 8px; }
 .orbe-buttons button { flex-grow: 1; padding: 8px; font-size: 14px; margin-top: 0; }
-.orbe-buttons button.selected { border-color: var(--color-lapiz); background-color: var(--color-lapiz); color: var(--color-papel); }
 .orbe textarea { font-size: 14px; padding: 8px; margin-bottom: 0; }
 
 .form-actions {
-  flex-shrink: 0; /* Evita que el footer se encoja */
+  flex-shrink: 0; /* No se encoge */
   display: flex;
   gap: 15px;
   padding-top: 15px;
   border-top: 1px solid var(--color-borde-suave);
 }
 .form-actions button { flex-grow: 1; margin-top: 0; }
-.form-actions .secondary { background-color: #f0f0f0; border-color: #f0f0f0; }
-.form-actions .secondary:hover { background-color: #e0e0e0; }
 
 /* Estilo Post-it */
-.post-it-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-}
+.post-it-wrapper { display: flex; justify-content: center; align-items: center; width: 100%; }
 .post-it { background-color: #fffde7; padding: 25px; border-radius: 4px; box-shadow: 3px 3px 10px rgba(0,0,0,0.15); transform: rotate(-1.5deg); width: 100%; max-width: 320px; text-align: center; position: relative; }
-.post-it:hover { transform: rotate(0deg) scale(1.02); transition: transform 0.2s ease-in-out; }
-.post-it h3 { font-size: 1.5rem; border-bottom: 1px dashed #ccc; padding-bottom: 10px; margin-bottom: 15px; }
-.clima-visual { font-size: 3rem; margin: 15px 0; }
-.frase-del-dia { font-style: italic; font-size: 1.1rem; color: #666; }
-.edit-button { position: absolute; top: 5px; right: 5px; background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 5px; line-height: 1; opacity: 0.5; }
-.edit-button:hover { opacity: 1; }
+.clima-visual { font-size: 3rem; }
+.edit-button { position: absolute; top: 5px; right: 5px; font-size: 1.2rem; }

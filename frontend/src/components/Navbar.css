@@ -9,28 +9,10 @@
   background-color: var(--color-blanco-puro);
 }
 
-.navbar-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px;
-  margin-bottom: 30px;
-}
-
-.brand-text {
-  font-family: var(--font-titulos);
-  font-size: 24px;
-}
-
-.nav-links {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.nav-actions {
-  margin-top: auto;
-}
+.navbar-brand { display: flex; align-items: center; gap: 12px; padding: 10px; margin-bottom: 30px; }
+.brand-text { font-family: var(--font-titulos); font-size: 24px; }
+.nav-links { display: flex; flex-direction: column; gap: 5px; }
+.nav-actions { margin-top: auto; }
 
 .nav-item {
   display: flex;
@@ -45,32 +27,24 @@
   transition: background-color 0.2s ease, color 0.2s ease;
   width: 100%;
   background: none;
-  border: 1px solid transparent; /* CLAVE: Borde invisible para mantener el tamaño */
+  border: none;
   cursor: pointer;
   text-align: left;
-  box-sizing: border-box; /* Asegura que el padding no altere el tamaño total */
+  box-sizing: border-box;
 }
 
-.nav-item:hover {
-  background-color: #f0f0f0;
-}
+.nav-item:hover { background-color: #f0f0f0; }
 
+/* CLAVE: El estado activo ahora solo cambia colores, no dimensiones. */
 .nav-item.active {
   background-color: var(--color-lapiz);
   color: var(--color-blanco-puro);
 }
-.nav-item.active svg {
-  stroke: var(--color-blanco-puro);
-}
+.nav-item.active svg { stroke: var(--color-blanco-puro); }
 
-
-/* --- ESTILOS RESPONSIVE PARA MÓVIL --- */
 @media (max-width: 768px) {
   .navbar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    position: fixed; bottom: 0; left: 0; right: 0;
     height: 60px;
     flex-direction: row;
     border-top: 1px solid var(--color-borde-suave);
@@ -81,34 +55,27 @@
     justify-content: space-around;
     align-items: center;
   }
-
-  .navbar-brand, .link-text {
-    display: none;
-  }
-  
-  .nav-links, .nav-actions {
-    display: contents;
-  }
+  .navbar-brand, .link-text { display: none; }
+  .nav-links, .nav-actions { display: contents; }
   
   .nav-item {
     flex: 1;
-    display: flex; /* Re-aseguramos flex para centrar */
+    display: flex;
     justify-content: center;
-    align-items: center; /* Centrado vertical perfecto */
+    align-items: center;
     height: 100%;
     border-radius: 0;
     gap: 0;
-    padding: 0; /* Reseteamos padding para control total */
-    border: none; /* Quitamos el borde en móvil */
+    padding: 0;
   }
-
-  /* CLAVE: El estado activo en móvil no debe tener efectos secundarios de layout */
+  
+  /* CLAVE: El estado activo en móvil ahora es más sutil y no rompe el layout. */
   .nav-item.active {
-    background-color: #f0f0f0; /* Un gris suave para el activo en móvil */
+    background-color: #f0f0f0;
     color: var(--color-sol-acento);
   }
   .nav-item.active svg {
     stroke: var(--color-sol-acento);
-    transform: scale(1.1); /* Un pequeño zoom para feedback visual */
+    transform: scale(1.1);
   }
 }

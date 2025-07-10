@@ -1,31 +1,26 @@
 /* frontend/src/components/AppLayout.css */
-
 .app-container {
   display: grid;
-  grid-template-columns: 220px 1fr; /* Simplificado a 2 columnas por defecto */
+  grid-template-columns: 220px 1fr;
   grid-template-rows: 1fr;
   width: 100vw;
   height: 100vh;
-  overflow: hidden; /* <-- CLAVE: Evita el scroll en el contenedor principal */
+  overflow: hidden;
   background-color: #f0f2f5;
 }
 
 .content-area {
-  overflow-y: auto; /* <-- CLAVE: Permite el scroll SÓLO en el área de contenido */
-  padding: 30px;
+  overflow-y: auto; /* Permite scroll SÓLO aquí */
+  padding: 20px; /* Un padding base */
+  /* CLAVE: Aseguramos que el contenido interno se comporte bien */
+  display: flex;
+  justify-content: center;
 }
 
-/* Ocultamos la barra derecha por ahora para simplificar */
-.right-sidebar {
-  display: none;
-}
+.right-sidebar { display: none; }
 
-
-/* --- ESTILOS RESPONSIVE --- */
 @media (max-width: 1024px) {
-  .app-container {
-    grid-template-columns: 80px 1fr; /* Navbar de iconos */
-  }
+  .app-container { grid-template-columns: 80px 1fr; }
 }
 
 @media (max-width: 768px) {
@@ -35,8 +30,8 @@
     flex-direction: column;
   }
   .content-area {
-    flex-grow: 1; /* Ocupa todo el espacio disponible */
+    flex-grow: 1;
     padding: 15px;
-    padding-bottom: 75px; /* Espacio para la navbar fija */
+    padding-bottom: 75px;
   }
 }
