@@ -1,21 +1,17 @@
 // frontend/src/App.jsx
 
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Navigate
-} from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 
 // Pages
 import LoginScene from './pages/loginscene';
 import Home from './pages/home';
 import Tracking from './pages/tracking';
-import Couch from './pages/couch';
-import Register from './pages/register'; // <-- 1. Importa la página de registro
+import Sunny from './pages/Sunny'; // <-- CAMBIADO DE 'Couch' A 'Sunny'
+import Register from './pages/register';
 
 // Route Components
 import ProtectedRoute from './components/protectedroute';
-import GuestRoute from './components/guestroute'; // <-- 1. Importa el nuevo guardián
+import GuestRoute from './components/guestroute';
 
 const router = createBrowserRouter([
   {
@@ -23,29 +19,20 @@ const router = createBrowserRouter([
     element: <Navigate to="/login" replace />
   },
   {
-    // 2. Ruta para invitados (no logueados)
     path: '/',
     element: <GuestRoute />,
     children: [
-      {
-        path: '/login',
-        element: <LoginScene />
-      },
-      // 1. Pagina de Registro
-      { 
-        path: '/register',
-        element: <Register />
-      }
+      { path: '/login', element: <LoginScene /> },
+      { path: '/register', element: <Register /> }
     ]
   },
   {
-    // 3. Ruta para usuarios logueados
     path: '/',
     element: <ProtectedRoute />,
     children: [
       { path: '/home', element: <Home /> },
       { path: '/tracking', element: <Tracking /> },
-      { path: '/couch', element: <Couch /> }
+      { path: '/sunny', element: <Sunny /> } // <-- CAMBIADO DE '/couch' A '/sunny'
     ]
   }
 ]);

@@ -13,15 +13,12 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Middlewares globales
 app.use(cors());
 app.use(express.json());
 
 // =================================================================
 // 3. RUTAS DE LA API (La Centralita)
 // =================================================================
-
-// --- RUTA DE HEALTH CHECK ---
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
@@ -29,11 +26,11 @@ app.get('/health', (req, res) => {
 // --- CONEXIÓN A LOS DEPARTAMENTOS (ARCHIVOS DE RUTAS) ---
 const authRoutes = require('./routes/auth');
 const registrosRoutes = require('./routes/registros');
-const coachRoutes = require('./routes/coach'); // <-- La última pieza
+const sunnyRoutes = require('./routes/sunny'); // <-- CAMBIADO DE 'coach' A 'sunny'
 
 app.use('/api/auth', authRoutes);
 app.use('/api/registros', registrosRoutes);
-app.use('/api/coach', coachRoutes); // <-- Conectada
+app.use('/api/sunny', sunnyRoutes); // <-- CAMBIADO DE 'coach' A 'sunny'
 
 // =================================================================
 // 4. INICIO DEL SERVIDOR

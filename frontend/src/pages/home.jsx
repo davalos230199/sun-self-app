@@ -147,7 +147,7 @@ export default function Home() {
           <p className="frase-del-dia">{fraseDelDia}</p>
           <div className="botones-accion">
             <button onClick={() => setEstadoFinalizado(false)}>Registrar de nuevo</button>
-            <button onClick={() => navigate('/couch')}>Hablar con el Coach</button>
+            <button onClick={() => navigate('/sunny')}>Hablar con Sunny</button>
             <button onClick={() => navigate('/tracking')}>Ver mi historial</button>
           </div>
         </div>
