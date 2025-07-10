@@ -1,0 +1,29 @@
+/* frontend/src/pages/Settings.css */
+.settings-container {
+  width: 100%;
+}
+
+.settings-card {
+  background-color: #fafafa;
+  border: 1px solid var(--color-borde-suave);
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.settings-card h3 {
+  margin-top: 0;
+  border-bottom: 1px solid var(--color-borde-suave);
+  padding-bottom: 10px;
+}
+
+.logout-button {
+  width: 100%;
+  background-color: #e74c3c; /* Un rojo suave para indicar acción destructiva */
+  border-color: #e74c3c;
+  color: white;
+}
+.logout-button:hover {
+  background-color: #c0392b;
+  border-color: #c0392b;
+  color: white;
+}

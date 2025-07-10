@@ -1,94 +1,70 @@
 /* frontend/src/pages/home.css */
-
-/* Hacemos que la tarjeta de Home pueda ser un poco más ancha */
-.home-specific-layout {
-  max-width: 550px; 
+.home-content {
+  width: 100%;
+  padding: 0;
+  background-color: transparent !important; /* El contenedor de home no necesita su propio fondo */
+  border: none !important;
+  box-shadow: none !important;
 }
 
-.home-specific-layout h2 {
-  font-size: 2.8rem;
-  margin-bottom: 20px;
+.formulario-estado h2 {
+  text-align: center;
 }
-
-.home-specific-layout p {
+.formulario-estado p {
+  text-align: center;
   font-size: 1.2rem;
   margin-bottom: 30px;
 }
 
-.orbe {
-  margin-bottom: 25px;
-  text-align: left;
-}
+.orbe { margin-bottom: 25px; text-align: left; }
+.orbe h3 { font-size: 1.5rem; margin-bottom: 10px; border-bottom: 1px solid var(--color-borde-suave); padding-bottom: 5px; }
+.orbe-buttons { display: flex; gap: 10px; margin-bottom: 10px; }
+.orbe-buttons button { flex-grow: 1; padding: 8px; font-size: 14px; }
+.orbe-buttons button.selected { border-color: var(--color-lapiz); background-color: var(--color-lapiz); color: var(--color-papel); }
+.formulario-estado .primary { width: 100%; margin-top: 20px; }
 
-.orbe h3 {
-  font-size: 2rem;
-  margin-bottom: 10px;
-  border-bottom: 1px solid var(--color-borde-suave);
-  padding-bottom: 5px;
-}
-
-.orbe-buttons {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.orbe-buttons button {
-  flex-grow: 1;
-  padding: 8px;
-  font-size: 16px;
-  background-color: var(--color-papel);
-  border: 1px solid var(--color-borde-suave);
-}
-
-.orbe-buttons button.selected {
-  border-color: var(--color-lapiz);
-  background-color: var(--color-lapiz);
-  color: var(--color-papel);
-}
-
-.orbe-buttons button:hover {
-  border-color: var(--color-lapiz);
-}
-
-.formulario-estado .primary {
+/* Estilo Post-it */
+.post-it {
+  background-color: #fffde7; /* Amarillo pálido de post-it */
+  padding: 25px;
+  border-radius: 4px;
+  box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+  transform: rotate(-2deg); /* Ligera rotación para efecto realista */
   width: 100%;
-  margin-top: 20px;
+  max-width: 350px;
+  margin: 20px auto;
+  text-align: center;
+  position: relative;
 }
 
-.logout-btn {
-  margin-top: 30px;
+.post-it h3 {
+  font-size: 1.8rem;
+  border-bottom: 1px dashed #ccc;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.clima-visual { font-size: 2.5rem; margin: 20px 0; }
+.frase-del-dia { font-style: italic; font-size: 1.2rem; color: #666; }
+
+.edit-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
   border: none;
-  background: none;
-  color: #aaa;
-  font-size: 14px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 5px;
+  line-height: 1;
 }
-.logout-btn:hover {
-  background: none;
-  color: var(--color-lapiz);
-  text-decoration: underline;
-}
-
-/* Estilos para la vista finalizada */
-.estado-finalizado {
-  padding: 20px;
+.edit-button:hover {
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 50%;
 }
 
-.clima-visual {
-  font-size: 3rem;
-  margin: 20px 0;
-}
-
-.frase-del-dia {
-  font-style: italic;
-  font-size: 1.3rem;
-  color: #666;
-}
-
-.botones-accion {
-  margin-top: 30px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
+/* Responsive para Home */
+@media (max-width: 768px) {
+  .orbe h3 { font-size: 1.3rem; }
+  .orbe-buttons button { font-size: 12px; padding: 6px; }
 }

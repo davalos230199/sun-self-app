@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
+import './Auth.css'; // <-- Usamos los nuevos estilos compartidos
 
 export default function Register() {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -9,9 +10,7 @@ export default function Register() {
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,46 +18,28 @@ export default function Register() {
     setSuccess('');
     try {
       await api.register(form);
-      setSuccess('¡Usuario creado con éxito! Redirigiendo al login...');
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
+      setSuccess('¡Cuenta creada! Redirigiendo al login...');
+      setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al crear el usuario.');
+      setError(err.response?.data?.error || 'Error al registrar.');
     }
   };
 
   return (
-    // Envolvemos todo en nuestro "molde" para mantener la consistencia.
-    <div className="card-container">
-      <form onSubmit={handleSubmit}>
-        <h2>Crear una cuenta</h2>
-        <p>Únete a Sun-Self para empezar tu diario.</p>
-        <input
-          name="email"
-          type="email"
-          placeholder="Tu email"
-          value={form.email}
-          onChange={handleChange}
-          required
-        />
-        <input
-          name="password"
-          type="password"
-          placeholder="Crea una contraseña"
-          value={form.password}
-          onChange={handleChange}
-          required
-        />
-        <button type="submit">Registrarme</button>
-
-        {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
-        {success && <p style={{ color: 'green', marginTop: '10px' }}>{success}</p>}
-
-        <p style={{ marginTop: '20px' }}>
-          ¿Ya tienes una cuenta? <Link to="/login">Inicia sesión</Link>
-        </p>
-      </form>
+    <div className="auth-container">
+      <div className="auth-card">
+        <form onSubmit={handleSubmit}>
+          <h2>Crear una cuenta</h2>
+          {success && <p style={{ color: 'green' }}>{success}</p>}
+          {error && <p style={{ color: 'red' }}>{error}</p>}
+          <input type="email" name="email" placeholder="Tu email" onChange={handleChange} required />
+          <input type="password" name="password" placeholder="Crea una contraseña" onChange={handleChange} required />
+          <button type="submit">Registrarme</button>
+          <p style={{ marginTop: '20px' }}>
+            ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 }

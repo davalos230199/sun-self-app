@@ -1,15 +1,11 @@
 // frontend/src/App.jsx
-
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
-
-// Pages
-import LoginScene from './pages/loginscene';
+import Login from './pages/Login'; // <-- Directo a Login
+import Register from './pages/Register'; // <-- Directo a Register
 import Home from './pages/home';
 import Tracking from './pages/tracking';
-import Sunny from './pages/Sunny'; // <-- CAMBIADO DE 'Couch' A 'Sunny'
-import Register from './pages/register';
-
-// Route Components
+import Sunny from './pages/Sunny';
+import Settings from './pages/Settings'; // <-- Importamos la nueva página
 import ProtectedRoute from './components/protectedroute';
 import GuestRoute from './components/guestroute';
 
@@ -22,7 +18,8 @@ const router = createBrowserRouter([
     path: '/',
     element: <GuestRoute />,
     children: [
-      { path: '/login', element: <LoginScene /> },
+      // Eliminamos LoginScene, ahora las rutas son limpias
+      { path: '/login', element: <Login /> },
       { path: '/register', element: <Register /> }
     ]
   },
@@ -32,7 +29,8 @@ const router = createBrowserRouter([
     children: [
       { path: '/home', element: <Home /> },
       { path: '/tracking', element: <Tracking /> },
-      { path: '/sunny', element: <Sunny /> } // <-- CAMBIADO DE '/couch' A '/sunny'
+      { path: '/sunny', element: <Sunny /> },
+      { path: '/settings', element: <Settings /> } // <-- Añadimos la nueva ruta
     ]
   }
 ]);

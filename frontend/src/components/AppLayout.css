@@ -2,40 +2,23 @@
 
 .app-container {
   display: grid;
-  /* Damos más espacio al contenido y un poco menos a las barras laterales */
-  grid-template-columns: 220px 1fr 280px; 
+  grid-template-columns: 220px 1fr 280px;
   grid-template-rows: 1fr;
   width: 100vw;
-  height: 100vh;
-  gap: 30px; /* <-- Aumentamos el espacio entre columnas */
+  height: 100vh; /* <-- Clave: Ocupa toda la altura de la pantalla */
+  overflow: hidden; /* <-- Clave: Evita el scroll en el contenedor principal */
   background-color: #f0f2f5;
-  padding: 0;
 }
 
 .content-area {
-  padding: 30px; /* <-- Aumentamos el padding interno */
-  overflow-y: auto;
-  display: flex;
-  justify-content: center; /* Centramos el contenido principal */
+  overflow-y: auto; /* <-- Clave: Permite el scroll SÓLO en esta área */
+  padding: 30px;
 }
-
-/* Envolvemos el contenido de las páginas en una tarjeta para darles un fondo y bordes */
-.content-area > * {
-  background-color: var(--color-blanco-puro);
-  padding: 30px 40px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  border: 1px solid var(--color-borde-suave);
-  width: 100%;
-  max-width: 700px; /* Un ancho máximo para el contenido */
-  height: fit-content;
-}
-
 
 .right-sidebar {
-  padding: 20px;
-  border-left: 1px solid var(--color-borde-suave);
   background-color: var(--color-blanco-puro);
+  border-left: 1px solid var(--color-borde-suave);
+  padding: 20px;
 }
 
 .placeholder-card {
@@ -49,14 +32,10 @@
 /* --- ESTILOS RESPONSIVE --- */
 @media (max-width: 1024px) {
   .app-container {
-    grid-template-columns: 80px 1fr; /* Navbar de iconos */
-    gap: 0;
+    grid-template-columns: 80px 1fr;
   }
   .right-sidebar {
     display: none;
-  }
-  .content-area {
-    padding: 20px;
   }
 }
 
@@ -67,10 +46,8 @@
     flex-direction: column;
   }
   .content-area {
-    padding: 15px; /* Menos padding en móvil */
-    padding-bottom: 80px;
-  }
-  .content-area > * {
-    padding: 20px;
+    flex-grow: 1;
+    padding: 15px;
+    padding-bottom: 80px; /* Espacio para la navbar fija */
   }
 }
