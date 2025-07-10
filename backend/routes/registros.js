@@ -73,6 +73,9 @@ router.get('/today', async (req, res) => {
       .eq('user_id', userId)
       .gte('created_at', `${today}T00:00:00.000Z`)
       .lte('created_at', `${today}T23:59:59.999Z`)
+      // CLAVE: Ordenamos por fecha de creación DESCENDENTE antes de limitar a 1.
+      // Esto nos asegura que siempre obtendremos el registro MÁS RECIENTE del día.
+      .order('created_at', { ascending: false })
       .limit(1);
 
     if (error) throw error;
