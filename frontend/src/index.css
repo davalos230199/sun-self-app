@@ -1,105 +1,101 @@
-/* frontend/src/index.css - Estilo "Journal Íntimo" */
+/* frontend/src/index.css */
 
-/* 1. Importar las nuevas fuentes de Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Lora:wght@400;600&display=swap');
+/* --- 1. IMPORTAMOS NUESTRAS FUENTES CORREGIDAS --- */
+/* Patrick Hand para títulos, Nunito para cuerpo (más legible) */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&family=Patrick+Hand&display=swap');
 
-/* 2. Nuevas variables de Color y Tipografía */
+/* --- 2. NUESTRA "TIENDA DE MATERIALES" ACTUALIZADA --- */
 :root {
-  --font-title: 'Caveat', cursive;
-  --font-body: 'Lora', serif;
+  --color-papel: #FDFCF6;
+  --color-lapiz: #4A4A4A;
+  --color-sol-acento: #F39C12;
+  --color-sol-acento-hover: #d8890b;
+  --color-borde-suave: #EAEAEA;
+  --color-blanco-puro: #FFFFFF;
 
-  --color-paper: #FDF6E3;
-  --color-ink: #4A4A4A;
-  --color-accent: #FFA07A; /* Coral Suave */
-  --color-border: #D3D3D3;
+  --color-estado-alto: #F39C12;
+  --color-estado-neutral: #BDC3C7;
+  --color-estado-bajo: #A9CCE3;
+
+  /* Fuentes con mejor jerarquía */
+  --font-titulos: 'Patrick Hand', sans-serif;
+  --font-cuerpo: 'Nunito', sans-serif; /* <-- CAMBIO: Fuente legible */
 }
 
-/* 3. Estilos Base con textura de papel */
+/* --- 3. ESTILOS BASE DE LA "CASA" --- */
 body {
   margin: 0;
-  font-family: var(--font-body);
-  background-color: var(--color-paper);
-  /* Textura sutil de papel de fondo */
-  background-image: url('https://www.transparenttextures.com/patterns/notebook-dark.png');
-  color: var(--color-ink);
+  font-family: var(--font-cuerpo); /* <-- Aplicamos la nueva fuente de cuerpo */
+  background-color: var(--color-papel);
+  color: var(--color-lapiz);
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  padding: 20px; /* Añadimos un poco de padding general */
+  box-sizing: border-box;
 }
 
-/* 4. Estilos para los títulos con la fuente de "escritura a mano" */
-h2, h3 {
-  font-family: var(--font-title);
-  color: var(--color-ink);
-  font-size: 2.5rem; /* Un poco más grande para que la fuente luzca */
-  font-weight: 700;
-  margin-bottom: 25px;
+h2, h3, h4 {
+  font-family: var(--font-titulos);
+  font-weight: normal;
+  font-size: 2.5rem; /* Hacemos los títulos más grandes e impactantes */
+  margin-top: 0;
 }
 
-/* 5. Contenedor principal que simula una hoja de papel */
-form {
-  background-color: white;
-  padding: 40px 50px;
-  border-radius: 5px;
-  border: 1px solid var(--color-border);
-  box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.1);
+/* --- 4. NUESTRO "MOLDE" REUTILIZABLE PARA CONTENIDO --- */
+.card-container {
+  background-color: var(--color-blanco-puro);
+  padding: 40px; /* <-- El espaciado interno que faltaba */
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+  border: 1px solid var(--color-borde-suave);
   width: 100%;
   max-width: 450px;
   text-align: center;
+  box-sizing: border-box;
 }
 
-/* 6. Estilos de inputs y botones para que coincidan */
-input {
-  width: calc(100% - 22px);
-  padding: 12px 10px;
-  margin-bottom: 20px;
-  border: none;
-  border-bottom: 2px solid var(--color-border);
+/* --- 5. ESTILOS BASE PARA ELEMENTOS DE FORMULARIO --- */
+/* (Estos ya no necesitan tanto estilo propio, porque vivirán dentro del .card-container) */
+
+button {
+  font-family: var(--font-titulos);
+  font-size: 18px;
+  padding: 12px 25px;
+  border: 1px solid var(--color-lapiz);
+  border-radius: 5px;
   background-color: transparent;
-  font-family: var(--font-body);
-  font-size: 16px;
-  transition: border-color 0.3s ease;
-}
-
-input:focus {
-  outline: none;
-  border-bottom-color: var(--color-accent);
-}
-
-button[type="submit"] {
-  width: 100%;
-  padding: 15px;
-  border: 2px solid var(--color-ink);
-  border-radius: 30px; /* Botones más redondos y amigables */
-  background-color: var(--color-accent);
-  color: white;
-  font-family: var(--font-body);
-  font-size: 16px;
-  font-weight: 600;
+  color: var(--color-lapiz);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease-in-out;
   margin-top: 10px;
 }
 
-button[type="submit"]:hover {
-  background-color: var(--color-ink);
-  color: white;
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* --- ESTILOS RESPONSIVOS --- */
-/* Para pantallas de 768px o menos (tablets y celulares) */
-@media (max-width: 768px) {
-  body {
-    /* Permitimos scroll en el body para que nada se corte */
-    align-items: flex-start;
-    padding-top: 20px;
-  }
+button.primary, button[type="submit"] {
+  background-color: var(--color-sol-acento);
+  border-color: var(--color-sol-acento);
+  color: var(--color-blanco-puro);
+}
 
-  form {
-    /* Hacemos que el formulario ocupe casi toda la pantalla */
-    width: 90%;
-    padding: 25px;
-    margin: 0 auto;
-  }
+input, textarea {
+  font-family: var(--font-cuerpo);
+  font-size: 16px;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid var(--color-borde-suave);
+  border-radius: 5px;
+  background-color: #fcfcfc;
+  box-sizing: border-box;
+}
+
+input:focus, textarea:focus {
+  outline: 1px solid var(--color-sol-acento);
+  box-shadow: 0 0 5px rgba(243, 156, 18, 0.5);
 }

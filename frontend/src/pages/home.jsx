@@ -1,17 +1,11 @@
 // frontend/src/pages/home.jsx
 import { useEffect, useState, useCallback } from 'react';
-// 1. Importamos nuestro nuevo módulo de API centralizado
 import api from '../services/api';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import './home.css';
 
-// 2. ¡ADIÓS! Ya no necesitamos crear una instancia de axios aquí.
-// const api = axios.create({ ... }); // <--- ELIMINADO
-// api.interceptors.request.use(...); // <--- ELIMINADO
-
 export default function Home() {
   const { user } = useOutletContext();
-
   const [estados, setEstados] = useState({
     mente: { seleccion: '', comentario: '' },
     emocion: { seleccion: '', comentario: '' },
@@ -22,7 +16,7 @@ export default function Home() {
   const [climaVisual, setClimaVisual] = useState('');
   const navigate = useNavigate();
 
-  // Las funciones de useCallback permanecen igual
+  // ... (Las funciones generarFrase, determinarClima, etc. no cambian)
   const generarFrase = useCallback((e) => {
     const m = e.mente.seleccion;
     const emo = e.emocion.seleccion;
@@ -32,7 +26,6 @@ export default function Home() {
     if (m === 'alto') return 'Mente clara, horizonte abierto. Aprovéchalo para avanzar.';
     return 'Hoy estás navegando tus estados con honestidad. Eso también es fuerza.';
   }, []);
-
   const determinarClima = useCallback((e) => {
     const valores = [e.mente.seleccion, e.emocion.seleccion, e.cuerpo.seleccion];
     const puntaje = valores.reduce((acc, val) => {
@@ -44,17 +37,12 @@ export default function Home() {
     if (puntaje <= -2) return '🌧️ Lluvia suave y necesaria';
     return '⛅ Nublado con momentos de claridad';
   }, []);
-
-  // El useEffect que carga el registro del día
   useEffect(() => {
     if (!user) return;
-
     const cargarRegistroDelDia = async () => {
       try {
-        // 3. Usamos la nueva función de nuestro servicio de API. ¡Más legible!
         const registroResponse = await api.getRegistroDeHoy();
         const registroDeHoy = registroResponse.data.registro;
-
         if (registroDeHoy) {
           const estadosGuardados = {
             mente: { seleccion: registroDeHoy.mente_estat, comentario: registroDeHoy.mente_coment },
@@ -70,14 +58,10 @@ export default function Home() {
         console.error("No se pudo verificar el registro de hoy, se asume que es un día nuevo:", error);
       }
     };
-
     cargarRegistroDelDia();
   }, [user, navigate, generarFrase, determinarClima]);
-
-  // Los manejadores de eventos ahora usan las funciones del servicio
   const handleGuardar = async () => {
     try {
-      // 4. Usamos la nueva función para guardar.
       await api.saveRegistro(estados);
       setFraseDelDia(generarFrase(estados));
       setClimaVisual(determinarClima(estados));
@@ -86,22 +70,21 @@ export default function Home() {
       console.error("Error al guardar el estado:", error);
     }
   };
-
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
   };
-
-  // El resto de los manejadores no cambian
   const handleSeleccion = (orbe, valor) => {
     setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], seleccion: valor } }));
   };
   const handleComentario = (orbe, valor) => {
     setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], comentario: valor } }));
   };
+  // ...
 
   return (
-    <div className="home-container">
+    // Reemplazamos 'home-container' por nuestro 'card-container' reutilizable.
+    <div className="card-container home-specific-layout">
       <h2>Hola, {user.email}</h2>
 
       {estadoFinalizado ? (
@@ -140,7 +123,7 @@ export default function Home() {
               />
             </div>
           ))}
-          <button onClick={handleGuardar} className="guardar-btn">Guardar estado</button>
+          <button onClick={handleGuardar} className="primary">Guardar estado</button>
         </div>
       )}
       <button onClick={handleLogout} className="logout-btn">

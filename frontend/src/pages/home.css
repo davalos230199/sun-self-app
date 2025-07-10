@@ -1,96 +1,94 @@
-/* frontend/src/pages/Home.css */
+/* frontend/src/pages/home.css */
 
-.home-container {
-  background-color: white;
-  padding: 40px 50px;
-  border-radius: 5px;
-  border: 1px solid var(--color-border);
-  box-shadow: 3px 3px 15px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 600px;
-  text-align: center;
-  transition: all 0.5s ease;
+/* Hacemos que la tarjeta de Home pueda ser un poco más ancha */
+.home-specific-layout {
+  max-width: 550px; 
 }
 
-.home-container h2 {
-    font-size: 3rem;
-    margin-top: 0;
+.home-specific-layout h2 {
+  font-size: 2.8rem;
+  margin-bottom: 20px;
+}
+
+.home-specific-layout p {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
 }
 
 .orbe {
-    margin-bottom: 30px;
-    text-align: left;
+  margin-bottom: 25px;
+  text-align: left;
 }
 
 .orbe h3 {
-    font-size: 2.2rem;
-    margin: 0 0 15px 0;
-    border-bottom: 2px solid var(--color-paper);
+  font-size: 2rem;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--color-borde-suave);
+  padding-bottom: 5px;
+}
+
+.orbe-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .orbe-buttons button {
-    border: 2px solid var(--color-border);
-    background-color: transparent;
-    border-radius: 20px;
-    padding: 8px 20px;
-    margin: 0 5px;
-    cursor: pointer;
-    font-family: var(--font-body);
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.orbe-buttons button:hover {
-    transform: translateY(-2px);
+  flex-grow: 1;
+  padding: 8px;
+  font-size: 16px;
+  background-color: var(--color-papel);
+  border: 1px solid var(--color-borde-suave);
 }
 
 .orbe-buttons button.selected {
-    border-color: var(--color-accent);
-    background-color: var(--color-accent);
-    color: white;
+  border-color: var(--color-lapiz);
+  background-color: var(--color-lapiz);
+  color: var(--color-papel);
 }
 
-textarea {
-    width: calc(100% - 20px);
-    margin-top: 15px;
-    border: none;
-    border-left: 2px solid var(--color-border);
-    padding: 10px;
-    font-family: var(--font-body);
-    font-size: 1rem;
-    background-color: #fafafa;
-    resize: vertical;
+.orbe-buttons button:hover {
+  border-color: var(--color-lapiz);
 }
 
-textarea:focus {
-    outline: none;
-    border-left-color: var(--color-accent);
+.formulario-estado .primary {
+  width: 100%;
+  margin-top: 20px;
 }
 
-@media (max-width: 768px) {
-  .home-container {
-    width: 90vw; /* Ocupa más ancho */
-    padding: 15px; /* Menos padding lateral */
-    margin-top: 0;
-  }
+.logout-btn {
+  margin-top: 30px;
+  border: none;
+  background: none;
+  color: #aaa;
+  font-size: 14px;
+}
+.logout-btn:hover {
+  background: none;
+  color: var(--color-lapiz);
+  text-decoration: underline;
+}
 
-  .home-container h2 {
-    font-size: 2.5rem;
-  }
+/* Estilos para la vista finalizada */
+.estado-finalizado {
+  padding: 20px;
+}
 
-  .orbe h3 {
-    font-size: 1.8rem;
-  }
+.clima-visual {
+  font-size: 3rem;
+  margin: 20px 0;
+}
 
-  .orbe-buttons {
-      /* Permite que los botones se reordenen si no caben */
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-  }
+.frase-del-dia {
+  font-style: italic;
+  font-size: 1.3rem;
+  color: #666;
+}
 
-  .orbe-buttons button {
-    padding: 8px 18px;
-    margin: 5px;
-  }
+.botones-accion {
+  margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
 }
