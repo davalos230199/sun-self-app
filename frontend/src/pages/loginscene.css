@@ -77,3 +77,32 @@
   /* La tapa se abre 180 grados */
   transform: rotateY(-180deg);
 }
+
+@media (max-width: 768px) {
+  .notebook {
+    /* Achicamos drásticamente el cuaderno */
+    width: 90vw; /* 90% del ancho de la pantalla */
+    height: 60vh; /* 60% del alto de la pantalla */
+
+    /* Recalculamos el centrado para el nuevo tamaño */
+    /* La mitad del nuevo ancho, dividido por 2 */
+    transform: translateX(calc(90vw / -4));
+  }
+
+  .notebook.open {
+    transform: translateX(0);
+  }
+
+  .notebook-cover {
+    font-size: 2rem; /* Achicamos el título */
+  }
+
+  /* Hacemos que el formulario de login se vea bien dentro del cuaderno chico */
+  .notebook-page form {
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    box-shadow: none;
+    border: none;
+  }
+}

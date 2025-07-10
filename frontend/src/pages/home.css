@@ -66,3 +66,19 @@ textarea:focus {
     outline: none;
     border-left-color: var(--color-accent);
 }
+
+@media (max-width: 768px) {
+  .home-container {
+    width: 90%;
+    padding: 20px;
+  }
+
+  .orbe h3 {
+    font-size: 1.8rem;
+  }
+
+  .orbe-buttons button {
+    padding: 6px 15px;
+    margin: 5px 2px;
+  }
+}

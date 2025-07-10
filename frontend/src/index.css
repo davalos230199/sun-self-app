@@ -86,3 +86,20 @@ button[type="submit"]:hover {
   background-color: var(--color-ink);
   color: white;
 }
+
+/* --- ESTILOS RESPONSIVOS --- */
+/* Para pantallas de 768px o menos (tablets y celulares) */
+@media (max-width: 768px) {
+  body {
+    /* Permitimos scroll en el body para que nada se corte */
+    align-items: flex-start;
+    padding-top: 20px;
+  }
+
+  form {
+    /* Hacemos que el formulario ocupe casi toda la pantalla */
+    width: 90%;
+    padding: 25px;
+    margin: 0 auto;
+  }
+}
