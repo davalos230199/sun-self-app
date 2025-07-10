@@ -29,7 +29,7 @@
 }
 
 .nav-actions {
-  margin-top: auto; /* Empuja las acciones al final */
+  margin-top: auto;
 }
 
 .nav-item {
@@ -45,17 +45,16 @@
   transition: background-color 0.2s ease, color 0.2s ease;
   width: 100%;
   background: none;
-  border: none;
+  border: 1px solid transparent; /* CLAVE: Borde invisible para mantener el tamaño */
   cursor: pointer;
   text-align: left;
+  box-sizing: border-box; /* Asegura que el padding no altere el tamaño total */
 }
 
 .nav-item:hover {
   background-color: #f0f0f0;
 }
 
-/* CLAVE: El estado activo ahora solo cambia el color de fondo y texto. */
-/* NO cambia el tamaño, padding o borde, evitando que se "desarme". */
 .nav-item.active {
   background-color: var(--color-lapiz);
   color: var(--color-blanco-puro);
@@ -78,7 +77,6 @@
     border-right: none;
     padding: 0;
     z-index: 1000;
-    /* CLAVE: Unimos los dos contenedores en uno solo para el layout móvil */
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -88,17 +86,29 @@
     display: none;
   }
   
-  /* CLAVE: Ocultamos los contenedores de escritorio y mostramos solo los items */
   .nav-links, .nav-actions {
-    display: contents; /* Este truco hace que los contenedores "desaparezcan" y sus hijos se unan al layout del padre */
+    display: contents;
   }
   
-  /* CLAVE: Cada item (link o botón) ahora es un cuadrado flexible e idéntico */
   .nav-item {
-    flex: 1; /* Ocupan el mismo espacio */
+    flex: 1;
+    display: flex; /* Re-aseguramos flex para centrar */
     justify-content: center;
+    align-items: center; /* Centrado vertical perfecto */
     height: 100%;
     border-radius: 0;
     gap: 0;
+    padding: 0; /* Reseteamos padding para control total */
+    border: none; /* Quitamos el borde en móvil */
+  }
+
+  /* CLAVE: El estado activo en móvil no debe tener efectos secundarios de layout */
+  .nav-item.active {
+    background-color: #f0f0f0; /* Un gris suave para el activo en móvil */
+    color: var(--color-sol-acento);
+  }
+  .nav-item.active svg {
+    stroke: var(--color-sol-acento);
+    transform: scale(1.1); /* Un pequeño zoom para feedback visual */
   }
 }
