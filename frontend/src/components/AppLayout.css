@@ -3,16 +3,16 @@
   display: grid;
   grid-template-columns: 220px 1fr;
   grid-template-rows: 1fr;
+  /* CLAVE: Usamos nuestra variable JS para la altura, con un fallback a vh */
+  height: calc(var(--vh, 1vh) * 100);
   width: 100vw;
-  height: 100vh;
   overflow: hidden;
   background-color: #f0f2f5;
 }
 
 .content-area {
-  overflow-y: auto; /* Permite scroll SÓLO aquí */
-  padding: 20px; /* Un padding base */
-  /* CLAVE: Aseguramos que el contenido interno se comporte bien */
+  overflow-y: auto;
+  padding: 20px;
   display: flex;
   justify-content: center;
 }

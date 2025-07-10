@@ -1,47 +1,30 @@
 // frontend/src/pages/Tracking.jsx
-
 import { useEffect, useState } from 'react';
-import { useNavigate, useOutletContext } from 'react-router-dom';
-// 1. ADIÓS a axios. Ahora importamos nuestro agente central.
 import api from '../services/api';
-import './tracking.css'; // Asumo que tienes este archivo de estilos
+import PageHeader from '../components/PageHeader'; // <-- Importamos el header
+import './Tracking.css';
 
 export default function Tracking() {
-  // Recibimos el usuario del guardián, por si lo necesitamos en el futuro.
-  const { user } = useOutletContext(); 
   const [registros, setRegistros] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    // La comprobación de 'user' es una buena práctica.
-    if (!user) return;
-
     const fetchRegistros = async () => {
       try {
-        // 2. LA MAGIA: En lugar de usar axios, llamamos a la función de nuestro agente.
-        // Es más corto, más claro y no necesitamos saber la URL.
         const response = await api.getRegistros();
         setRegistros(response.data);
-      } catch (error) {
-        console.error("Error al cargar el historial:", error);
-        // Podríamos mostrar un mensaje de error al usuario aquí.
-      } finally {
-        setLoading(false);
-      }
+      } catch (error) { console.error("Error al cargar el historial:", error); }
+      finally { setLoading(false); }
     };
-
     fetchRegistros();
-  }, [user]); // El efecto se ejecuta cuando el guardián nos da el usuario.
-
-  if (loading) {
-    return <div className="tracking-container">Cargando tu historial...</div>;
-  }
+  }, []);
 
   return (
     <div className="tracking-container">
-      <h2>Tu Diario</h2>
-      {registros.length > 0 ? (
+      <PageHeader title="Tu Diario" />
+      {loading ? (
+        <p>Cargando tu historial...</p>
+      ) : registros.length > 0 ? (
         <div className="registros-list">
           {registros.map((registro) => (
             <div key={registro.id} className="registro-card">
@@ -55,7 +38,6 @@ export default function Tracking() {
       ) : (
         <p>Aún no tienes registros guardados.</p>
       )}
-       <button onClick={() => navigate('/home')} className="back-button">Volver</button>
     </div>
   );
 }

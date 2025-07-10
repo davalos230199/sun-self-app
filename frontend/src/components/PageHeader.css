@@ -1,0 +1,31 @@
+/* frontend/src/components/PageHeader.css */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-shrink: 0; /* No se encoge */
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.page-header .back-button {
+  background: none;
+  border: 1px solid var(--color-borde-suave);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  transition: background-color 0.2s;
+}
+.page-header .back-button:hover {
+  background-color: #f0f0f0;
+}
