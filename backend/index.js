@@ -192,27 +192,36 @@ app.get('/api/registros', authMiddleware, async (req, res) => {
 
 // --- RUTA PARA HABLAR CON EL COACH ---
 app.post('/api/coach', authMiddleware, async (req, res) => {
-  const { message } = req.body; // Recibimos el mensaje del usuario
+  // Log de Entrada: ¿Llegó la petición?
+  console.log('--- COACH API: Petición recibida en /api/coach ---');
+
+  const { message } = req.body;
 
   if (!message) {
+    console.log('--- COACH API: Error - El mensaje está vacío.');
     return res.status(400).json({ error: 'Se requiere un mensaje.' });
   }
 
   try {
+    // Log de Intento: ¿Estamos a punto de llamar a OpenAI?
+    console.log(`--- COACH API: Intentando llamar a OpenAI con el mensaje: "${message}"`);
+
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo", // El modelo de IA que usaremos
+      model: "gpt-3.5-turbo",
       messages: [
-        // Le damos contexto a la IA sobre su rol
         { role: "system", content: "Eres un coach de vida empático y perspicaz llamado Sun-Self. Ayudas a los usuarios a explorar sus sentimientos basándote en un sistema de 'orbes' (mente, emoción, cuerpo). Tu tono es cálido, maduro y un poco 'ñoño', como un diario íntimo. No das consejos directos, haces preguntas que invitan a la reflexión." },
-        // Le pasamos el mensaje del usuario
         { role: "user", content: message }
       ],
     });
 
+    // Log de Éxito: Si llegamos aquí, OpenAI respondió bien.
+    console.log('--- COACH API: Llamada a OpenAI exitosa.');
     res.json({ reply: completion.choices[0].message.content });
 
   } catch (error) {
-    console.error("Error con la API de OpenAI:", error);
+    // Log de Fallo: ¿Qué rompió exactamente?
+    console.error('--- COACH API: ERROR CATASTRÓFICO ---');
+    console.error('El objeto de error completo es:', error); // Logueamos el error completo
     res.status(500).json({ error: 'No se pudo obtener una respuesta del coach.' });
   }
 });
