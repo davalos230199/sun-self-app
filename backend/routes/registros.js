@@ -24,7 +24,9 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Se requiere la selección de todos los orbes.' });
     }
 
-    const { data, error } = await supabase.from('registros').insert([{
+    const { data, error } = await supabase
+    .from('registros')
+    .insert([{
       user_id: userId,
       mente_estat: mente.seleccion,
       mente_coment: mente.comentario,
@@ -32,14 +34,14 @@ router.post('/', async (req, res) => {
       emocion_coment: emocion.comentario,
       cuerpo_estat: cuerpo.seleccion,
       cuerpo_coment: cuerpo.comentario,
-    }]);
+    }]).select(); // <-- ¡AQUÍ ESTÁ EL CAMBIO! -- AÑADE EL ULTIMO REGISTRO CREADO EN EL MENU INICIAL
 
     if (error) throw error;
     res.status(201).json({ message: 'Registro guardado con éxito', registro: data });
   } catch (err) {
     res.status(500).json({ error: 'Error al guardar el registro' });
   }
-}).select(); // <-- ¡AQUÍ ESTÁ EL CAMBIO! -- AÑADE EL ULTIMO REGISTRO CREADO EN EL MENU INICIAL
+});
 
 // RUTA PARA OBTENER TODO EL HISTORIAL -> GET /api/registros
 router.get('/', async (req, res) => {
