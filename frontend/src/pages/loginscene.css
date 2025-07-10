@@ -78,26 +78,43 @@
   transform: rotateY(-180deg);
 }
 
+
 @media (max-width: 768px) {
   .notebook {
-    /* Achicamos drásticamente el cuaderno */
-    width: 90vw; /* 90% del ancho de la pantalla */
-    height: 60vh; /* 60% del alto de la pantalla */
-
-    /* Recalculamos el centrado para el nuevo tamaño */
-    /* La mitad del nuevo ancho, dividido por 2 */
-    transform: translateX(calc(90vw / -4));
+    /* Hacemos el cuaderno más chico y preparamos para el giro */
+    width: 90vw;
+    max-width: 350px;
+    height: 500px;
+    transform: none; /* Quitamos el translateX de la versión de escritorio */
   }
 
-  .notebook.open {
-    transform: translateX(0);
+  /* La tapa y la página ahora ocupan el 100% del contenedor y se posicionan una sobre otra */
+  .notebook-cover,
+  .notebook-page {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    backface-visibility: hidden; /* Oculta la cara trasera durante el giro */
+    border-radius: 10px;
   }
 
   .notebook-cover {
-    font-size: 2rem; /* Achicamos el título */
+    z-index: 2; /* Asegura que la tapa esté al frente */
   }
 
-  /* Hacemos que el formulario de login se vea bien dentro del cuaderno chico */
+  .notebook-page {
+    /* La página (el formulario) empieza girada, de espaldas */
+    transform: rotateY(180deg);
+  }
+
+  /* Cuando el cuaderno se "abre", gira el contenedor entero */
+  .notebook.open {
+    transform: rotateY(180deg);
+  }
+
+  /* Estilos para el formulario dentro de la tarjeta girada */
   .notebook-page form {
     width: 100%;
     height: 100%;

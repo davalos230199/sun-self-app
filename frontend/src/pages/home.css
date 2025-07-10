@@ -69,16 +69,28 @@ textarea:focus {
 
 @media (max-width: 768px) {
   .home-container {
-    width: 90%;
-    padding: 20px;
+    width: 90vw; /* Ocupa más ancho */
+    padding: 15px; /* Menos padding lateral */
+    margin-top: 0;
+  }
+
+  .home-container h2 {
+    font-size: 2.5rem;
   }
 
   .orbe h3 {
     font-size: 1.8rem;
   }
 
+  .orbe-buttons {
+      /* Permite que los botones se reordenen si no caben */
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+  }
+
   .orbe-buttons button {
-    padding: 6px 15px;
-    margin: 5px 2px;
+    padding: 8px 18px;
+    margin: 5px;
   }
 }
