@@ -10,7 +10,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { createClient } = require('@supabase/supabase-js');
 const { OpenAI } = require('openai');
-const authMiddleware = require('./auth');
+const authMiddleware = require('./middleware/auth');
 
 // =================================================================
 // 2. INICIALIZACIÓN Y MIDDLEWARES
@@ -41,65 +41,9 @@ app.get('/health', (req, res) => {
 });
 
 // --- RUTAS DE AUTENTICACIÓN ---
+const authRoutes = require('./routes/auth'); // <-- 1. IMPORTAMOS
+app.use('/api/auth', authRoutes);           // <-- 2. USAMOS CON PREFIJO
 
-// 1. RUTA DE REGISTRO
-app.post('/api/register', async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email y contraseña son requeridos' });
-  }
-
-  try {
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const { data, error } = await supabase
-      .from('users')
-      .insert([{ email: email, password: hashedPassword }])
-      .select();
-
-    if (error) {
-      if (error.code === '23505') {
-        return res.status(409).json({ error: 'El email ya está en uso' });
-      }
-      return res.status(500).json({ error: error.message });
-    }
-
-    res.status(201).json({ message: 'Usuario creado con éxito', user: data[0] });
-  } catch (err) {
-    res.status(500).json({ error: 'Error interno del servidor' });
-  }
-});
-
-// 2. RUTA DE LOGIN
-app.post('/api/login', async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email y contraseña son requeridos' });
-  }
-
-  const { data: users, error } = await supabase.from('users').select('*').eq('email', email);
-  if (error || users.length === 0) {
-    return res.status(401).json({ message: 'Credenciales incorrectas' });
-  }
-
-  const user = users[0];
-  const validPassword = await bcrypt.compare(password, user.password);
-  if (!validPassword) {
-    return res.status(401).json({ message: 'Credenciales incorrectas' });
-  }
-
-  const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
-    expiresIn: '1h'
-  });
-
-  res.json({ token });
-});
-
-// 3. RUTA DE VERIFICACIÓN DE SESIÓN
-app.get('/api/me', authMiddleware, (req, res) => {
-  res.json({ user: req.user });
-});
 
 // --- RUTAS DE REGISTROS ---
 

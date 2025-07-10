@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom'; // <-- Añade Link aquí
 
 export default function Login() {
+
   // Estado inicial ahora usa 'email' en lugar de 'username'
   const [form, setForm] = useState({ email: '', password: '' }); // <-- CAMBIO
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export default function Login() {
       // Enviamos el objeto 'form' que ahora contiene { email, password }
       // DESPUÉS:
       const apiUrl = import.meta.env.VITE_API_URL;
-      const res = await axios.post(`${apiUrl}/login`, form);
+      const res = await axios.post(`${apiUrl}/api/auth/login`, form);
       localStorage.setItem('token', res.data.token);
       navigate('/home');
     } catch (err) {
