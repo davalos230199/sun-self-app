@@ -49,6 +49,11 @@ export const saveRegistro = (estados) => {
   return apiClient.post('/api/registros', estados);
 };
 
+// --- Nueva Función para "La Hoja de Atrás" ---
+export const saveHojaAtras = (id, texto) => {
+  return apiClient.put(`/api/registros/${id}/hoja_atras`, { texto });
+};
+
 // --- Funciones de Sunny ---
 export const postToSunny = (message) => {
   return apiClient.post('/api/sunny', { message });
@@ -63,6 +68,7 @@ const api = {
   getRegistroDeHoy,
   saveRegistro,
   postToSunny,
+  saveHojaAtras,
 };
 
 export default api;

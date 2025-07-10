@@ -8,6 +8,7 @@ import Sunny from './pages/Sunny';
 import Settings from './pages/Settings'; // <-- Importamos la nueva página
 import ProtectedRoute from './components/protectedroute';
 import GuestRoute from './components/guestroute';
+import Journal from './pages/Journal'; // <-- Importamos la nueva página
 
 const router = createBrowserRouter([
   {
@@ -30,7 +31,8 @@ const router = createBrowserRouter([
       { path: '/home', element: <Home /> },
       { path: '/tracking', element: <Tracking /> },
       { path: '/sunny', element: <Sunny /> },
-      { path: '/settings', element: <Settings /> } // <-- Añadimos la nueva ruta
+      { path: '/settings', element: <Settings /> }, // <-- Añadimos la nueva ruta
+      { path: '/journal/:id', element: <Journal /> } // <-- AÑADIMOS LA NUEVA RUTA
     ]
   }
 ]);
