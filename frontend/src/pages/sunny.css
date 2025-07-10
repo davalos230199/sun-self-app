@@ -1,0 +1,116 @@
+/* frontend/src/pages/Sunny.css */
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 40px);
+  width: 100%;
+  max-width: 700px;
+  margin: 20px auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  overflow: hidden;
+  background-color: #f9f9f9;
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.chat-header h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-title);
+}
+
+.messages-list {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.message-wrapper {
+  display: flex;
+  max-width: 80%;
+}
+
+.message {
+  padding: 10px 15px;
+  border-radius: 18px;
+  color: var(--color-text);
+}
+
+/* Estilo para los mensajes de Sunny */
+.message-wrapper.sunny {
+  align-self: flex-start;
+}
+.message-wrapper.sunny .message {
+  background-color: #ECECEC;
+  border-bottom-left-radius: 4px;
+}
+
+/* Estilo para los mensajes del Usuario */
+.message-wrapper.user {
+  align-self: flex-end;
+}
+.message-wrapper.user .message {
+  background-color: var(--color-accent);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.message p {
+  margin: 0;
+}
+
+.chat-form {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #e0e0e0;
+  background-color: white;
+}
+
+.chat-form input {
+  flex-grow: 1;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 10px 15px;
+  margin-right: 10px;
+}
+
+.chat-form button {
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: none;
+  background-color: var(--color-accent);
+  color: white;
+  cursor: pointer;
+}
+
+.back-button {
+  background: none;
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.loading-dots {
+  font-weight: bold;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+
