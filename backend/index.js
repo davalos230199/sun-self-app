@@ -19,6 +19,12 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// --- Configuración de OpenAI ---
+const { OpenAI } = require('openai');
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 // --- MIDDLEWARE ---
 // --- EL BACKEND NO DUERME ---
 app.use(cors());
@@ -165,7 +171,7 @@ app.get('/api/registros', authMiddleware, async (req, res) => {
     // Esto nos mostrará en los logs de Render qué ID está buscando.
     console.log(`Buscando registros para el user_id: ${userId}`);
     // --------------------
-    
+
     // Buscamos todos los registros del usuario
     const { data, error } = await supabase
       .from('registros')
@@ -181,6 +187,33 @@ app.get('/api/registros', authMiddleware, async (req, res) => {
     // Añadimos un log para ver el error en Render si algo falla
     console.error("Error en GET /api/registros:", err);
     res.status(500).json({ error: 'Error al obtener los registros' });
+  }
+});
+
+// --- RUTA PARA HABLAR CON EL COACH ---
+app.post('/api/coach', authMiddleware, async (req, res) => {
+  const { message } = req.body; // Recibimos el mensaje del usuario
+
+  if (!message) {
+    return res.status(400).json({ error: 'Se requiere un mensaje.' });
+  }
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo", // El modelo de IA que usaremos
+      messages: [
+        // Le damos contexto a la IA sobre su rol
+        { role: "system", content: "Eres un coach de vida empático y perspicaz llamado Sun-Self. Ayudas a los usuarios a explorar sus sentimientos basándote en un sistema de 'orbes' (mente, emoción, cuerpo). Tu tono es cálido, maduro y un poco 'ñoño', como un diario íntimo. No das consejos directos, haces preguntas que invitan a la reflexión." },
+        // Le pasamos el mensaje del usuario
+        { role: "user", content: message }
+      ],
+    });
+
+    res.json({ reply: completion.choices[0].message.content });
+
+  } catch (error) {
+    console.error("Error con la API de OpenAI:", error);
+    res.status(500).json({ error: 'No se pudo obtener una respuesta del coach.' });
   }
 });
 

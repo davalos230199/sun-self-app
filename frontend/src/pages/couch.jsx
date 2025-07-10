@@ -9,13 +9,31 @@ export default function Couch() {
   const [input, setInput] = useState('');
   const navigate = useNavigate();
 
-  const handleEnviar = () => {
-    if (!input.trim()) return;
-    const nuevosMensajes = [...mensajes, { autor: 'user', texto: input }];
-    setMensajes(nuevosMensajes);
-    setInput('');
-    // Aquí, más adelante, irá la llamada a la IA real
-  };
+ // EN: Couch.jsx
+const handleEnviar = async () => {
+  if (!input.trim()) return;
+  const token = localStorage.getItem('token');
+
+  const nuevosMensajes = [...mensajes, { autor: 'user', texto: input }];
+  setMensajes(nuevosMensajes);
+  const mensajeActual = input;
+  setInput(''); // Limpiamos el input inmediatamente
+
+  try {
+    const api = axios.create({
+      baseURL: import.meta.env.VITE_API_URL,
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    const response = await api.post('/api/coach', { message: mensajeActual });
+
+    setMensajes(prev => [...prev, { autor: 'ia', texto: response.data.reply }]);
+
+  } catch (error) {
+    console.error("Error al contactar al coach:", error);
+    setMensajes(prev => [...prev, { autor: 'ia', texto: 'Lo siento, no estoy disponible en este momento. Inténtalo más tarde.' }]);
+  }
+};
 
   return (
     <div className="couch-container">
