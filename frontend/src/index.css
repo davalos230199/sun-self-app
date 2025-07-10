@@ -1,6 +1,4 @@
 /* frontend/src/index.css */
-
-/* (La sección de @import y :root no cambia) */
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&family=Patrick+Hand&display=swap');
 
 :root {
@@ -17,71 +15,26 @@
   --font-cuerpo: 'Nunito', sans-serif;
 }
 
-body {
+/* CLAVE: Forzamos a que la estructura base no tenga scroll */
+html, body {
+  height: 100%;
+  overflow: hidden;
   margin: 0;
+  padding: 0;
+}
+
+body {
   font-family: var(--font-cuerpo);
-  background-color: #f0f2f5; /* Un gris muy suave para el fondo general */
+  background-color: #f0f2f5;
   color: var(--color-lapiz);
 }
 
-/*
-  AQUÍ ESTÁ EL ARREGLO ESTÉTICO:
-  Reducimos el tamaño de los títulos para que no sean tan dominantes.
-*/
-h2 {
-  font-family: var(--font-titulos);
-  font-weight: normal;
-  font-size: 2.2rem; /* <-- Reducido de 2.5rem */
-  margin-top: 0;
-  margin-bottom: 8px;
-}
-h3 {
-  font-family: var(--font-titulos);
-  font-weight: normal;
-  font-size: 1.8rem; /* <-- Reducido */
-  margin-top: 0;
-  margin-bottom: 15px;
-}
+h2 { font-family: var(--font-titulos); font-weight: normal; font-size: 2.2rem; margin-top: 0; margin-bottom: 8px; }
+h3 { font-family: var(--font-titulos); font-weight: normal; font-size: 1.8rem; margin-top: 0; margin-bottom: 15px; }
 
-/* El .card-container se elimina de aquí, ya que el layout principal lo manejará */
-
-button {
-  font-family: var(--font-titulos);
-  font-size: 17px; /* <-- Ligeramente más pequeño */
-  padding: 10px 20px; /* <-- Un poco menos de padding vertical */
-  border: 1px solid var(--color-lapiz);
-  border-radius: 5px;
-  background-color: transparent;
-  color: var(--color-lapiz);
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  margin-top: 10px;
-}
-
-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-button.primary, button[type="submit"] {
-  background-color: var(--color-sol-acento);
-  border-color: var(--color-sol-acento);
-  color: var(--color-blanco-puro);
-}
-
-input, textarea {
-  font-family: var(--font-cuerpo);
-  font-size: 16px;
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  border: 1px solid var(--color-borde-suave);
-  border-radius: 5px;
-  background-color: #fcfcfc;
-  box-sizing: border-box;
-}
-
-input:focus, textarea:focus {
-  outline: 1px solid var(--color-sol-acento);
-  box-shadow: 0 0 5px rgba(243, 156, 18, 0.5);
-}
+/* ... (el resto de los estilos de botones, inputs, etc. no necesitan cambios) ... */
+button { font-family: var(--font-titulos); font-size: 17px; padding: 10px 20px; border: 1px solid var(--color-lapiz); border-radius: 5px; background-color: transparent; color: var(--color-lapiz); cursor: pointer; transition: all 0.2s ease-in-out; margin-top: 10px; }
+button:hover { transform: translateY(-2px); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+button.primary, button[type="submit"] { background-color: var(--color-sol-acento); border-color: var(--color-sol-acento); color: var(--color-blanco-puro); }
+input, textarea { font-family: var(--font-cuerpo); font-size: 16px; width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--color-borde-suave); border-radius: 5px; background-color: #fcfcfc; box-sizing: border-box; }
+input:focus, textarea:focus { outline: 1px solid var(--color-sol-acento); box-shadow: 0 0 5px rgba(243, 156, 18, 0.5); }

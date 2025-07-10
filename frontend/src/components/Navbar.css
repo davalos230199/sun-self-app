@@ -2,112 +2,7 @@
 .navbar {
   display: flex;
   flex-direction: column;
-  padding: 20px;
-  border-right: 1px solid var(--color-borde-suave);
-  height: 100vh;
-  box-sizing: border-box;
-  background-color: var(--color-blanco-puro);
-}
-
-.navbar-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px;
-  margin-bottom: 30px;
-}
-
-.brand-text {
-  font-family: var(--font-titulos);
-  font-size: 24px;
-  font-weight: 600;
-}
-
-.nav-links {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  flex-grow: 1; /* Empuja el logout hacia abajo en la vista de escritorio */
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 12px;
-  border-radius: 8px;
-  text-decoration: none;
-  color: var(--color-lapiz);
-  font-size: 16px;
-  font-weight: 600;
-  transition: background-color 0.2s ease;
-  width: 100%;
-  background: none;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-}
-
-.nav-item:hover {
-  background-color: #f0f0f0;
-}
-
-.nav-item.active {
-  font-weight: bold;
-  background-color: #e8e8e8;
-}
-
-.logout-button {
-  margin-top: auto; /* Empuja el botón al final del contenedor flex */
-}
-
-
-/* --- ESTILOS RESPONSIVE PARA MÓVIL --- */
-@media (max-width: 768px) {
-  .navbar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-    border-top: 1px solid var(--color-borde-suave);
-    border-right: none;
-    padding: 0 10px;
-    z-index: 1000;
-  }
-
-  .navbar-brand, .link-text {
-    display: none; /* Ocultamos texto y logo en móvil */
-  }
-  
-  .nav-links {
-    flex-direction: row;
-    justify-content: space-around;
-    width: 100%;
-    height: 100%;
-    gap: 0;
-    flex-grow: 0;
-  }
-  
-  .nav-item {
-    padding: 10px;
-    justify-content: center;
-    flex-grow: 1;
-    height: 100%;
-  }
-
-  /*
-    AQUÍ ESTÁ EL ARREGLO:
-    Nos aseguramos de que el botón de logout sea visible y se comporte
-    como los otros íconos en la barra móvil.
-  *//* frontend/src/components/Navbar.css */
-.navbar {
-  display: flex;
-  flex-direction: column;
-  padding: 20px 10px; /* Menos padding horizontal */
+  padding: 20px 10px;
   border-right: 1px solid var(--color-borde-suave);
   height: 100vh;
   box-sizing: border-box;
@@ -130,7 +25,7 @@
 .nav-links {
   display: flex;
   flex-direction: column;
-  gap: 5px; /* Menos espacio entre links */
+  gap: 5px;
 }
 
 .nav-actions {
@@ -147,7 +42,7 @@
   color: var(--color-lapiz);
   font-size: 16px;
   font-weight: 600;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
   width: 100%;
   background: none;
   border: none;
@@ -159,9 +54,16 @@
   background-color: #f0f0f0;
 }
 
+/* CLAVE: El estado activo ahora solo cambia el color de fondo y texto. */
+/* NO cambia el tamaño, padding o borde, evitando que se "desarme". */
 .nav-item.active {
-  background-color: #e8e8e8;
+  background-color: var(--color-lapiz);
+  color: var(--color-blanco-puro);
 }
+.nav-item.active svg {
+  stroke: var(--color-blanco-puro);
+}
+
 
 /* --- ESTILOS RESPONSIVE PARA MÓVIL --- */
 @media (max-width: 768px) {
@@ -176,35 +78,27 @@
     border-right: none;
     padding: 0;
     z-index: 1000;
+    /* CLAVE: Unimos los dos contenedores en uno solo para el layout móvil */
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
   }
 
   .navbar-brand, .link-text {
     display: none;
   }
   
-  /* CLAVE: Hacemos que los contenedores de links ocupen todo el espacio */
+  /* CLAVE: Ocultamos los contenedores de escritorio y mostramos solo los items */
   .nav-links, .nav-actions {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    flex-grow: 1;
-    margin-top: 0;
+    display: contents; /* Este truco hace que los contenedores "desaparezcan" y sus hijos se unan al layout del padre */
   }
   
-  /* CLAVE: Hacemos que cada item sea un cuadrado flexible */
+  /* CLAVE: Cada item (link o botón) ahora es un cuadrado flexible e idéntico */
   .nav-item {
-    flex-grow: 1;
+    flex: 1; /* Ocupan el mismo espacio */
     justify-content: center;
     height: 100%;
     border-radius: 0;
-  }
-}
-
-  .logout-button {
-    display: flex;
-    margin-top: 0;
+    gap: 0;
   }
 }
