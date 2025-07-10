@@ -103,7 +103,106 @@
     AQUÍ ESTÁ EL ARREGLO:
     Nos aseguramos de que el botón de logout sea visible y se comporte
     como los otros íconos en la barra móvil.
-  */
+  *//* frontend/src/components/Navbar.css */
+.navbar {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 10px; /* Menos padding horizontal */
+  border-right: 1px solid var(--color-borde-suave);
+  height: 100vh;
+  box-sizing: border-box;
+  background-color: var(--color-blanco-puro);
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  margin-bottom: 30px;
+}
+
+.brand-text {
+  font-family: var(--font-titulos);
+  font-size: 24px;
+}
+
+.nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* Menos espacio entre links */
+}
+
+.nav-actions {
+  margin-top: auto; /* Empuja las acciones al final */
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--color-lapiz);
+  font-size: 16px;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.nav-item:hover {
+  background-color: #f0f0f0;
+}
+
+.nav-item.active {
+  background-color: #e8e8e8;
+}
+
+/* --- ESTILOS RESPONSIVE PARA MÓVIL --- */
+@media (max-width: 768px) {
+  .navbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    flex-direction: row;
+    border-top: 1px solid var(--color-borde-suave);
+    border-right: none;
+    padding: 0;
+    z-index: 1000;
+  }
+
+  .navbar-brand, .link-text {
+    display: none;
+  }
+  
+  /* CLAVE: Hacemos que los contenedores de links ocupen todo el espacio */
+  .nav-links, .nav-actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    flex-grow: 1;
+    margin-top: 0;
+  }
+  
+  /* CLAVE: Hacemos que cada item sea un cuadrado flexible */
+  .nav-item {
+    flex-grow: 1;
+    justify-content: center;
+    height: 100%;
+    border-radius: 0;
+  }
+}
+
   .logout-button {
     display: flex;
     margin-top: 0;

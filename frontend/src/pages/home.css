@@ -1,70 +1,65 @@
 /* frontend/src/pages/home.css */
 .home-content {
   width: 100%;
-  padding: 0;
-  background-color: transparent !important; /* El contenedor de home no necesita su propio fondo */
-  border: none !important;
-  box-shadow: none !important;
+  max-width: 600px; /* Un poco más de ancho para el form */
+  margin: 0 auto; /* Centramos el contenido */
 }
 
-.formulario-estado h2 {
-  text-align: center;
-}
-.formulario-estado p {
-  text-align: center;
-  font-size: 1.2rem;
-  margin-bottom: 30px;
-}
+.formulario-estado h2 { text-align: center; }
+.formulario-estado p { text-align: center; font-size: 1.1rem; color: #666; margin-bottom: 25px; }
 
-.orbe { margin-bottom: 25px; text-align: left; }
-.orbe h3 { font-size: 1.5rem; margin-bottom: 10px; border-bottom: 1px solid var(--color-borde-suave); padding-bottom: 5px; }
+.orbe { margin-bottom: 20px; text-align: left; }
+.orbe h3 { font-size: 1.3rem; text-transform: capitalize; margin-bottom: 12px; border-bottom: 1px solid var(--color-borde-suave); padding-bottom: 8px; }
 .orbe-buttons { display: flex; gap: 10px; margin-bottom: 10px; }
 .orbe-buttons button { flex-grow: 1; padding: 8px; font-size: 14px; }
 .orbe-buttons button.selected { border-color: var(--color-lapiz); background-color: var(--color-lapiz); color: var(--color-papel); }
-.formulario-estado .primary { width: 100%; margin-top: 20px; }
+
+.form-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+.form-actions button {
+  flex-grow: 1;
+}
+.form-actions .secondary {
+  background-color: #f0f0f0;
+  border-color: #f0f0f0;
+}
+.form-actions .secondary:hover {
+  background-color: #e0e0e0;
+}
+
 
 /* Estilo Post-it */
 .post-it {
-  background-color: #fffde7; /* Amarillo pálido de post-it */
+  background-color: #fffde7;
   padding: 25px;
   border-radius: 4px;
-  box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
-  transform: rotate(-2deg); /* Ligera rotación para efecto realista */
+  box-shadow: 3px 3px 10px rgba(0,0,0,0.15);
+  transform: rotate(-1.5deg);
   width: 100%;
-  max-width: 350px;
+  max-width: 320px;
   margin: 20px auto;
   text-align: center;
   position: relative;
 }
-
-.post-it h3 {
-  font-size: 1.8rem;
-  border-bottom: 1px dashed #ccc;
-  padding-bottom: 10px;
-  margin-bottom: 20px;
+.post-it:hover {
+  transform: rotate(0deg) scale(1.02);
+  transition: transform 0.2s ease-in-out;
 }
-
-.clima-visual { font-size: 2.5rem; margin: 20px 0; }
-.frase-del-dia { font-style: italic; font-size: 1.2rem; color: #666; }
-
-.edit-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 5px;
-  line-height: 1;
-}
-.edit-button:hover {
-  background-color: rgba(0,0,0,0.1);
-  border-radius: 50%;
-}
+.post-it h3 { font-size: 1.5rem; border-bottom: 1px dashed #ccc; padding-bottom: 10px; margin-bottom: 15px; }
+.clima-visual { font-size: 3rem; margin: 15px 0; }
+.frase-del-dia { font-style: italic; font-size: 1.1rem; color: #666; }
+.edit-button { position: absolute; top: 5px; right: 5px; background: none; border: none; font-size: 1.2rem; cursor: pointer; padding: 5px; line-height: 1; opacity: 0.5; }
+.edit-button:hover { opacity: 1; }
 
 /* Responsive para Home */
 @media (max-width: 768px) {
-  .orbe h3 { font-size: 1.3rem; }
-  .orbe-buttons button { font-size: 12px; padding: 6px; }
+  .home-content {
+    max-width: 100%;
+  }
+  .orbe h3 { font-size: 1.2rem; }
+  .orbe-buttons button { font-size: 13px; }
+  textarea { font-size: 14px; }
 }
