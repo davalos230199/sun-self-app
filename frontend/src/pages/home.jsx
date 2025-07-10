@@ -1,17 +1,16 @@
 // frontend/src/pages/home.jsx
 import { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+// 1. Importamos el hook que nos permite recibir datos del "guardián"
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import './home.css';
 
-// --- Buena Práctica 1: Crear una instancia de API reutilizable ---
-// Esto evita crear una nueva instancia de axios en cada función y centraliza la configuración.
+// La instancia de API sigue siendo una buena práctica
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
-// --- Buena Práctica 2: Usar un interceptor para el token ---
-// Esto añade automáticamente el token a TODAS las peticiones que salgan de esta instancia.
+// El interceptor también, para añadir el token automáticamente
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -20,23 +19,24 @@ api.interceptors.request.use(config => {
   return config;
 });
 
-
 export default function Home() {
-  const [user, setUser] = useState(null);
+  // 2. ¡ADIÓS al estado local del usuario! Ahora lo recibimos directamente.
+  const { user } = useOutletContext();
+
+  // El resto de los estados permanecen igual
   const [estados, setEstados] = useState({
     mente: { seleccion: '', comentario: '' },
     emocion: { seleccion: '', comentario: '' },
     cuerpo: { seleccion: '', comentario: '' }
   });
-
   const [estadoFinalizado, setEstadoFinalizado] = useState(false);
   const [fraseDelDia, setFraseDelDia] = useState('');
   const [climaVisual, setClimaVisual] = useState('');
   const navigate = useNavigate();
 
-  // --- Buena Práctica 3: Envolver funciones en useCallback ---
-  // Evita que estas funciones se re-creen en cada render, optimizando el rendimiento.
+  // Las funciones de useCallback permanecen igual
   const generarFrase = useCallback((e) => {
+    // ... (sin cambios aquí)
     const m = e.mente.seleccion;
     const emo = e.emocion.seleccion;
     const c = e.cuerpo.seleccion;
@@ -47,6 +47,7 @@ export default function Home() {
   }, []);
 
   const determinarClima = useCallback((e) => {
+    // ... (sin cambios aquí)
     const valores = [e.mente.seleccion, e.emocion.seleccion, e.cuerpo.seleccion];
     const puntaje = valores.reduce((acc, val) => {
       if (val === 'alto') return acc + 1;
@@ -58,27 +59,12 @@ export default function Home() {
     return '⛅ Nublado con momentos de claridad';
   }, []);
 
-  // --- Buena Práctica 4: Separar la lógica en useEffects con una sola responsabilidad ---
+  // 3. ELIMINAMOS por completo el useEffect que verificaba al usuario. ¡Ya no es necesario!
 
-  // Efecto 1: Verificar autenticación y cargar usuario.
+  // 4. Solo conservamos el useEffect que carga el registro del día.
   useEffect(() => {
-    const verificarUsuario = async () => {
-      try {
-        // AQUÍ ESTÁ EL ARREGLO: Se cambió '/me' por '/api/auth/me'
-        const userResponse = await api.get('/api/auth/me');
-        setUser(userResponse.data.user);
-      } catch (error) {
-        // Si esta llamada falla, el token es inválido o expiró.
-        localStorage.removeItem('token');
-        navigate('/login');
-      }
-    };
-    verificarUsuario();
-  }, [navigate]);
-
-  // Efecto 2: Cargar el registro del día (solo se ejecuta si tenemos un usuario).
-  useEffect(() => {
-    if (!user) return; // No hacer nada si aún no se ha cargado el usuario.
+    // La comprobación de 'user' es una seguridad extra.
+    if (!user) return;
 
     const cargarRegistroDelDia = async () => {
       try {
@@ -102,21 +88,17 @@ export default function Home() {
     };
 
     cargarRegistroDelDia();
-  }, [user, navigate, generarFrase, determinarClima]);
+  }, [user, navigate, generarFrase, determinarClima]); // Ahora solo depende de 'user' y las otras funciones
 
-
-  // --- Manejadores de eventos ---
+  // Los manejadores de eventos no cambian
   const handleSeleccion = (orbe, valor) => {
     setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], seleccion: valor } }));
   };
-
   const handleComentario = (orbe, valor) => {
     setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], comentario: valor } }));
   };
-
   const handleGuardar = async () => {
     try {
-      // Reutilizamos la instancia de 'api' que ya tiene el token.
       await api.post('/api/registros', estados);
       setFraseDelDia(generarFrase(estados));
       setClimaVisual(determinarClima(estados));
@@ -125,19 +107,17 @@ export default function Home() {
       console.error("Error al guardar el estado:", error);
     }
   };
-
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
   };
 
-  // --- Renderizado del componente ---
-  if (!user) {
-    return <div className="home-container">Cargando...</div>;
-  }
+  // 5. ELIMINAMOS el estado de carga. El guardián ya lo maneja.
+  // if (!user) { return <div className="home-container">Cargando...</div>; }
 
   return (
     <div className="home-container">
+      {/* 6. El 'user' viene directamente del contexto, ¡qué limpio! */}
       <h2>Hola, {user.email}</h2>
 
       {estadoFinalizado ? (
