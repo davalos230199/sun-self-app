@@ -39,7 +39,7 @@ router.post('/', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Error al guardar el registro' });
   }
-});
+}).select(); // <-- ¡AQUÍ ESTÁ EL CAMBIO! -- AÑADE EL ULTIMO REGISTRO CREADO EN EL MENU INICIAL
 
 // RUTA PARA OBTENER TODO EL HISTORIAL -> GET /api/registros
 router.get('/', async (req, res) => {

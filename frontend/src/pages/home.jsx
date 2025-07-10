@@ -34,15 +34,30 @@ export default function Home() {
         cargarRegistroDelDia();
     }, [user, generarFrase, determinarClima]);
 
-    const handleGuardar = async () => {
-        try {
-            await api.saveRegistro(estados);
-            setFraseDelDia(generarFrase(estados));
-            setClimaVisual(determinarClima(estados));
-            setEstadoFinalizado(true);
-            setTieneRegistroPrevio(true);
-        } catch (error) { console.error("Error al guardar el estado:", error); }
-    };
+const handleGuardar = async () => {
+    try {
+      // CLAVE: Capturamos la respuesta de la API.
+      const response = await api.saveRegistro(estados);
+      const registroGuardado = response.data.registro;
+
+      // CLAVE: Usamos el registro devuelto por el backend para generar la vista.
+      // Esto asegura que estamos viendo la "fuente de la verdad".
+      const estadosParaFrase = {
+        mente: { seleccion: registroGuardado.mente_estat },
+        emocion: { seleccion: registroGuardado.emocion_estat },
+        cuerpo: { seleccion: registroGuardado.cuerpo_estat }
+      };
+
+      setFraseDelDia(generarFrase(estadosParaFrase));
+      setClimaVisual(determinarClima(registroGuardado));
+      
+      setEstadoFinalizado(true);
+      setTieneRegistroPrevio(true);
+    } catch (error) {
+      console.error("Error al guardar el estado:", error);
+    }
+  };
+
 
     // LÓGICA DE CANCELAR CORREGIDA
     const handleCancel = () => {
