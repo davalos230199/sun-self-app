@@ -80,41 +80,54 @@
 
 
 @media (max-width: 768px) {
-  .notebook {
-    /* Hacemos el cuaderno más chico y preparamos para el giro */
-    width: 90vw;
-    max-width: 350px;
-    height: 500px;
-    transform: none; /* Quitamos el translateX de la versión de escritorio */
+  .scene-container {
+    /* Le damos perspectiva a toda la escena para el efecto 3D */
+    perspective: 2000px;
   }
 
-  /* La tapa y la página ahora ocupan el 100% del contenedor y se posicionan una sobre otra */
-  .notebook-cover,
+  .notebook {
+    width: 90vw;
+    max-width: 400px; /* El cuaderno ahora es del tamaño de UNA página */
+    height: 600px;
+    transform: none; /* Quitamos cualquier traslación anterior */
+    position: relative;
+  }
+
+  /* La página con el formulario es la base, está quieta debajo */
   .notebook-page {
+    position: absolute;
     width: 100%;
     height: 100%;
-    position: absolute;
     top: 0;
     left: 0;
-    backface-visibility: hidden; /* Oculta la cara trasera durante el giro */
     border-radius: 10px;
   }
-
+  
+  /* La tapa se posiciona exactamente encima de la página base */
   .notebook-cover {
-    z-index: 2; /* Asegura que la tapa esté al frente */
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    border-radius: 10px;
+    
+    /* ¡LA CLAVE ESTÁ AQUÍ! */
+    /* 1. El punto de giro es el borde izquierdo (el lomo) */
+    transform-origin: left center;
+    /* 2. Añadimos una transición suave para el giro */
+    transition: transform 1.2s ease-in-out;
+    /* 3. Mantenemos el estilo 3D */
+    transform-style: preserve-3d;
   }
 
-  .notebook-page {
-    /* La página (el formulario) empieza girada, de espaldas */
-    transform: rotateY(180deg);
+  /* Cuando el cuaderno se abre... */
+  .notebook.open .notebook-cover {
+    /* ...la tapa gira 180 grados hacia la izquierda sobre su lomo */
+    transform: rotateY(-180deg);
   }
 
-  /* Cuando el cuaderno se "abre", gira el contenedor entero */
-  .notebook.open {
-    transform: rotateY(180deg);
-  }
-
-  /* Estilos para el formulario dentro de la tarjeta girada */
+  /* Estilos para el formulario (sin cambios) */
   .notebook-page form {
     width: 100%;
     height: 100%;
