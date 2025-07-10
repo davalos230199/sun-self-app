@@ -1,10 +1,8 @@
 /* frontend/src/index.css */
 
-/* --- 1. IMPORTAMOS NUESTRAS FUENTES CORREGIDAS --- */
-/* Patrick Hand para títulos, Nunito para cuerpo (más legible) */
+/* (La sección de @import y :root no cambia) */
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&family=Patrick+Hand&display=swap');
 
-/* --- 2. NUESTRA "TIENDA DE MATERIALES" ACTUALIZADA --- */
 :root {
   --color-papel: #FDFCF6;
   --color-lapiz: #4A4A4A;
@@ -12,57 +10,45 @@
   --color-sol-acento-hover: #d8890b;
   --color-borde-suave: #EAEAEA;
   --color-blanco-puro: #FFFFFF;
-
   --color-estado-alto: #F39C12;
   --color-estado-neutral: #BDC3C7;
   --color-estado-bajo: #A9CCE3;
-
-  /* Fuentes con mejor jerarquía */
   --font-titulos: 'Patrick Hand', sans-serif;
-  --font-cuerpo: 'Nunito', sans-serif; /* <-- CAMBIO: Fuente legible */
+  --font-cuerpo: 'Nunito', sans-serif;
 }
 
-/* --- 3. ESTILOS BASE DE LA "CASA" --- */
 body {
   margin: 0;
-  font-family: var(--font-cuerpo); /* <-- Aplicamos la nueva fuente de cuerpo */
-  background-color: var(--color-papel);
+  font-family: var(--font-cuerpo);
+  background-color: #f0f2f5; /* Un gris muy suave para el fondo general */
   color: var(--color-lapiz);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 20px; /* Añadimos un poco de padding general */
-  box-sizing: border-box;
 }
 
-h2, h3, h4 {
+/*
+  AQUÍ ESTÁ EL ARREGLO ESTÉTICO:
+  Reducimos el tamaño de los títulos para que no sean tan dominantes.
+*/
+h2 {
   font-family: var(--font-titulos);
   font-weight: normal;
-  font-size: 2.5rem; /* Hacemos los títulos más grandes e impactantes */
+  font-size: 2.2rem; /* <-- Reducido de 2.5rem */
   margin-top: 0;
+  margin-bottom: 8px;
+}
+h3 {
+  font-family: var(--font-titulos);
+  font-weight: normal;
+  font-size: 1.8rem; /* <-- Reducido */
+  margin-top: 0;
+  margin-bottom: 15px;
 }
 
-/* --- 4. NUESTRO "MOLDE" REUTILIZABLE PARA CONTENIDO --- */
-.card-container {
-  background-color: var(--color-blanco-puro);
-  padding: 40px; /* <-- El espaciado interno que faltaba */
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
-  border: 1px solid var(--color-borde-suave);
-  width: 100%;
-  max-width: 450px;
-  text-align: center;
-  box-sizing: border-box;
-}
-
-/* --- 5. ESTILOS BASE PARA ELEMENTOS DE FORMULARIO --- */
-/* (Estos ya no necesitan tanto estilo propio, porque vivirán dentro del .card-container) */
+/* El .card-container se elimina de aquí, ya que el layout principal lo manejará */
 
 button {
   font-family: var(--font-titulos);
-  font-size: 18px;
-  padding: 12px 25px;
+  font-size: 17px; /* <-- Ligeramente más pequeño */
+  padding: 10px 20px; /* <-- Un poco menos de padding vertical */
   border: 1px solid var(--color-lapiz);
   border-radius: 5px;
   background-color: transparent;

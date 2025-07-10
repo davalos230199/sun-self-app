@@ -1,7 +1,7 @@
 // frontend/src/pages/home.jsx
 import { useEffect, useState, useCallback } from 'react';
 import api from '../services/api';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useOutletContext } from 'react-router-dom';
 import './home.css';
 
 export default function Home() {
@@ -14,9 +14,8 @@ export default function Home() {
   const [estadoFinalizado, setEstadoFinalizado] = useState(false);
   const [fraseDelDia, setFraseDelDia] = useState('');
   const [climaVisual, setClimaVisual] = useState('');
-  const navigate = useNavigate();
-
-  // ... (Las funciones generarFrase, determinarClima, etc. no cambian)
+  
+  // Las funciones de useCallback no cambian
   const generarFrase = useCallback((e) => {
     const m = e.mente.seleccion;
     const emo = e.emocion.seleccion;
@@ -26,6 +25,7 @@ export default function Home() {
     if (m === 'alto') return 'Mente clara, horizonte abierto. Aprovéchalo para avanzar.';
     return 'Hoy estás navegando tus estados con honestidad. Eso también es fuerza.';
   }, []);
+
   const determinarClima = useCallback((e) => {
     const valores = [e.mente.seleccion, e.emocion.seleccion, e.cuerpo.seleccion];
     const puntaje = valores.reduce((acc, val) => {
@@ -37,6 +37,8 @@ export default function Home() {
     if (puntaje <= -2) return '🌧️ Lluvia suave y necesaria';
     return '⛅ Nublado con momentos de claridad';
   }, []);
+
+  // El useEffect que carga el registro del día no cambia
   useEffect(() => {
     if (!user) return;
     const cargarRegistroDelDia = async () => {
@@ -59,7 +61,9 @@ export default function Home() {
       }
     };
     cargarRegistroDelDia();
-  }, [user, navigate, generarFrase, determinarClima]);
+  }, [user, generarFrase, determinarClima]);
+
+  // Los manejadores de eventos no cambian
   const handleGuardar = async () => {
     try {
       await api.saveRegistro(estados);
@@ -70,21 +74,17 @@ export default function Home() {
       console.error("Error al guardar el estado:", error);
     }
   };
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
   const handleSeleccion = (orbe, valor) => {
     setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], seleccion: valor } }));
   };
   const handleComentario = (orbe, valor) => {
     setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], comentario: valor } }));
   };
-  // ...
 
   return (
-    // Reemplazamos 'home-container' por nuestro 'card-container' reutilizable.
-    <div className="card-container home-specific-layout">
+    // Ya no usamos card-container aquí, el layout principal lo maneja.
+    // Le damos una clase propia para estilos específicos si es necesario.
+    <div className="home-content">
       <h2>Hola, {user.email}</h2>
 
       {estadoFinalizado ? (
@@ -92,11 +92,10 @@ export default function Home() {
           <h3>Tu estado de hoy:</h3>
           <div className="clima-visual">{climaVisual}</div>
           <p className="frase-del-dia">{fraseDelDia}</p>
-          <div className="botones-accion">
-            <button onClick={() => setEstadoFinalizado(false)}>Registrar de nuevo</button>
-            <button onClick={() => navigate('/sunny')}>Hablar con Sunny</button>
-            <button onClick={() => navigate('/tracking')}>Ver mi historial</button>
-          </div>
+          {/*
+            LOS BOTONES DE NAVEGACIÓN HAN SIDO ELIMINADOS.
+            La Navbar ahora se encarga de esto.
+          */}
         </div>
       ) : (
         <div className="formulario-estado">
@@ -126,9 +125,7 @@ export default function Home() {
           <button onClick={handleGuardar} className="primary">Guardar estado</button>
         </div>
       )}
-      <button onClick={handleLogout} className="logout-btn">
-        Cerrar Sesión
-      </button>
+      {/* EL BOTÓN DE LOGOUT TAMBIÉN SE FUE, AHORA VIVE EN LA NAVBAR */}
     </div>
   );
 }

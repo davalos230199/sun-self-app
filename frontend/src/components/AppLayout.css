@@ -2,54 +2,75 @@
 
 .app-container {
   display: grid;
-  grid-template-columns: 240px 1fr 300px; /* Navbar | Contenido | Sidebar */
+  /* Damos más espacio al contenido y un poco menos a las barras laterales */
+  grid-template-columns: 220px 1fr 280px; 
   grid-template-rows: 1fr;
   width: 100vw;
   height: 100vh;
-  gap: 20px;
+  gap: 30px; /* <-- Aumentamos el espacio entre columnas */
+  background-color: #f0f2f5;
+  padding: 0;
 }
 
 .content-area {
-  padding: 20px;
-  overflow-y: auto; /* Permite scroll si el contenido es largo */
+  padding: 30px; /* <-- Aumentamos el padding interno */
+  overflow-y: auto;
+  display: flex;
+  justify-content: center; /* Centramos el contenido principal */
 }
+
+/* Envolvemos el contenido de las páginas en una tarjeta para darles un fondo y bordes */
+.content-area > * {
+  background-color: var(--color-blanco-puro);
+  padding: 30px 40px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  border: 1px solid var(--color-borde-suave);
+  width: 100%;
+  max-width: 700px; /* Un ancho máximo para el contenido */
+  height: fit-content;
+}
+
 
 .right-sidebar {
   padding: 20px;
   border-left: 1px solid var(--color-borde-suave);
-  display: flex;
-  flex-direction: column;
+  background-color: var(--color-blanco-puro);
 }
 
 .placeholder-card {
-  border: 1px dashed var(--color-borde-suave);
+  border: 1px dashed #ccc;
   border-radius: 8px;
   padding: 20px;
   height: 100%;
+  text-align: center;
 }
 
-/* --- ESTILOS RESPONSIVE PARA MÓVIL --- */
+/* --- ESTILOS RESPONSIVE --- */
 @media (max-width: 1024px) {
   .app-container {
-    /* En tablets, ocultamos la barra derecha */
-    grid-template-columns: 240px 1fr;
+    grid-template-columns: 80px 1fr; /* Navbar de iconos */
+    gap: 0;
   }
   .right-sidebar {
     display: none;
+  }
+  .content-area {
+    padding: 20px;
   }
 }
 
 @media (max-width: 768px) {
   .app-container {
-    /* En móviles, todo es una columna */
     grid-template-columns: 1fr;
     display: flex;
     flex-direction: column;
   }
-
   .content-area {
-    /* Ocupa todo el espacio menos la navbar de abajo */
-    flex-grow: 1;
-    padding-bottom: 80px; /* Espacio para la navbar fija */
+    padding: 15px; /* Menos padding en móvil */
+    padding-bottom: 80px;
+  }
+  .content-area > * {
+    padding: 20px;
   }
 }
