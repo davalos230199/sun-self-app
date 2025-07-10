@@ -11,6 +11,7 @@ import LoginScene from './pages/loginscene';
 import Home from './pages/home';
 import Tracking from './pages/tracking';
 import Couch from './pages/couch';
+import Register from './pages/register'; // <-- 1. Importa la página de registro
 
 // Route Components
 import ProtectedRoute from './components/protectedroute';
@@ -29,8 +30,12 @@ const router = createBrowserRouter([
       {
         path: '/login',
         element: <LoginScene />
+      },
+      // 1. Pagina de Registro
+      { 
+        path: '/register',
+        element: <Register />
       }
-      // Si tuvieras una página de registro, también iría aquí
     ]
   },
   {

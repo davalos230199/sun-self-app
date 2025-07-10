@@ -1,8 +1,7 @@
-// ./frontend/src/pages/login.jsx
 
 import { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // <-- Añade Link aquí
 
 export default function Login() {
   // Estado inicial ahora usa 'email' en lugar de 'username'
@@ -47,6 +46,11 @@ export default function Login() {
         onChange={handleChange}
       />
       <button type="submit">Entrar</button>
+      
+      {/* AÑADE ESTE PÁRRAFO CON EL LINK */}
+      <p style={{ marginTop: '20px' }}>
+        ¿No tienes una cuenta? <Link to="/register">Crea una aquí</Link>
+      </p>
     </form>
   );
 }
