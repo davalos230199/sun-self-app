@@ -12,9 +12,30 @@ export default function Home() {
     const [climaVisual, setClimaVisual] = useState('');
     const [tieneRegistroPrevio, setTieneRegistroPrevio] = useState(false);
 
-    const generarFrase = useCallback((e) => { const m = e.mente.seleccion; const emo = e.emocion.seleccion; const c = e.cuerpo.seleccion; if (m === 'bajo' || emo === 'bajo') return 'Hoy tu energía parece pedirte calma. Permítete frenar un poco.'; if (emo === 'alto' && c === 'alto') return 'Estás vibrando con intensidad, canalízalo con intención.'; if (m === 'alto') return 'Mente clara, horizonte abierto. Aprovéchalo para avanzar.'; return 'Hoy estás navegando tus estados con honestidad. Eso también es fuerza.'; }, []);
-    const determinarClima = useCallback((e) => { const valores = [e.mente.seleccion, e.emocion.seleccion, e.cuerpo.seleccion]; const puntaje = valores.reduce((acc, val) => { if (val === 'alto') return acc + 1; if (val === 'bajo') return acc - 1; return acc; }, 0); if (puntaje >= 2) return '☀️'; if (puntaje <= -2) return '🌧️'; return '⛅'; }, []);
+    // --- CAMBIO 1: La función ahora espera el registro oficial del backend ---
+    const generarFrase = useCallback((registro) => {
+        const m = registro.mente_estat;
+        const emo = registro.emocion_estat;
+        const c = registro.cuerpo_estat;
+        if (m === 'bajo' || emo === 'bajo') return 'Hoy tu energía parece pedirte calma. Permítete frenar un poco.';
+        if (emo === 'alto' && c === 'alto') return 'Estás vibrando con intensidad, canalízalo con intención.';
+        if (m === 'alto') return 'Mente clara, horizonte abierto. Aprovéchalo para avanzar.';
+        return 'Hoy estás navegando tus estados con honestidad. Eso también es fuerza.';
+    }, []);
+
+    const determinarClima = useCallback((registro) => {
+        const valores = [registro.mente_estat, registro.emocion_estat, registro.cuerpo_estat];
+        const puntaje = valores.reduce((acc, val) => {
+            if (val === 'alto') return acc + 1;
+            if (val === 'bajo') return acc - 1;
+            return acc;
+        }, 0);
+        if (puntaje >= 2) return '☀️';
+        if (puntaje <= -2) return '🌧️';
+        return '⛅';
+    }, []);
     
+    // --- CAMBIO 2: El useEffect ahora usa la nueva lógica ---
     useEffect(() => {
         if (!user) return;
         const cargarRegistroDelDia = async () => {
@@ -24,8 +45,9 @@ export default function Home() {
                 if (registroDeHoy) {
                     const estadosGuardados = { mente: { seleccion: registroDeHoy.mente_estat, comentario: registroDeHoy.mente_coment }, emocion: { seleccion: registroDeHoy.emocion_estat, comentario: registroDeHoy.emocion_coment }, cuerpo: { seleccion: registroDeHoy.cuerpo_estat, comentario: registroDeHoy.cuerpo_coment } };
                     setEstados(estadosGuardados);
-                    setFraseDelDia(generarFrase(estadosGuardados));
-                    setClimaVisual(determinarClima(estadosGuardados));
+                    // Ambas funciones reciben el mismo objeto: el registro oficial.
+                    setFraseDelDia(generarFrase(registroDeHoy));
+                    setClimaVisual(determinarClima(registroDeHoy));
                     setEstadoFinalizado(true);
                     setTieneRegistroPrevio(true);
                 }
@@ -34,41 +56,24 @@ export default function Home() {
         cargarRegistroDelDia();
     }, [user, generarFrase, determinarClima]);
 
-const handleGuardar = async () => {
-    try {
-      // CLAVE: Capturamos la respuesta de la API.
-      const response = await api.saveRegistro(estados);
-      const registroGuardado = response.data.registro;
+    // --- CAMBIO 3: La función de guardar ahora es mucho más simple y robusta ---
+    const handleGuardar = async () => {
+        try {
+            const response = await api.saveRegistro(estados);
+            const registroGuardado = response.data.registro; // Capturamos la respuesta oficial
 
-      // CLAVE: Usamos el registro devuelto por el backend para generar la vista.
-      // Esto asegura que estamos viendo la "fuente de la verdad".
-      const estadosParaFrase = {
-        mente: { seleccion: registroGuardado.mente_estat },
-        emocion: { seleccion: registroGuardado.emocion_estat },
-        cuerpo: { seleccion: registroGuardado.cuerpo_estat }
-      };
-
-      setFraseDelDia(generarFrase(estadosParaFrase));
-      setClimaVisual(determinarClima(registroGuardado));
-      
-      setEstadoFinalizado(true);
-      setTieneRegistroPrevio(true);
-    } catch (error) {
-      console.error("Error al guardar el estado:", error);
-    }
-  };
-
-
-    // LÓGICA DE CANCELAR CORREGIDA
-    const handleCancel = () => {
-        if (tieneRegistroPrevio) {
+            // Ya no construimos objetos a mano. Usamos la respuesta directa.
+            setFraseDelDia(generarFrase(registroGuardado));
+            setClimaVisual(determinarClima(registroGuardado));
+            
             setEstadoFinalizado(true);
-        } else {
-            // Si es un registro nuevo y cancela, simplemente limpiamos el formulario.
-            setEstados({ mente: { seleccion: '', comentario: '' }, emocion: { seleccion: '', comentario: '' }, cuerpo: { seleccion: '', comentario: '' } });
+            setTieneRegistroPrevio(true);
+        } catch (error) {
+            console.error("Error al guardar el estado:", error);
         }
     };
 
+    const handleCancel = () => { if (tieneRegistroPrevio) { setEstadoFinalizado(true); } else { setEstados({ mente: { seleccion: '', comentario: '' }, emocion: { seleccion: '', comentario: '' }, cuerpo: { seleccion: '', comentario: '' } }); } };
     const handleSeleccion = (orbe, valor) => { setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], seleccion: valor } })); };
     const handleComentario = (orbe, valor) => { setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], comentario: valor } })); };
 
@@ -89,7 +94,6 @@ const handleGuardar = async () => {
             <h2>Hola, {user.email}</h2>
             <p>¿Cómo estás hoy?</p>
           </header>
-          {/* CLAVE: Envolvemos los orbes en un contenedor para hacerlo scrolleable */}
           <div className="orbes-container">
             {['mente', 'emocion', 'cuerpo'].map((orbe) => (
               <div className="orbe" key={orbe}>
