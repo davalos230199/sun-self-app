@@ -1,0 +1,55 @@
+/* frontend/src/components/AppLayout.css */
+
+.app-container {
+  display: grid;
+  grid-template-columns: 240px 1fr 300px; /* Navbar | Contenido | Sidebar */
+  grid-template-rows: 1fr;
+  width: 100vw;
+  height: 100vh;
+  gap: 20px;
+}
+
+.content-area {
+  padding: 20px;
+  overflow-y: auto; /* Permite scroll si el contenido es largo */
+}
+
+.right-sidebar {
+  padding: 20px;
+  border-left: 1px solid var(--color-borde-suave);
+  display: flex;
+  flex-direction: column;
+}
+
+.placeholder-card {
+  border: 1px dashed var(--color-borde-suave);
+  border-radius: 8px;
+  padding: 20px;
+  height: 100%;
+}
+
+/* --- ESTILOS RESPONSIVE PARA MÓVIL --- */
+@media (max-width: 1024px) {
+  .app-container {
+    /* En tablets, ocultamos la barra derecha */
+    grid-template-columns: 240px 1fr;
+  }
+  .right-sidebar {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    /* En móviles, todo es una columna */
+    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .content-area {
+    /* Ocupa todo el espacio menos la navbar de abajo */
+    flex-grow: 1;
+    padding-bottom: 80px; /* Espacio para la navbar fija */
+  }
+}

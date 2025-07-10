@@ -1,0 +1,94 @@
+/* frontend/src/components/Navbar.css */
+.navbar {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border-right: 1px solid var(--color-borde-suave);
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  margin-bottom: 30px;
+}
+
+.brand-text {
+  font-family: var(--font-titulos);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-grow: 1; /* Empuja las acciones hacia abajo */
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--color-lapiz);
+  font-size: 16px;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.nav-item:hover {
+  background-color: #f0f0f0;
+}
+
+/* Estilo para el link activo */
+.nav-item.active {
+  font-weight: bold;
+  background-color: #e8e8e8;
+}
+
+.logout-button {
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* --- ESTILOS RESPONSIVE PARA MÓVIL --- */
+@media (max-width: 768px) {
+  .navbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    background-color: var(--color-blanco-puro);
+    border-top: 1px solid var(--color-borde-suave);
+    border-right: none;
+    padding: 0 10px;
+    z-index: 1000;
+  }
+
+  .navbar-brand, .nav-actions, .link-text {
+    display: none; /* Ocultamos texto y logo en móvil */
+  }
+  
+  .nav-links {
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
+    gap: 0;
+  }
+  
+  .nav-item {
+    padding: 10px;
+  }
+}
