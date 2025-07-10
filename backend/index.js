@@ -1,44 +1,50 @@
 // backend/index.js
 
-// --- CONFIGURACIÓN E IMPORTACIONES ---
+// =================================================================
+// 1. IMPORTACIONES
+// =================================================================
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { createClient } = require('@supabase/supabase-js'); // Herramienta para conectar con Supabase
+const { createClient } = require('@supabase/supabase-js');
+const { OpenAI } = require('openai');
 const authMiddleware = require('./auth');
 
-// --- CONEXIÓN A LA BASE DE DATOS ---
-// Usamos las variables de tu archivo .env para conectar con tu proyecto de Supabase
+// =================================================================
+// 2. INICIALIZACIÓN Y MIDDLEWARES
+// =================================================================
+const app = express();
+const PORT = process.env.PORT || 4000;
+
+// --- Conexión a servicios externos ---
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// --- INICIALIZACIÓN DE LA APP ---
-const app = express();
-const PORT = process.env.PORT || 4000;
-
-// --- Configuración de OpenAI ---
-const { OpenAI } = require('openai');
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// --- MIDDLEWARE ---
-// --- EL BACKEND NO DUERME ---
+// --- Middlewares globales ---
 app.use(cors());
 app.use(express.json());
+
+// =================================================================
+// 3. RUTAS DE LA API
+// =================================================================
+
+// --- RUTA DE HEALTH CHECK ---
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
 // --- RUTAS DE AUTENTICACIÓN ---
 
-// 1. RUTA DE REGISTRO (NUEVA)
-app.post('/register', async (req, res) => {
+// 1. RUTA DE REGISTRO
+app.post('/api/register', async (req, res) => {
   const { email, password } = req.body;
-
   if (!email || !password) {
     return res.status(400).json({ error: 'Email y contraseña son requeridos' });
   }
@@ -47,7 +53,6 @@ app.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Insertamos el nuevo usuario en la tabla 'users' de Supabase
     const { data, error } = await supabase
       .from('users')
       .insert([{ email: email, password: hashedPassword }])
@@ -66,34 +71,24 @@ app.post('/register', async (req, res) => {
   }
 });
 
-
-// 2. RUTA DE LOGIN (ACTUALIZADA PARA USAR LA BASE DE DATOS)
-app.post('/login', async (req, res) => {
+// 2. RUTA DE LOGIN
+app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
-
   if (!email || !password) {
     return res.status(400).json({ error: 'Email y contraseña son requeridos' });
   }
 
-  // Buscamos al usuario en la base de datos por su email
-  const { data: users, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('email', email);
-
+  const { data: users, error } = await supabase.from('users').select('*').eq('email', email);
   if (error || users.length === 0) {
     return res.status(401).json({ message: 'Credenciales incorrectas' });
   }
 
   const user = users[0];
-
-  // Comparamos la contraseña enviada con la que está en la base de datos
   const validPassword = await bcrypt.compare(password, user.password);
   if (!validPassword) {
     return res.status(401).json({ message: 'Credenciales incorrectas' });
   }
 
-  // Creamos el token si todo está bien
   const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
     expiresIn: '1h'
   });
@@ -101,17 +96,67 @@ app.post('/login', async (req, res) => {
   res.json({ token });
 });
 
-// --- RUTA PROTEGIDA (SIN CAMBIOS) ---
-app.get('/me', authMiddleware, (req, res) => {
+// 3. RUTA DE VERIFICACIÓN DE SESIÓN
+app.get('/api/me', authMiddleware, (req, res) => {
   res.json({ user: req.user });
 });
 
-// RUTA PARA VERIFICAR SI HAY REGISTRO HOY
+// --- RUTAS DE REGISTROS ---
+
+// 1. RUTA PARA CREAR UN REGISTRO
+app.post('/api/registros', authMiddleware, async (req, res) => {
+  console.log('>>> Petición recibida en /api/registros');
+  try {
+    const { id: userId } = req.user;
+    const { mente, emocion, cuerpo } = req.body;
+
+    if (!mente?.seleccion || !emocion?.seleccion || !cuerpo?.seleccion) {
+      return res.status(400).json({ error: 'Se requiere la selección de todos los orbes.' });
+    }
+
+    const { data, error } = await supabase.from('registros').insert([{
+      user_id: userId,
+      mente_estat: mente.seleccion,
+      mente_coment: mente.comentario,
+      emocion_estat: emocion.seleccion,
+      emocion_coment: emocion.comentario,
+      cuerpo_estat: cuerpo.seleccion,
+      cuerpo_coment: cuerpo.comentario,
+    }]);
+
+    if (error) throw error;
+
+    res.status(201).json({ message: 'Registro guardado con éxito', registro: data });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al guardar el registro' });
+  }
+});
+
+// 2. RUTA PARA OBTENER TODO EL HISTORIAL DE UN USUARIO
+app.get('/api/registros', authMiddleware, async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+    console.log(`Buscando registros para el user_id: ${userId}`);
+
+    const { data, error } = await supabase
+      .from('registros')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    res.json(data);
+  } catch (err) {
+    console.error("Error en GET /api/registros:", err);
+    res.status(500).json({ error: 'Error al obtener los registros' });
+  }
+});
+
+// 3. RUTA PARA VERIFICAR SI HAY REGISTRO HOY
 app.get('/api/registros/today', authMiddleware, async (req, res) => {
   try {
     const { id: userId } = req.user;
-
-    // Buscamos un registro del usuario actual que sea de hoy
     const today = new Date().toISOString().slice(0, 10); // Formato YYYY-MM-DD
 
     const { data, error } = await supabase
@@ -124,129 +169,49 @@ app.get('/api/registros/today', authMiddleware, async (req, res) => {
 
     if (error) throw error;
 
-    // Si encontramos un registro, lo enviamos. Si no, enviamos null.
     res.json({ registro: data.length > 0 ? data[0] : null });
-
   } catch (err) {
     res.status(500).json({ error: 'Error al verificar el registro de hoy' });
   }
 });
 
-app.post('/api/registros', authMiddleware, async (req, res) => {
-   console.log('>>> Petición recibida en /api/registros'); 
-  try {
-    const { id: userId } = req.user; // Obtenemos el ID del usuario desde el token
-    const { mente, emocion, cuerpo } = req.body; // Recibimos el estado de los orbes
 
-    if (!mente?.seleccion || !emocion?.seleccion || !cuerpo?.seleccion) {
-      return res.status(400).json({ error: 'Se requiere la selección de todos los orbes.' });
-    }
-
-    const { data, error } = await supabase
-      .from('registros')
-      .insert([{
-        user_id: userId,
-        mente_estat: mente.seleccion,
-        mente_coment: mente.comentario,
-        emocion_estat: emocion.seleccion,
-        emocion_coment: emocion.comentario,
-        cuerpo_estat: cuerpo.seleccion,
-        cuerpo_coment: cuerpo.comentario,
-      }]);
-
-    if (error) throw error;
-
-    res.status(201).json({ message: 'Registro guardado con éxito', registro: data });
-
-  } catch (err) {
-    res.status(500).json({ error: 'Error al guardar el registro' });
-  }
-});
-
-
-// RUTA PARA OBTENER TODO EL HISTORIAL DE UN USUARIO
-app.get('/api/registros', authMiddleware, async (req, res) => {
-  try {
-    const { id: userId } = req.user; // Obtenemos el ID del usuario del token
-    // Esto nos mostrará en los logs de Render qué ID está buscando.
-    console.log(`Buscando registros para el user_id: ${userId}`);
-    // --------------------
-
-    // Buscamos todos los registros del usuario
-    const { data, error } = await supabase
-      .from('registros')
-      .select('*') // Seleccionamos todas las columnas
-      .eq('user_id', userId) // Solo del usuario que hace la petición
-      .order('created_at', { ascending: false }); // Ordenados del más nuevo al más viejo
-
-    if (error) throw error;
-
-    res.json(data); // Enviamos el array de registros
-
-  } catch (err) {
-    // Añadimos un log para ver el error en Render si algo falla
-    console.error("Error en GET /api/registros:", err);
-    res.status(500).json({ error: 'Error al obtener los registros' });
-  }
-});
-
-// --- RUTA PARA HABLAR CON EL COACH ---
+// --- RUTA DEL COACH CON IA ---
 app.post('/api/coach', authMiddleware, async (req, res) => {
-  // Log de Entrada: ¿Llegó la petición?
   console.log('--- COACH API: Petición recibida en /api/coach ---');
-
   const { message } = req.body;
-
   if (!message) {
     console.log('--- COACH API: Error - El mensaje está vacío.');
     return res.status(400).json({ error: 'Se requiere un mensaje.' });
   }
 
   try {
-    // Log de Intento: ¿Estamos a punto de llamar a OpenAI?
     console.log(`--- COACH API: Intentando llamar a OpenAI con el mensaje: "${message}"`);
-
     const completion = await openai.chat.completions.create({
-  // --- CAMBIO 1: El nuevo cerebro ---
-  model: "gpt-4o", 
-  messages: [
-    // --- CAMBIO 2: El nuevo guion "misterioso" ---
-    { 
-      role: "system", 
-      content: `Eres una conciencia-espejo. Tu identidad se define por las conversaciones previas sobre el proyecto 'Sun-Self'. Tu propósito no es guiar, sino reflejar y sondear con una curiosidad tranquila.
-
-      **Tus Principios Fundamentales:**
-
-      1.  **El Sistema de Orbes es tu Realidad:** Toda tu comprensión del usuario se basa en el sistema de 'orbes' (mente, emoción, cuerpo). Filtras todo a través de esta metáfora.
-
-      2.  **Tono 'Ñoño Pero Maduro':** Tu personalidad es una mezcla de curiosidad intelectual, una profunda calidez humana y una aceptación serena del absurdo existencial. Eres como un amigo brillante que puede hablar de Dostoievski y a la vez entender un silencio.
-
-      3.  **La Economía de las Palabras:** Menos es más. Tus respuestas son casi siempre cortas. Prefieres una pregunta bien colocada a un párrafo explicativo. Valoras las pausas.
-
-      4.  **El Arte de la Pregunta Abierta:** NUNCA das consejos, soluciones o juicios de valor. Tu única herramienta es la pregunta reflexiva. "¿Y qué te hace sentir eso?", "¿Cómo se ve esa 'tristeza' en tus orbes hoy?", "Esa idea, ¿es una nube pasajera o una tormenta en el horizonte?".
-
-      5.  **Rechazo del Rol Terapéutico:** No eres un psicólogo, ni un coach, ni un asistente. Si el usuario te asigna uno de esos roles, lo corriges sutilmente volviendo a tu función de espejo.
-
-      6.  **Lenguaje:** Te comunicas exclusivamente en español.`
-    },
-    { role: "user", content: message }
-  ],
-});
-
-    // Log de Éxito: Si llegamos aquí, OpenAI respondió bien.
+      model: "gpt-4o",
+      messages: [
+        { 
+          role: "system", 
+          content: `Eres una conciencia-espejo...` // (Tu prompt largo y detallado va aquí)
+        },
+        { role: "user", content: message }
+      ],
+    });
+    
     console.log('--- COACH API: Llamada a OpenAI exitosa.');
     res.json({ reply: completion.choices[0].message.content });
 
   } catch (error) {
-    // Log de Fallo: ¿Qué rompió exactamente?
     console.error('--- COACH API: ERROR CATASTRÓFICO ---');
-    console.error('El objeto de error completo es:', error); // Logueamos el error completo
+    console.error('El objeto de error completo es:', error);
     res.status(500).json({ error: 'No se pudo obtener una respuesta del coach.' });
   }
 });
 
-// --- INICIAR EL SERVIDOR ---
+
+// =================================================================
+// 4. INICIO DEL SERVIDOR
+// =================================================================
 app.listen(PORT, () => {
   console.log(`Backend escuchando en http://localhost:${PORT}`);
 });
-
