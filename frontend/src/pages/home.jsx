@@ -6,12 +6,23 @@ import './home.css';
 
 const opciones = [ { valor: 'bajo', emoji: '🌧️' }, { valor: 'neutral', emoji: '⛅' }, { valor: 'alto', emoji: '☀️' } ];
 
-const PostItOrbe = ({ orbe, estados, onSeleccion, onComentario }) => ( <div className="post-it-orbe"> <div className="post-it-header"> <h3>{orbe}</h3> <div className="orbe-buttons"> {opciones.map(({ valor, emoji }) => ( <button key={valor} className={`icon-button ${estados[orbe].seleccion === valor ? 'selected' : ''}`} onClick={() => onSeleccion(orbe, valor)} type="button" title={valor}> {emoji} </button> ))} </div> </div> <textarea placeholder={`¿Algún pensamiento sobre tu ${orbe}?`} value={estados[orbe].comentario} onChange={(e) => onComentario(orbe, e.target.value)} rows="2" /> </div> );
+const PostItOrbe = ({ orbe, estados, onSeleccion, onComentario }) => (
+  <div className="post-it-orbe">
+    <div className="post-it-header">
+      <h3>{orbe}</h3>
+      <div className="orbe-buttons">
+        {opciones.map(({ valor, emoji }) => (
+          <button key={valor} className={`icon-button ${estados[orbe].seleccion === valor ? 'selected' : ''}`} onClick={() => onSeleccion(orbe, valor)} type="button" title={valor}>{emoji}</button>
+        ))}
+      </div>
+    </div>
+    <textarea placeholder={`¿Algún pensamiento sobre tu ${orbe}?`} value={estados[orbe].comentario} onChange={(e) => onComentario(orbe, e.target.value)} rows="2" />
+  </div>
+);
 
 export default function Home() {
     const { user } = useOutletContext();
     const [estados, setEstados] = useState({ mente: { seleccion: '', comentario: '' }, emocion: { seleccion: '', comentario: '' }, cuerpo: { seleccion: '', comentario: '' } });
-    // 1. Nuevo estado para la meta del día.
     const [metaDelDia, setMetaDelDia] = useState('');
     const [estadoFinalizado, setEstadoFinalizado] = useState(false);
     const [fraseDelDia, setFraseDelDia] = useState('');
@@ -23,8 +34,8 @@ export default function Home() {
 
     const fechaDeHoy = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
 
-    const generarFrase = useCallback((registro) => { /* ... */ }, []);
-    const determinarClima = useCallback((registro) => { /* ... */ }, []);
+    const generarFrase = useCallback((registro) => { const m = registro.mente_estat; const emo = registro.emocion_estat; const c = registro.cuerpo_estat; if (m === 'bajo' || emo === 'bajo') return 'Hoy tu energía parece pedirte calma. Permítete frenar un poco.'; if (emo === 'alto' && c === 'alto') return 'Estás vibrando con intensidad, canalízalo con intención.'; if (m === 'alto') return 'Mente clara, horizonte abierto. Aprovéchalo para avanzar.'; return 'Hoy estás navegando tus estados con honestidad. Eso también es fuerza.'; }, []);
+    const determinarClima = useCallback((registro) => { const valores = [registro.mente_estat, registro.emocion_estat, registro.cuerpo_estat]; const puntaje = valores.reduce((acc, val) => { if (val === 'alto') return acc + 1; if (val === 'bajo') return acc - 1; return acc; }, 0); if (puntaje >= 2) return '☀️'; if (puntaje <= -2) return '🌧️'; return '⛅'; }, []);
     
     useEffect(() => {
         if (!user) return;
@@ -33,9 +44,11 @@ export default function Home() {
                 const registroResponse = await api.getRegistroDeHoy();
                 const registroDeHoy = registroResponse.data.registro;
                 if (registroDeHoy) {
-                    // ... (lógica para setear estados)
-                    // 2. Cargamos la meta si ya existe.
+                    const estadosGuardados = { mente: { seleccion: registroDeHoy.mente_estat, comentario: registroDeHoy.mente_coment }, emocion: { seleccion: registroDeHoy.emocion_estat, comentario: registroDeHoy.emocion_coment }, cuerpo: { seleccion: registroDeHoy.cuerpo_estat, comentario: registroDeHoy.cuerpo_coment } };
+                    setEstados(estadosGuardados);
                     setMetaDelDia(registroDeHoy.meta_del_dia || '');
+                    setFraseDelDia(generarFrase(registroDeHoy));
+                    setClimaVisual(determinarClima(registroDeHoy));
                     setEstadoFinalizado(true);
                     setTieneRegistroPrevio(true);
                     setRegistroId(registroDeHoy.id);
@@ -48,20 +61,31 @@ export default function Home() {
 
     const handleGuardar = async () => {
         try {
-            // 3. Incluimos la meta en el objeto que se envía a la API.
             const payload = { ...estados, meta_del_dia: metaDelDia };
             const response = await api.saveRegistro(payload);
             const registroGuardado = response.data.registro;
-            // ... (lógica para setear frase, clima, etc.)
+            setFraseDelDia(generarFrase(registroGuardado));
+            setClimaVisual(determinarClima(registroGuardado));
             setEstadoFinalizado(true);
             setTieneRegistroPrevio(true);
             setRegistroId(registroGuardado.id);
         } catch (error) { console.error("Error al guardar el estado:", error); }
     };
 
-    const handleCancel = () => { /* ... */ };
-    const handleSeleccion = (orbe, valor) => { /* ... */ };
-    const handleComentario = (orbe, valor) => { /* ... */ };
+    const handleCancel = () => {
+        if (tieneRegistroPrevio) {
+            setEstadoFinalizado(true);
+        } else {
+            setEstados({ mente: { seleccion: '', comentario: '' }, emocion: { seleccion: '', comentario: '' }, cuerpo: { seleccion: '', comentario: '' } });
+            setMetaDelDia('');
+        }
+    };
+    const handleSeleccion = (orbe, valor) => {
+        setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], seleccion: valor } }));
+    };
+    const handleComentario = (orbe, valor) => {
+        setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], comentario: valor } }));
+    };
 
   if (isLoading) {
     return ( <div className="home-content loading-state"> <p>Cargando tu día...</p> </div> );
@@ -75,19 +99,25 @@ export default function Home() {
       </header>
       {estadoFinalizado ? (
         <div className="daily-dashboard">
-          <div className="post-it-display">
-            {/* ... (post-it principal) ... */}
-          </div>
-          {/* 4. Mostramos el post-it de la meta si tiene contenido. */}
+          {/* CLAVE: La meta ahora se muestra ARRIBA si existe */}
           {metaDelDia && (
             <div className="meta-post-it">
               <div className="meta-header">
-                <span>🎯</span>
                 <h4>Meta del Día</h4>
+                <span>🎯</span>
               </div>
               <p>{metaDelDia}</p>
             </div>
           )}
+          <div className="post-it-display">
+            <button className="edit-button" onClick={() => setEstadoFinalizado(false)} title="Editar estado">✏️</button>
+            <h3>Tu estado de hoy</h3>
+            <div className="clima-visual">{climaVisual}</div>
+            <p className="frase-del-dia">{fraseDelDia}</p>
+            <footer className="post-it-footer">
+              <a onClick={() => navigate(`/journal/${registroId}`)}>Escribir en la hoja de atrás...</a>
+            </footer>
+          </div>
         </div>
       ) : (
         <div className="formulario-estado">
@@ -96,9 +126,12 @@ export default function Home() {
             {['mente', 'emocion', 'cuerpo'].map((orbe) => (
               <PostItOrbe key={orbe} orbe={orbe} estados={estados} onSeleccion={handleSeleccion} onComentario={handleComentario} />
             ))}
-            {/* 5. Añadimos el campo para la meta en el formulario. */}
             <div className="post-it-orbe">
-              <h3>🎯 Meta del Día (opcional)</h3>
+              {/* CLAVE: La estructura del header ahora es consistente */}
+              <div className="post-it-header">
+                <h3>Meta del Día (opcional)</h3>
+                <span className="meta-icon">🎯</span>
+              </div>
               <textarea
                 placeholder="¿Cuál es tu pequeño gran objetivo para hoy?"
                 value={metaDelDia}
