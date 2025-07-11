@@ -11,7 +11,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 router.use(authMiddleware);
 
-// La ruta POST para crear no cambia.
+// RUTA PARA CREAR UN REGISTRO
 router.post('/', async (req, res) => {
   try {
     const { id: userId } = req.user;
@@ -19,7 +19,39 @@ router.post('/', async (req, res) => {
     if (!mente?.seleccion || !emocion?.seleccion || !cuerpo?.seleccion) {
       return res.status(400).json({ error: 'Se requiere la selección de todos los orbes.' });
     }
-    const { data, error } = await supabase.from('registros').insert([{ user_id: userId, mente_estat: mente.seleccion, mente_coment: mente.comentario, emocion_estat: emocion.seleccion, emocion_coment: emocion.comentario, cuerpo_estat: cuerpo.seleccion, cuerpo_coment: cuerpo.comentario, }]).select();
+
+    // --- 1. LÓGICA AÑADIDA PARA CALCULAR EL ESTADO GENERAL ---
+    const valores = [mente.seleccion, emocion.seleccion, cuerpo.seleccion];
+    const puntaje = valores.reduce((acc, val) => {
+      if (val === 'alto') return acc + 1;
+      if (val === 'bajo') return acc - 1;
+      return acc;
+    }, 0);
+
+    let estado_general;
+    if (puntaje >= 2) {
+      estado_general = 'soleado';
+    } else if (puntaje <= -2) {
+      estado_general = 'lluvioso';
+    } else {
+      estado_general = 'nublado';
+    }
+    // --- FIN DE LA LÓGICA AÑADIDA ---
+
+    const { data, error } = await supabase
+      .from('registros')
+      .insert([{ 
+        user_id: userId, 
+        mente_estat: mente.seleccion, 
+        mente_coment: mente.comentario, 
+        emocion_estat: emocion.seleccion, 
+        emocion_coment: emocion.comentario, 
+        cuerpo_estat: cuerpo.seleccion, 
+        cuerpo_coment: cuerpo.comentario,
+        estado_general: estado_general // <-- 2. Guardamos el nuevo campo
+      }])
+      .select();
+
     if (error) throw error;
     res.status(201).json({ message: 'Registro guardado con éxito', registro: data[0] });
   } catch (err) {
@@ -27,7 +59,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// La ruta GET para el historial no cambia.
+// RUTA GET PARA EL HISTORIAL
 router.get('/', async (req, res) => {
   try {
     const { id: userId } = req.user;
@@ -40,7 +72,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// La ruta GET para el registro de hoy no cambia.
+// RUTA GET PARA EL REGISTRO DE HOY
 router.get('/today', async (req, res) => {
   try {
     const { id: userId } = req.user;
@@ -53,69 +85,40 @@ router.get('/today', async (req, res) => {
   }
 });
 
-
-// --- NUEVO ENDPOINT PARA "LA HOJA DE ATRÁS" ---
-// Usamos PUT para actualizar un registro existente.
+// RUTA PUT PARA "LA HOJA DE ATRÁS"
 router.put('/:id/hoja_atras', async (req, res) => {
   try {
-    const { id: recordId } = req.params; // El ID del registro viene de la URL
-    const { id: userId } = req.user;     // El ID del usuario viene del token
-    const { texto } = req.body;          // El texto del diario viene del cuerpo de la petición
-
+    const { id: recordId } = req.params;
+    const { id: userId } = req.user;
+    const { texto } = req.body;
     if (typeof texto === 'undefined') {
       return res.status(400).json({ error: 'El campo "texto" es requerido.' });
     }
-
-    // Actualizamos la columna 'hoja_atras' en la tabla 'registros'.
-    // IMPORTANTE: Añadimos una doble comprobación de seguridad:
-    // 1. Que el ID del registro coincida.
-    // 2. Que el user_id del registro coincida con el del usuario autenticado.
-    // Esto evita que un usuario pueda modificar el diario de otro.
-    const { data, error } = await supabase
-      .from('registros')
-      .update({ hoja_atras: texto })
-      .eq('id', recordId)
-      .eq('user_id', userId)
-      .select();
-
+    const { data, error } = await supabase.from('registros').update({ hoja_atras: texto }).eq('id', recordId).eq('user_id', userId).select();
     if (error) throw error;
-
-    // Si la actualización no encontró ninguna fila (porque el ID era incorrecto o no pertenecía al usuario),
-    // data estará vacío.
     if (data.length === 0) {
       return res.status(404).json({ error: 'Registro no encontrado o no tienes permiso para modificarlo.' });
     }
-
     res.status(200).json({ message: 'Hoja de atrás guardada con éxito.', registro: data[0] });
-
   } catch (err) {
     console.error("Error en PUT /:id/hoja_atras:", err);
     res.status(500).json({ error: 'Error interno al guardar la entrada del diario.' });
   }
 });
 
+// RUTA GET PARA UN SOLO REGISTRO
 router.get('/:id', async (req, res) => {
   try {
     const { id: recordId } = req.params;
     const { id: userId } = req.user;
-
-    // Buscamos el registro que coincida con el ID y que pertenezca al usuario.
-    const { data, error } = await supabase
-      .from('registros')
-      .select('*')
-      .eq('id', recordId)
-      .eq('user_id', userId)
-      .single(); // .single() espera un solo resultado o devuelve un error.
-
+    const { data, error } = await supabase.from('registros').select('*').eq('id', recordId).eq('user_id', userId).single();
     if (error) {
-      if (error.code === 'PGRST116') { // Código de Supabase para "no rows found"
+      if (error.code === 'PGRST116') {
         return res.status(404).json({ error: 'Registro no encontrado.' });
       }
       throw error;
     }
-    
     res.status(200).json(data);
-
   } catch (err) {
     console.error("Error en GET /:id :", err);
     res.status(500).json({ error: 'Error interno al obtener el registro.' });
