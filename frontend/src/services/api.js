@@ -54,6 +54,11 @@ export const saveHojaAtras = (id, texto) => {
   return apiClient.put(`/api/registros/${id}/hoja_atras`, { texto });
 };
 
+// --- Nueva Función para obtener un solo registro hoja de atras ---
+export const getRegistroById = (id) => {
+  return apiClient.get(`/api/registros/${id}`);
+};
+
 // --- Funciones de Sunny ---
 export const postToSunny = (message) => {
   return apiClient.post('/api/sunny', { message });
@@ -69,6 +74,7 @@ const api = {
   saveRegistro,
   postToSunny,
   saveHojaAtras,
+  getRegistroById,
 };
 
 export default api;

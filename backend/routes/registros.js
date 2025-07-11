@@ -94,5 +94,32 @@ router.put('/:id/hoja_atras', async (req, res) => {
   }
 });
 
+router.get('/:id', async (req, res) => {
+  try {
+    const { id: recordId } = req.params;
+    const { id: userId } = req.user;
+
+    // Buscamos el registro que coincida con el ID y que pertenezca al usuario.
+    const { data, error } = await supabase
+      .from('registros')
+      .select('*')
+      .eq('id', recordId)
+      .eq('user_id', userId)
+      .single(); // .single() espera un solo resultado o devuelve un error.
+
+    if (error) {
+      if (error.code === 'PGRST116') { // Código de Supabase para "no rows found"
+        return res.status(404).json({ error: 'Registro no encontrado.' });
+      }
+      throw error;
+    }
+    
+    res.status(200).json(data);
+
+  } catch (err) {
+    console.error("Error en GET /:id :", err);
+    res.status(500).json({ error: 'Error interno al obtener el registro.' });
+  }
+});
 
 module.exports = router;
