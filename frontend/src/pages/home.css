@@ -45,6 +45,7 @@
   min-width: 80px;
   display: flex;
   align-items: center;
+  justify-content: center; /* Añadido para centrar el contenido */
   font-size: 0.8rem;
   font-weight: 600;
   color: #aaa;

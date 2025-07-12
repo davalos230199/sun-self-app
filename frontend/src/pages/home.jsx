@@ -62,7 +62,7 @@ export default function Home() {
         cargarRegistroDelDia();
     }, [user, generarFrase, determinarClima]);
 
-     // NUEVO useEffect DEDICADO AL CONTADOR de edicion de estado ---
+     // useEffect dedicado al contador de edicion de estado ---
     useEffect(() => {
         if (!estadoFinalizado || !registroTimestamp) {
             setTiempoRestante(0);
@@ -99,8 +99,9 @@ export default function Home() {
         } catch (error) { console.error("Error al guardar el estado:", error); }
     };
 
+    // CAMBIO CLAVE 1: La función ahora devuelve "00:00:00" cuando el tiempo se agota.
     const formatTiempo = (ms) => {
-        if (ms <= 0) return null; // No mostramos nada si el tiempo terminó
+        if (ms <= 0) return "00:00:00"; // No devolvemos null, sino el contador en cero.
         const totalSegundos = Math.floor(ms / 1000);
         const horas = Math.floor(totalSegundos / 3600).toString().padStart(2, '0');
         const minutos = Math.floor((totalSegundos % 3600) / 60).toString().padStart(2, '0');
@@ -123,11 +124,14 @@ export default function Home() {
         setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], comentario: valor } }));
     };
 
-  if (isLoading) {
-    return ( <div className="home-content loading-state"> <p>Cargando tu día...</p> </div> );
-  }
+    // CAMBIO CLAVE 2: Creamos una variable para que el JSX sea más legible.
+    const edicionBloqueada = tiempoRestante > 0;
 
-  return (
+ if (isLoading) {
+   return ( <div className="home-content loading-state"> <p>Cargando tu día...</p> </div> );
+ }
+
+ return (
     <div className="home-content">
       <header className="home-header">
         <span className="greeting">Hola, {user.nombre}</span>
@@ -146,17 +150,19 @@ export default function Home() {
           )}
           <div className="post-it-display">
             <div className="post-it-top-bar">
-              {/* CLAVE: El contenedor del timer ahora siempre existe, */}
-              {/* pero solo muestra contenido si hay tiempo. */}
-              {/* Esto evita que el layout "salte". */}
+              {/* CAMBIO CLAVE 3: La lógica de renderizado del temporizador es más clara. */}
               <div className="timer-display">
-                {tiempoRestante > 0 && `⏳ ${formatTiempo(tiempoRestante)}`}
+                {/* Mostramos el emoji solo si el tiempo está corriendo */}
+                {edicionBloqueada && '⏳ '}
+                {/* El tiempo formateado siempre se muestra */}
+                {formatTiempo(tiempoRestante)}
               </div>
               <button 
                 className="edit-button" 
                 onClick={() => setEstadoFinalizado(false)} 
                 title="Editar estado"
-                disabled={tiempoRestante > 0}
+                // La propiedad disabled ahora depende de nuestra variable booleana.
+                disabled={edicionBloqueada}
               >
                 ✏️
               </button>
