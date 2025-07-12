@@ -1,4 +1,3 @@
-// frontend/src/services/api.js
 import axios from 'axios';
 
 const apiClient = axios.create({
@@ -11,8 +10,6 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
-    // CLAVE: Usamos la API de Internacionalización para obtener el nombre de la zona horaria.
-    // Es mucho más preciso que el simple offset.
     config.headers['X-Client-Timezone'] = Intl.DateTimeFormat().resolvedOptions().timeZone;
     return config;
   },
@@ -21,7 +18,7 @@ apiClient.interceptors.request.use(
   }
 );
 
-// El resto del archivo no cambia
+// --- FUNCIONES EXISTENTES ---
 export const register = (userData) => { return apiClient.post('/api/auth/register', userData); };
 export const login = (credentials) => { return apiClient.post('/api/auth/login', credentials); };
 export const getMe = () => { return apiClient.get('/api/auth/me'); };
@@ -30,5 +27,23 @@ export const getRegistroDeHoy = () => { return apiClient.get('/api/registros/tod
 export const saveRegistro = (payload) => { return apiClient.post('/api/registros', payload); };
 export const getRegistroById = (id) => { return apiClient.get(`/api/registros/${id}`); };
 export const saveHojaAtras = (id, texto) => { return apiClient.put(`/api/registros/${id}/hoja_atras`, { texto }); };
-const api = { register, login, getMe, getRegistros, getRegistroDeHoy, saveRegistro, getRegistroById, saveHojaAtras };
+
+// --- CAMBIO: NUEVA FUNCIÓN PARA LA FRASE INTELIGENTE ---
+export const generarFraseInteligente = (payload) => {
+  return apiClient.post('/api/sunny/generar-frase', payload);
+};
+
+// --- CAMBIO: AÑADIMOS LA NUEVA FUNCIÓN AL OBJETO API ---
+const api = { 
+  register, 
+  login, 
+  getMe, 
+  getRegistros, 
+  getRegistroDeHoy, 
+  saveRegistro, 
+  getRegistroById, 
+  saveHojaAtras,
+  generarFraseInteligente // <-- Exportamos la nueva función
+};
+
 export default api;

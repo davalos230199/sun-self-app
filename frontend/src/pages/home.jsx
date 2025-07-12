@@ -1,4 +1,3 @@
-// frontend/src/pages/home.jsx
 import { useEffect, useState, useCallback } from 'react';
 import api from '../services/api';
 import { useNavigate, useOutletContext } from 'react-router-dom';
@@ -36,7 +35,16 @@ export default function Home() {
     const [registroTimestamp, setRegistroTimestamp] = useState(null);
     const fechaDeHoy = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
 
-    const generarFrase = useCallback((registro) => { const m = registro.mente_estat; const emo = registro.emocion_estat; const c = registro.cuerpo_estat; if (m === 'bajo' || emo === 'bajo') return 'Hoy tu energía parece pedirte calma. Permítete frenar un poco.'; if (emo === 'alto' && c === 'alto') return 'Estás vibrando con intensidad, canalízalo con intención.'; if (m === 'alto') return 'Mente clara, horizonte abierto. Aprovéchalo para avanzar.'; return 'Hoy estás navegando tus estados con honestidad. Eso también es fuerza.'; }, []);
+    // CAMBIO 1: La función estática 'generarFrase' ya no es necesaria. La eliminamos.
+    // En su lugar, creamos una función de fallback para registros antiguos que no tengan frase.
+    const generarFraseFallback = useCallback((registro) => {
+        if (registro.frase_sunny) {
+            return registro.frase_sunny;
+        }
+        // Lógica simple para registros viejos sin frase de IA
+        return 'Aquí yace un momento de tu pasado. Obsérvalo con curiosidad.';
+    }, []);
+
     const determinarClima = useCallback((registro) => { const valores = [registro.mente_estat, registro.emocion_estat, registro.cuerpo_estat]; const puntaje = valores.reduce((acc, val) => { if (val === 'alto') return acc + 1; if (val === 'bajo') return acc - 1; return acc; }, 0); if (puntaje >= 2) return '☀️'; if (puntaje <= -2) return '🌧️'; return '⛅'; }, []);
     
     useEffect(() => {
@@ -49,7 +57,10 @@ export default function Home() {
                     const estadosGuardados = { mente: { seleccion: registroDeHoy.mente_estat, comentario: registroDeHoy.mente_coment }, emocion: { seleccion: registroDeHoy.emocion_estat, comentario: registroDeHoy.emocion_coment }, cuerpo: { seleccion: registroDeHoy.cuerpo_estat, comentario: registroDeHoy.cuerpo_coment } };
                     setEstados(estadosGuardados);
                     setMetaDelDia(registroDeHoy.meta_del_dia || '');
-                    setFraseDelDia(generarFrase(registroDeHoy));
+                    
+                    // CAMBIO 2: Usamos la frase guardada en la DB o la de fallback.
+                    setFraseDelDia(generarFraseFallback(registroDeHoy));
+
                     setClimaVisual(determinarClima(registroDeHoy));
                     setEstadoFinalizado(true);
                     setTieneRegistroPrevio(true);
@@ -60,15 +71,15 @@ export default function Home() {
             finally { setIsLoading(false); }
         };
         cargarRegistroDelDia();
-    }, [user, generarFrase, determinarClima]);
+    }, [user, determinarClima, generarFraseFallback]);
 
-     // useEffect dedicado al contador de edicion de estado ---
+     // useEffect del contador (sin cambios)
     useEffect(() => {
         if (!estadoFinalizado || !registroTimestamp) {
             setTiempoRestante(0);
             return;
         }
-        const LIMITE_EDICION = 4 * 60 * 60 * 1000; // 4 horas en milisegundos
+        const LIMITE_EDICION = 4 * 60 * 60 * 1000;
         const intervalo = setInterval(() => {
             const ahora = Date.now();
             const tiempoPasado = ahora - registroTimestamp;
@@ -86,22 +97,44 @@ export default function Home() {
 
     const handleGuardar = async () => {
         try {
+            // 1. Guardamos el registro como antes
             const payload = { ...estados, meta_del_dia: metaDelDia };
             const response = await api.saveRegistro(payload);
             const registroGuardado = response.data.registro;
-            setFraseDelDia(generarFrase(registroGuardado));
+
+            // Actualizamos la UI principal inmediatamente
             setClimaVisual(determinarClima(registroGuardado));
             setEstadoFinalizado(true);
             setTieneRegistroPrevio(true);
             setRegistroId(registroGuardado.id);
-            // Actualizamos el timestamp para reiniciar el contador
             setRegistroTimestamp(new Date(registroGuardado.created_at).getTime());
-        } catch (error) { console.error("Error al guardar el estado:", error); }
+
+            // 2. CAMBIO 3: Ahora generamos la frase inteligente
+            // Mostramos un mensaje de carga mientras la IA piensa
+            setFraseDelDia('Sunny está pensando...');
+
+            const frasePayload = {
+                mente_estat: registroGuardado.mente_estat,
+                emocion_estat: registroGuardado.emocion_estat,
+                cuerpo_estat: registroGuardado.cuerpo_estat,
+                meta_del_dia: registroGuardado.meta_del_dia,
+                registroId: registroGuardado.id
+            };
+            
+            const fraseResponse = await api.generarFraseInteligente(frasePayload);
+            
+            // 3. Actualizamos la UI con la frase de la IA
+            setFraseDelDia(fraseResponse.data.frase);
+
+        } catch (error) { 
+            console.error("Error al guardar o generar frase:", error);
+            // Si falla la IA, ponemos una frase de emergencia
+            setFraseDelDia('Cada registro es un paso en tu camino.');
+        }
     };
 
-    // CAMBIO CLAVE 1: La función ahora devuelve "00:00:00" cuando el tiempo se agota.
     const formatTiempo = (ms) => {
-        if (ms <= 0) return "00:00:00"; // No devolvemos null, sino el contador en cero.
+        if (ms <= 0) return "00:00:00";
         const totalSegundos = Math.floor(ms / 1000);
         const horas = Math.floor(totalSegundos / 3600).toString().padStart(2, '0');
         const minutos = Math.floor((totalSegundos % 3600) / 60).toString().padStart(2, '0');
@@ -124,7 +157,6 @@ export default function Home() {
         setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], comentario: valor } }));
     };
 
-    // CAMBIO CLAVE 2: Creamos una variable para que el JSX sea más legible.
     const edicionBloqueada = tiempoRestante > 0;
 
  if (isLoading) {
@@ -150,18 +182,14 @@ export default function Home() {
           )}
           <div className="post-it-display">
             <div className="post-it-top-bar">
-              {/* CAMBIO CLAVE 3: La lógica de renderizado del temporizador es más clara. */}
               <div className="timer-display">
-                {/* Mostramos el emoji solo si el tiempo está corriendo */}
                 {edicionBloqueada && '⏳ '}
-                {/* El tiempo formateado siempre se muestra */}
                 {formatTiempo(tiempoRestante)}
               </div>
               <button 
                 className="edit-button" 
                 onClick={() => setEstadoFinalizado(false)} 
                 title="Editar estado"
-                // La propiedad disabled ahora depende de nuestra variable booleana.
                 disabled={edicionBloqueada}
               >
                 ✏️
