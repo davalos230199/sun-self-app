@@ -4,20 +4,18 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 20px 0; /* Añadimos padding vertical para que no se pegue */
+  align-items: center; /* Centra los hijos horizontalmente */
+  padding: 20px 0;
   box-sizing: border-box;
 }
 
-/* CLAVE: Unificamos el tamaño y centrado de todos los elementos principales */
+/* CLAVE: Unificamos el ancho máximo para todos los contenedores principales */
 .home-header,
-.post-it-display,
-.meta-post-it {
-  width: 95%; /* Usamos un porcentaje para que se adapte mejor */
-  max-width: 400px; /* Un ancho máximo consistente para todos */
+.formulario-estado,
+.daily-dashboard {
+  width: 95%;
+  max-width: 450px; /* Un ancho máximo consistente */
   box-sizing: border-box;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .home-header {
@@ -36,8 +34,6 @@
 .home-header .date-display { font-family: var(--font-cuerpo); font-size: 0.9rem; font-weight: 600; color: #888; text-transform: capitalize; }
 
 .formulario-estado {
-  width: 100%;
-  max-width: 450px;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -71,9 +67,15 @@
   flex-direction: column;
   align-items: center;
   gap: 20px;
-  width: 100%;
 }
-
+.post-it-display,
+.meta-post-it {
+  width: 100%;
+  max-width: 400px; /* Ancho consistente */
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+}
 .post-it-display {
   background-color: #fffde7;
   padding: 25px;
@@ -88,7 +90,7 @@
 .post-it-display h3 { font-size: 1.5rem; }
 .post-it-display .clima-visual { font-size: 3rem; margin: 15px 0; }
 .post-it-display .frase-del-dia { font-style: italic; font-size: 1.1rem; flex-grow: 1; }
-.post-it-display .edit-button { position: absolute; top: 10px; right: 10px; font-size: 1.2rem; background: none; border: none; cursor: pointer; padding: 5px; opacity: 0.6; }
+.post-it-display .edit-button { position: absolute; top: 10px; right: 10px; font-size: 1.2rem; background: none; border: none; cursor: pointer; padding: 5px; opacity: 0.6; width: auto; height: auto; }
 .edit-button:hover { opacity: 1; }
 .post-it-footer { margin-top: 20px; padding-top: 15px; border-top: 1px dashed #ccc; }
 .post-it-footer a { font-family: var(--font-titulos); font-size: 1.1rem; color: #8a8a8a; cursor: pointer; text-decoration: none; }
