@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const { createClient } = require('@supabase/supabase-js');
-const authMiddleware = require('../middleware/auth'); // Correcto: importa desde otra carpeta
+const authMiddleware = require('../middleware/auth');
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
@@ -10,7 +10,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 router.use(authMiddleware);
 
-// RUTA PARA CREAR UN REGISTRO
+// RUTA PARA CREAR UN REGISTRO (sin cambios)
 router.post('/', async (req, res) => {
   try {
     const { id: userId } = req.user;
@@ -36,7 +36,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// RUTA GET PARA EL HISTORIAL
+// RUTA GET PARA EL HISTORIAL (sin cambios)
 router.get('/', async (req, res) => {
   try {
     const { id: userId } = req.user;
@@ -49,17 +49,24 @@ router.get('/', async (req, res) => {
   }
 });
 
-// RUTA GET PARA EL REGISTRO DE HOY
+// RUTA GET PARA EL REGISTRO DE HOY (¡AQUÍ ESTÁ EL ARREGLO!)
 router.get('/today', async (req, res) => {
   try {
     const { id: userId } = req.user;
+    // 1. Obtenemos la zona horaria del cliente (ej: 'America/Argentina/Buenos_Aires')
     const clientTimezone = req.headers['x-client-timezone'] || 'UTC';
+
+    // 2. CLAVE: Llamamos a nuestra nueva función inteligente (RPC) en Supabase.
+    // Le pasamos el ID del usuario y su zona horaria.
     const { data, error } = await supabase
       .rpc('get_today_record_for_user', {
         user_id_param: userId,
         client_timezone: clientTimezone
       });
+
     if (error) throw error;
+    
+    // La función devuelve un array. Si está vacío, no hay registro para "tu hoy".
     res.json({ registro: data.length > 0 ? data[0] : null });
   } catch (err) {
     console.error("Error en GET /today con RPC:", err);
@@ -67,7 +74,7 @@ router.get('/today', async (req, res) => {
   }
 });
 
-// RUTA PUT PARA "LA HOJA DE ATRÁS"
+// RUTA PUT PARA "LA HOJA DE ATRÁS" (sin cambios)
 router.put('/:id/hoja_atras', async (req, res) => {
   try {
     const { id: recordId } = req.params;
@@ -88,7 +95,7 @@ router.put('/:id/hoja_atras', async (req, res) => {
   }
 });
 
-// RUTA GET PARA UN SOLO REGISTRO
+// RUTA GET PARA UN SOLO REGISTRO (sin cambios)
 router.get('/:id', async (req, res) => {
   try {
     const { id: recordId } = req.params;
