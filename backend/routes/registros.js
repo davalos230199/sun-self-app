@@ -36,45 +36,82 @@ router.post('/', async (req, res) => {
   }
 });
 
-// RUTA GET PARA EL HISTORIAL
-router.get('/', async (req, res) => { /* ... (sin cambios) ... */ });
+// RUTA GET PARA EL HISTORIAL (sin cambios)
+router.get('/', async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+    const { data, error } = await supabase.from('registros').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error("Error en GET /api/registros:", err);
+    res.status(500).json({ error: 'Error al obtener los registros' });
+  }
+});
 
 // RUTA GET PARA EL REGISTRO DE HOY (¡AQUÍ ESTÁ EL ARREGLO!)
 router.get('/today', async (req, res) => {
   try {
     const { id: userId } = req.user;
-    
-    // 1. Obtenemos el desfase horario del cliente desde las cabeceras.
-    const timezoneOffset = parseInt(req.headers['x-timezone-offset'] || '0', 10);
+    // 1. Obtenemos la zona horaria del cliente (ej: 'America/Argentina/Buenos_Aires')
+    const clientTimezone = req.headers['x-client-timezone'] || 'UTC';
 
-    // 2. Calculamos la fecha y hora actual del cliente.
-    const now = new Date();
-    const clientNow = new Date(now.getTime() - timezoneOffset * 60 * 1000);
-    
-    // 3. Obtenemos la fecha en formato YYYY-MM-DD según el cliente.
-    const clientToday = clientNow.toISOString().slice(0, 10);
-
-    // 4. Usamos la fecha del cliente para la consulta.
+    // 2. CLAVE: Llamamos a nuestra nueva función inteligente (RPC) en Supabase.
+    // Le pasamos el ID del usuario y su zona horaria.
     const { data, error } = await supabase
-      .from('registros')
-      .select('*')
-      .eq('user_id', userId)
-      .gte('created_at', `${clientToday}T00:00:00.000Z`)
-      .lte('created_at', `${clientToday}T23:59:59.999Z`)
-      .order('created_at', { ascending: false })
-      .limit(1);
+      .rpc('get_today_record_for_user', {
+        user_id_param: userId,
+        client_timezone: clientTimezone
+      });
 
     if (error) throw error;
+    
+    // La función devuelve un array. Si está vacío, no hay registro para "hoy".
     res.json({ registro: data.length > 0 ? data[0] : null });
   } catch (err) {
+    console.error("Error en GET /today con RPC:", err);
     res.status(500).json({ error: 'Error al verificar el registro de hoy' });
   }
 });
 
-// RUTA PUT PARA "LA HOJA DE ATRÁS"
-router.put('/:id/hoja_atras', async (req, res) => { /* ... (sin cambios) ... */ });
+// RUTA PUT PARA "LA HOJA DE ATRÁS" (sin cambios)
+router.put('/:id/hoja_atras', async (req, res) => {
+  try {
+    const { id: recordId } = req.params;
+    const { id: userId } = req.user;
+    const { texto } = req.body;
+    if (typeof texto === 'undefined') {
+      return res.status(400).json({ error: 'El campo "texto" es requerido.' });
+    }
+    const { data, error } = await supabase.from('registros').update({ hoja_atras: texto }).eq('id', recordId).eq('user_id', userId).select();
+    if (error) throw error;
+    if (data.length === 0) {
+      return res.status(404).json({ error: 'Registro no encontrado o no tienes permiso para modificarlo.' });
+    }
+    res.status(200).json({ message: 'Hoja de atrás guardada con éxito.', registro: data[0] });
+  } catch (err) {
+    console.error("Error en PUT /:id/hoja_atras:", err);
+    res.status(500).json({ error: 'Error interno al guardar la entrada del diario.' });
+  }
+});
 
-// RUTA GET PARA UN SOLO REGISTRO
-router.get('/:id', async (req, res) => { /* ... (sin cambios) ... */ });
+// RUTA GET PARA UN SOLO REGISTRO (sin cambios)
+router.get('/:id', async (req, res) => {
+  try {
+    const { id: recordId } = req.params;
+    const { id: userId } = req.user;
+    const { data, error } = await supabase.from('registros').select('*').eq('id', recordId).eq('user_id', userId).single();
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return res.status(404).json({ error: 'Registro no encontrado.' });
+      }
+      throw error;
+    }
+    res.status(200).json(data);
+  } catch (err) {
+    console.error("Error en GET /:id :", err);
+    res.status(500).json({ error: 'Error interno al obtener el registro.' });
+  }
+});
 
 module.exports = router;

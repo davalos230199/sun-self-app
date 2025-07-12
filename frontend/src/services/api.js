@@ -11,8 +11,9 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
-    // CLAVE: Añadimos una nueva cabecera con el desfase horario del navegador.
-    config.headers['X-Timezone-Offset'] = new Date().getTimezoneOffset();
+    // CLAVE: Usamos la API de Internacionalización para obtener el nombre de la zona horaria.
+    // Es mucho más preciso que el simple offset.
+    config.headers['X-Client-Timezone'] = Intl.DateTimeFormat().resolvedOptions().timeZone;
     return config;
   },
   (error) => {
@@ -20,7 +21,7 @@ apiClient.interceptors.request.use(
   }
 );
 
-// El resto de las funciones exportadas no cambian.
+// El resto del archivo no cambia
 export const register = (userData) => { return apiClient.post('/api/auth/register', userData); };
 export const login = (credentials) => { return apiClient.post('/api/auth/login', credentials); };
 export const getMe = () => { return apiClient.get('/api/auth/me'); };
