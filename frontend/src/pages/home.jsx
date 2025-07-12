@@ -27,14 +27,13 @@ export default function Home() {
     const [estadoFinalizado, setEstadoFinalizado] = useState(false);
     const [fraseDelDia, setFraseDelDia] = useState('');
     const [climaVisual, setClimaVisual] = useState('');
+    const [tieneRegistroPrevio, setTieneRegistroPrevio] = useState(false);
     const [registroId, setRegistroId] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
-    // Estados para el contador
     const [tiempoRestante, setTiempoRestante] = useState(0);
     const [registroTimestamp, setRegistroTimestamp] = useState(null);
-    
     const fechaDeHoy = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
 
     const generarFrase = useCallback((registro) => { const m = registro.mente_estat; const emo = registro.emocion_estat; const c = registro.cuerpo_estat; if (m === 'bajo' || emo === 'bajo') return 'Hoy tu energía parece pedirte calma. Permítete frenar un poco.'; if (emo === 'alto' && c === 'alto') return 'Estás vibrando con intensidad, canalízalo con intención.'; if (m === 'alto') return 'Mente clara, horizonte abierto. Aprovéchalo para avanzar.'; return 'Hoy estás navegando tus estados con honestidad. Eso también es fuerza.'; }, []);
@@ -42,7 +41,6 @@ export default function Home() {
     
     useEffect(() => {
         if (!user) return;
-        setIsLoading(true);
         const cargarRegistroDelDia = async () => {
             try {
                 const registroResponse = await api.getRegistroDeHoy();
@@ -54,6 +52,7 @@ export default function Home() {
                     setFraseDelDia(generarFrase(registroDeHoy));
                     setClimaVisual(determinarClima(registroDeHoy));
                     setEstadoFinalizado(true);
+                    setTieneRegistroPrevio(true);
                     setRegistroId(registroDeHoy.id);
                     setRegistroTimestamp(new Date(registroDeHoy.created_at).getTime());
                 }
@@ -63,12 +62,13 @@ export default function Home() {
         cargarRegistroDelDia();
     }, [user, generarFrase, determinarClima]);
 
+     // NUEVO useEffect DEDICADO AL CONTADOR de edicion de estado ---
     useEffect(() => {
         if (!estadoFinalizado || !registroTimestamp) {
             setTiempoRestante(0);
             return;
         }
-        const LIMITE_EDICION = 4 * 60 * 60 * 1000;
+        const LIMITE_EDICION = 4 * 60 * 60 * 1000; // 4 horas en milisegundos
         const intervalo = setInterval(() => {
             const ahora = Date.now();
             const tiempoPasado = ahora - registroTimestamp;
@@ -83,6 +83,7 @@ export default function Home() {
         return () => clearInterval(intervalo);
     }, [estadoFinalizado, registroTimestamp]);
 
+
     const handleGuardar = async () => {
         try {
             const payload = { ...estados, meta_del_dia: metaDelDia };
@@ -91,13 +92,15 @@ export default function Home() {
             setFraseDelDia(generarFrase(registroGuardado));
             setClimaVisual(determinarClima(registroGuardado));
             setEstadoFinalizado(true);
+            setTieneRegistroPrevio(true);
             setRegistroId(registroGuardado.id);
+            // Actualizamos el timestamp para reiniciar el contador
             setRegistroTimestamp(new Date(registroGuardado.created_at).getTime());
         } catch (error) { console.error("Error al guardar el estado:", error); }
     };
 
     const formatTiempo = (ms) => {
-        if (ms <= 0) return null;
+        if (ms <= 0) return null; // No mostramos nada si el tiempo terminó
         const totalSegundos = Math.floor(ms / 1000);
         const horas = Math.floor(totalSegundos / 3600).toString().padStart(2, '0');
         const minutos = Math.floor((totalSegundos % 3600) / 60).toString().padStart(2, '0');
@@ -105,10 +108,21 @@ export default function Home() {
         return `${horas}:${minutos}:${segundos}`;
     };
 
-    const handleCancel = () => { setEstadoFinalizado(true); };
-    const handleSeleccion = (orbe, valor) => { setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], seleccion: valor } })); };
-    const handleComentario = (orbe, valor) => { setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], comentario: valor } })); };
-    
+    const handleCancel = () => {
+        if (tieneRegistroPrevio) {
+            setEstadoFinalizado(true);
+        } else {
+            setEstados({ mente: { seleccion: '', comentario: '' }, emocion: { seleccion: '', comentario: '' }, cuerpo: { seleccion: '', comentario: '' } });
+            setMetaDelDia('');
+        }
+    };
+    const handleSeleccion = (orbe, valor) => {
+        setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], seleccion: valor } }));
+    };
+    const handleComentario = (orbe, valor) => {
+        setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], comentario: valor } }));
+    };
+
   if (isLoading) {
     return ( <div className="home-content loading-state"> <p>Cargando tu día...</p> </div> );
   }
@@ -132,11 +146,12 @@ export default function Home() {
           )}
           <div className="post-it-display">
             <div className="post-it-top-bar">
-              {formatTiempo(tiempoRestante) && (
-                <div className="timer-display">
-                  ⏳ {formatTiempo(tiempoRestante)}
-                </div>
-              )}
+              {/* CLAVE: El contenedor del timer ahora siempre existe, */}
+              {/* pero solo muestra contenido si hay tiempo. */}
+              {/* Esto evita que el layout "salte". */}
+              <div className="timer-display">
+                {tiempoRestante > 0 && `⏳ ${formatTiempo(tiempoRestante)}`}
+              </div>
               <button 
                 className="edit-button" 
                 onClick={() => setEstadoFinalizado(false)} 
@@ -163,11 +178,11 @@ export default function Home() {
             ))}
             <div className="post-it-orbe">
               <div className="post-it-header">
-                <h3>Meta del Día</h3>
+                <h3>Meta del Día (opcional)</h3>
                 <span className="meta-icon">🎯</span>
               </div>
               <textarea
-                placeholder="¿Cuál es tu pequeño gran objetivo para hoy? (opcional)"
+                placeholder="¿Cuál es tu pequeño gran objetivo para hoy?"
                 value={metaDelDia}
                 onChange={(e) => setMetaDelDia(e.target.value)}
                 rows="2"
