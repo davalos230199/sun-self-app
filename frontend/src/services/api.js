@@ -27,11 +27,15 @@ export const getRegistroDeHoy = () => { return apiClient.get('/api/registros/tod
 export const saveRegistro = (payload) => { return apiClient.post('/api/registros', payload); };
 export const getRegistroById = (id) => { return apiClient.get(`/api/registros/${id}`); };
 export const saveHojaAtras = (id, texto) => { return apiClient.put(`/api/registros/${id}/hoja_atras`, { texto }); };
+export const generarFraseInteligente = (payload) => { return apiClient.post('/api/sunny/generar-frase', payload); };
 
-// --- CAMBIO: NUEVA FUNCIÓN PARA LA FRASE INTELIGENTE ---
-export const generarFraseInteligente = (payload) => {
-  return apiClient.post('/api/sunny/generar-frase', payload);
+// --- CAMBIO: AÑADIMOS LA FUNCIÓN PARA EL CHAT ---
+// Esta función se comunica con la ruta de chat refactorizada del backend.
+// Espera un objeto con una propiedad 'history' que es un array de mensajes.
+export const postToSunny = (payload) => {
+  return apiClient.post('/api/sunny', payload); // La ruta es '/api/sunny' y el payload es { history: [...] }
 };
+
 
 // --- CAMBIO: AÑADIMOS LA NUEVA FUNCIÓN AL OBJETO API ---
 const api = { 
@@ -43,7 +47,8 @@ const api = {
   saveRegistro, 
   getRegistroById, 
   saveHojaAtras,
-  generarFraseInteligente // <-- Exportamos la nueva función
+  generarFraseInteligente,
+  postToSunny // <-- Exportamos la nueva función del chat
 };
 
 export default api;
