@@ -1,8 +1,15 @@
 // backend/index.js
+
+// =================================================================
+// 1. IMPORTACIONES
+// =================================================================
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
+// =================================================================
+// 2. INICIALIZACIÓN Y MIDDLEWARES
+// =================================================================
 const app = express();
 const PORT = process.env.PORT || 4000;
 
@@ -11,17 +18,19 @@ const PORT = process.env.PORT || 4000;
 // la nueva cabecera 'x-client-timezone' en TODAS las rutas.
 // También mantenemos las cabeceras estándar como Authorization.
 app.use(cors({
-  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-client-timezone']
 }));
 
 app.use(express.json());
 
-// --- RUTAS DE LA API ---
+// =================================================================
+// 3. RUTAS DE LA API (La Centralita)
+// =================================================================
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
+// --- CONEXIÓN A LOS DEPARTAMENTOS (ARCHIVOS DE RUTAS) ---
 const authRoutes = require('./routes/auth');
 const registrosRoutes = require('./routes/registros');
 const sunnyRoutes = require('./routes/sunny');
@@ -30,7 +39,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/registros', registrosRoutes);
 app.use('/api/sunny', sunnyRoutes);
 
-// --- INICIO DEL SERVIDOR ---
+// =================================================================
+// 4. INICIO DEL SERVIDOR
+// =================================================================
 app.listen(PORT, () => {
   console.log(`Backend escuchando en http://localhost:${PORT}`);
 });
