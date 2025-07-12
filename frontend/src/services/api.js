@@ -28,14 +28,12 @@ export const saveRegistro = (payload) => { return apiClient.post('/api/registros
 export const getRegistroById = (id) => { return apiClient.get(`/api/registros/${id}`); };
 export const saveHojaAtras = (id, texto) => { return apiClient.put(`/api/registros/${id}/hoja_atras`, { texto }); };
 export const generarFraseInteligente = (payload) => { return apiClient.post('/api/sunny/generar-frase', payload); };
+export const postToSunny = (payload) => { return apiClient.post('/api/sunny', payload); };
 
-// --- CAMBIO: AÑADIMOS LA FUNCIÓN PARA EL CHAT ---
-// Esta función se comunica con la ruta de chat refactorizada del backend.
-// Espera un objeto con una propiedad 'history' que es un array de mensajes.
-export const postToSunny = (payload) => {
-  return apiClient.post('/api/sunny', payload); // La ruta es '/api/sunny' y el payload es { history: [...] }
+// --- CAMBIO: NUEVA FUNCIÓN PARA EL MURO DE SOLES ---
+export const getMuroEstados = () => {
+  return apiClient.get('/api/muro/estados');
 };
-
 
 // --- CAMBIO: AÑADIMOS LA NUEVA FUNCIÓN AL OBJETO API ---
 const api = { 
@@ -48,7 +46,8 @@ const api = {
   getRegistroById, 
   saveHojaAtras,
   generarFraseInteligente,
-  postToSunny // <-- Exportamos la nueva función del chat
+  postToSunny,
+  getMuroEstados // <-- Exportamos la nueva función del muro
 };
 
 export default api;

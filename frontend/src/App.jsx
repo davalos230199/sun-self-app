@@ -1,14 +1,14 @@
-// frontend/src/App.jsx
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
-import Login from './pages/Login'; // <-- Directo a Login
-import Register from './pages/Register'; // <-- Directo a Register
+import Login from './pages/Login';
+import Register from './pages/Register';
 import Home from './pages/home';
 import Tracking from './pages/Tracking';
 import Sunny from './pages/Sunny';
-import Settings from './pages/Settings'; // <-- Importamos la nueva página
+import Settings from './pages/Settings';
 import ProtectedRoute from './components/protectedroute';
 import GuestRoute from './components/guestroute';
-import Journal from './pages/Journal'; // <-- Importamos la nueva página
+import Journal from './pages/Journal';
+import MuroDeSoles from './pages/MuroDeSoles'; // <-- 1. IMPORTAMOS EL NUEVO COMPONENTE
 
 const router = createBrowserRouter([
   {
@@ -19,7 +19,6 @@ const router = createBrowserRouter([
     path: '/',
     element: <GuestRoute />,
     children: [
-      // Eliminamos LoginScene, ahora las rutas son limpias
       { path: '/login', element: <Login /> },
       { path: '/register', element: <Register /> }
     ]
@@ -31,8 +30,9 @@ const router = createBrowserRouter([
       { path: '/home', element: <Home /> },
       { path: '/tracking', element: <Tracking /> },
       { path: '/sunny', element: <Sunny /> },
-      { path: '/settings', element: <Settings /> }, // <-- Añadimos la nueva ruta
-      { path: '/journal/:id', element: <Journal /> } // <-- AÑADIMOS LA NUEVA RUTA
+      { path: '/muro', element: <MuroDeSoles /> }, // <-- 2. AÑADIMOS LA NUEVA RUTA PROTEGIDA
+      { path: '/settings', element: <Settings /> },
+      { path: '/journal/:id', element: <Journal /> }
     ]
   }
 ]);

@@ -79,3 +79,16 @@
     transform: scale(1.1);
   }
 }
+
+.sunny-link {
+  background-color: #fffde7; /* Un fondo amarillo muy suave */
+  border-radius: 8px;
+  color: #ff8f00; /* Un color anaranjado para el texto y el ícono */
+}
+
+/* Cuando el enlace de Sunny está activo, lo hacemos más pronunciado */
+.nav-item.sunny-link.active {
+  background-color: #ffecb3;
+  color: #e65100;
+  font-weight: 600;
+}

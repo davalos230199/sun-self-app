@@ -34,10 +34,12 @@ app.get('/health', (req, res) => {
 const authRoutes = require('./routes/auth');
 const registrosRoutes = require('./routes/registros');
 const sunnyRoutes = require('./routes/sunny');
+const muroRoutes = require('./routes/muro');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/registros', registrosRoutes);
 app.use('/api/sunny', sunnyRoutes);
+app.use('/api/muro', muroRoutes);
 
 // =================================================================
 // 4. INICIO DEL SERVIDOR
