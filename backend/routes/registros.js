@@ -10,7 +10,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 router.use(authMiddleware);
 
-// RUTA PARA CREAR UN REGISTRO
+// RUTA PARA CREAR UN REGISTRO (sin cambios)
 router.post('/', async (req, res) => {
   try {
     const { id: userId } = req.user;
@@ -66,7 +66,7 @@ router.get('/today', async (req, res) => {
 
     if (error) throw error;
     
-    // La función devuelve un array. Si está vacío, no hay registro para "hoy".
+    // La función devuelve un array. Si está vacío, no hay registro para "tu hoy".
     res.json({ registro: data.length > 0 ? data[0] : null });
   } catch (err) {
     console.error("Error en GET /today con RPC:", err);
