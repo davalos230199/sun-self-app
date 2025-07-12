@@ -15,9 +15,10 @@ const PORT = process.env.PORT || 4000;
 
 // --- CLAVE: CONFIGURACIÓN DE CORS CORREGIDA ---
 // Le decimos explícitamente a nuestro servidor que permita
-// la nueva cabecera 'X-Timezone-Offset' en TODAS las rutas.
+// la nueva cabecera 'x-client-timezone' en TODAS las rutas.
+// También permitimos las cabeceras estándar como Authorization.
 app.use(cors({
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Timezone-Offset']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-client-timezone']
 }));
 
 app.use(express.json());
