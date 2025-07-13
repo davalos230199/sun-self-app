@@ -1,6 +1,5 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import Auth from './pages/Auth'; // <-- CAMBIO: Importamos el nuevo componente unificado
 import Home from './pages/home';
 import Tracking from './pages/Tracking';
 import Sunny from './pages/Sunny';
@@ -8,7 +7,7 @@ import Settings from './pages/Settings';
 import ProtectedRoute from './components/protectedroute';
 import GuestRoute from './components/guestroute';
 import Journal from './pages/Journal';
-import MuroDeSoles from './pages/MuroDeSoles'; // <-- 1. IMPORTAMOS EL NUEVO COMPONENTE
+import MuroDeSoles from './pages/MuroDeSoles';
 
 const router = createBrowserRouter([
   {
@@ -19,8 +18,9 @@ const router = createBrowserRouter([
     path: '/',
     element: <GuestRoute />,
     children: [
-      { path: '/login', element: <Login /> },
-      { path: '/register', element: <Register /> }
+      // CAMBIO: Ambas rutas ahora apuntan al mismo componente Auth
+      { path: '/login', element: <Auth /> },
+      { path: '/register', element: <Auth /> }
     ]
   },
   {
@@ -30,7 +30,7 @@ const router = createBrowserRouter([
       { path: '/home', element: <Home /> },
       { path: '/tracking', element: <Tracking /> },
       { path: '/sunny', element: <Sunny /> },
-      { path: '/muro', element: <MuroDeSoles /> }, // <-- 2. AÑADIMOS LA NUEVA RUTA PROTEGIDA
+      { path: '/muro', element: <MuroDeSoles /> },
       { path: '/settings', element: <Settings /> },
       { path: '/journal/:id', element: <Journal /> }
     ]
