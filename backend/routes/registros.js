@@ -1,4 +1,3 @@
-// backend/routes/registros.js
 const express = require('express');
 const router = express.Router();
 const { createClient } = require('@supabase/supabase-js');
@@ -10,7 +9,61 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 router.use(authMiddleware);
 
-// RUTA PARA CREAR UN REGISTRO (sin cambios)
+// --- CAMBIO: NUEVA RUTA PARA LOS DATOS DEL GRÁFICO ---
+// GET /api/registros/chart-data?filter=mensual
+router.get('/chart-data', async (req, res) => {
+    try {
+        const { id: userId } = req.user;
+        const { filter } = req.query; // 'semanal', 'mensual', etc.
+
+        let query = supabase
+            .from('registros')
+            .select('created_at, estado_general')
+            .eq('user_id', userId);
+
+        // Aplicamos el filtro de fecha si se proporciona
+        if (filter === 'semanal') {
+            const unaSemanaAtras = new Date();
+            unaSemanaAtras.setDate(unaSemanaAtras.getDate() - 7);
+            query = query.gte('created_at', unaSemanaAtras.toISOString());
+        } else if (filter === 'mensual') {
+            const unMesAtras = new Date();
+            unMesAtras.setMonth(unMesAtras.getMonth() - 1);
+            query = query.gte('created_at', unMesAtras.toISOString());
+        }
+        // Se pueden añadir más filtros como 'anual' en el futuro
+
+        const { data, error } = await query.order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        // Mapeamos los datos al formato que necesita el gráfico con los nuevos valores
+        const chartData = data.map(registro => {
+            let valor;
+            switch (registro.estado_general) {
+                case 'soleado': valor = 4; break;
+                case 'nublado': valor = 3; break;
+                case 'lluvioso': valor = 2; break;
+                default: valor = 3; // Un valor neutral por si acaso
+            }
+            return {
+                fecha: new Date(registro.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }),
+                valor: valor
+            };
+        });
+
+        res.json(chartData);
+
+    } catch (err) {
+        console.error("Error en GET /chart-data:", err);
+        res.status(500).json({ error: 'Error al obtener los datos para el gráfico.' });
+    }
+});
+
+
+// --- RUTAS EXISTENTES (sin cambios) ---
+
+// RUTA PARA CREAR UN REGISTRO
 router.post('/', async (req, res) => {
   try {
     const { id: userId } = req.user;
@@ -36,7 +89,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// RUTA GET PARA EL HISTORIAL (sin cambios)
+// RUTA GET PARA EL HISTORIAL
 router.get('/', async (req, res) => {
   try {
     const { id: userId } = req.user;
@@ -49,24 +102,17 @@ router.get('/', async (req, res) => {
   }
 });
 
-// RUTA GET PARA EL REGISTRO DE HOY (¡AQUÍ ESTÁ EL ARREGLO!)
+// RUTA GET PARA EL REGISTRO DE HOY
 router.get('/today', async (req, res) => {
   try {
     const { id: userId } = req.user;
-    // 1. Obtenemos la zona horaria del cliente (ej: 'America/Argentina/Buenos_Aires')
     const clientTimezone = req.headers['x-client-timezone'] || 'UTC';
-
-    // 2. CLAVE: Llamamos a nuestra nueva función inteligente (RPC) en Supabase.
-    // Le pasamos el ID del usuario y su zona horaria.
     const { data, error } = await supabase
       .rpc('get_today_record_for_user', {
         user_id_param: userId,
         client_timezone: clientTimezone
       });
-
     if (error) throw error;
-    
-    // La función devuelve un array. Si está vacío, no hay registro para "tu hoy".
     res.json({ registro: data.length > 0 ? data[0] : null });
   } catch (err) {
     console.error("Error en GET /today con RPC:", err);
@@ -74,7 +120,7 @@ router.get('/today', async (req, res) => {
   }
 });
 
-// RUTA PUT PARA "LA HOJA DE ATRÁS" (sin cambios)
+// RUTA PUT PARA "LA HOJA DE ATRÁS"
 router.put('/:id/hoja_atras', async (req, res) => {
   try {
     const { id: recordId } = req.params;
@@ -95,7 +141,7 @@ router.put('/:id/hoja_atras', async (req, res) => {
   }
 });
 
-// RUTA GET PARA UN SOLO REGISTRO (sin cambios)
+// RUTA GET PARA UN SOLO REGISTRO
 router.get('/:id', async (req, res) => {
   try {
     const { id: recordId } = req.params;
