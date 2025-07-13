@@ -1,12 +1,14 @@
-// frontend/src/pages/Login.jsx
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import './Auth.css'; // <-- Usamos los nuevos estilos compartidos
+import './Auth.css'; // Usaremos los nuevos estilos
 
 export default function Login() {
-  const [form, setForm] = useState({ email: '', password: '' });
+  // Estado para controlar si mostramos la intro o el formulario
+  const [view, setView] = useState('intro'); // 'intro' o 'form'
+  const [form, setForm] = useState({ identifier: '', password: '' });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -14,28 +16,69 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     try {
-      const res = await api.login(form);
+      // Usamos el nuevo payload que el backend espera
+      const res = await api.login({ identifier: form.identifier, password: form.password });
       localStorage.setItem('token', res.data.token);
       navigate('/home');
     } catch (err) {
-      setError('Credenciales incorrectas.');
+      setError(err.response?.data?.message || 'Credenciales incorrectas.');
+      setLoading(false);
     }
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <form onSubmit={handleSubmit}>
-          <h2>Iniciar Sesión</h2>
-          {error && <p style={{ color: 'red' }}>{error}</p>}
-          <input type="email" name="email" placeholder="Email" onChange={handleChange} required />
-          <input type="password" name="password" placeholder="Contraseña" onChange={handleChange} required />
-          <button type="submit">Entrar</button>
-          <p style={{marginTop: '20px'}}>
-            ¿No tienes cuenta? <Link to="/register">Regístrate</Link>
-          </p>
-        </form>
+    // El contenedor principal ahora tiene una clase dinámica para la animación
+    <div className={`auth-scene ${view === 'form' ? 'form-active' : ''}`}>
+      
+      {/* Vista de Introducción */}
+      <div className="auth-intro">
+        <h1 className="intro-title">Sun-Self</h1>
+        <p className="intro-subtitle">Tu micro-hábito de auto-observación.</p>
+        <button className="intro-button" onClick={() => setView('form')}>
+          Iniciar el viaje
+        </button>
+      </div>
+
+      {/* Contenedor del Formulario (inicialmente oculto) */}
+      <div className="auth-form-container">
+        <div className="auth-card">
+          <form onSubmit={handleSubmit}>
+            <h2>Bienvenido de vuelta</h2>
+            <p className="form-description">Ingresa con tu apodo o email.</p>
+            {error && <p className="error-message">{error}</p>}
+            <div className="input-group">
+              <input 
+                type="text" 
+                name="identifier" 
+                id="identifier"
+                placeholder=" "
+                onChange={handleChange} 
+                required 
+              />
+              <label htmlFor="identifier">Apodo o Email</label>
+            </div>
+            <div className="input-group">
+              <input 
+                type="password" 
+                name="password" 
+                id="password"
+                placeholder=" "
+                onChange={handleChange} 
+                required 
+              />
+              <label htmlFor="password">Contraseña</label>
+            </div>
+            <button type="submit" className="auth-button" disabled={loading}>
+              {loading ? 'Entrando...' : 'Entrar'}
+            </button>
+            <p className="auth-switch">
+              ¿Es tu primera vez aquí?{' '}
+              <a onClick={() => navigate('/register')}>Regístrate</a>
+            </p>
+          </form>
+        </div>
       </div>
     </div>
   );
