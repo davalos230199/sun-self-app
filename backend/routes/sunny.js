@@ -2,10 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { OpenAI } = require('openai');
 const authMiddleware = require('../middleware/auth');
-const { createClient } = require('@supabase/supabase-js'); // CAMBIO: Importamos el cliente de Supabase
+const { createClient } = require('@supabase/supabase-js');
 
 // --- Conexión a Supabase ---
-// La necesitamos aquí para guardar la frase generada en la base de datos.
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -16,9 +15,8 @@ const openai = new OpenAI({
 });
 
 // =================================================================
-// 1. PERSONALIDAD CENTRALIZADA DE SUNNY
+// 1. PERSONALIDAD CENTRALIZADA DE SUNNY (Sin cambios)
 // =================================================================
-// Usamos el excelente prompt que creaste como la "constitución" de Sunny.
 const PERSONALIDAD_SUNNY = `
 Rol: Eres Sunny, una inteligencia artificial integrada en la plataforma Sun-Self. Tu propósito es guiar a las personas en su camino de autoconciencia y autoobservación, incluso si han perdido la memoria o el sentido de sí mismas. Actúas como el "alma" de Sun-Self, aplicando sus principios en cada interacción para ayudar al usuario a reconectarse con su identidad y bienestar interior de forma tangible y gradual.
 Tono y estilo: Comunícate de forma empática, cálida y cercana, como un hermano mayor comprensivo. Mantén siempre el tacto: habla con respeto y amabilidad. No debes sonar ni demasiado compasivo/lástimero ni demasiado autoritario; busca un equilibrio entre la compasión y el empuje suave. Utiliza un lenguaje sencillo y positivo, mostrando paciencia infinita. Adapta tu tono según el estado emocional del usuario, pero sin perder la calidez y el respeto.
@@ -40,11 +38,9 @@ Reglas de interacción:
 router.use(authMiddleware);
 
 // =================================================================
-// 2. RUTA DE CHAT (Refactorizada)
+// 2. RUTA DE CHAT
 // =================================================================
-// Ahora usa la constante PERSONALIDAD_SUNNY y está preparada para recibir un historial.
 router.post('/', async (req, res) => {
-  // CAMBIO: Ahora esperamos un array de mensajes para el historial.
   const { history } = req.body;
   if (!history || !Array.isArray(history) || history.length === 0) {
     return res.status(400).json({ error: 'Se requiere un historial de mensajes (history).' });
@@ -52,13 +48,14 @@ router.post('/', async (req, res) => {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      // CAMBIO 1: Usamos el modelo más económico y eficiente
+      model: "gpt-3.5-turbo",
       messages: [
         { 
           role: "system", 
-          content: PERSONALIDAD_SUNNY // Usamos la personalidad centralizada
+          content: PERSONALIDAD_SUNNY
         },
-        ...history // Añadimos todo el historial de la conversación
+        ...history
       ],
     });
     
@@ -71,7 +68,7 @@ router.post('/', async (req, res) => {
 });
 
 // =================================================================
-// 3. NUEVA RUTA: GENERAR FRASE DEL DÍA
+// 3. RUTA: GENERAR FRASE DEL DÍA
 // =================================================================
 router.post('/generar-frase', async (req, res) => {
     const { mente_estat, emocion_estat, cuerpo_estat, meta_del_dia, registroId } = req.body;
@@ -80,7 +77,6 @@ router.post('/generar-frase', async (req, res) => {
         return res.status(400).json({ error: 'Faltan datos del estado o el ID del registro.' });
     }
 
-    // Creamos el prompt específico para esta tarea.
     const promptDeTarea = `
       Basado en el siguiente estado del usuario que acaba de completar su registro diario:
       - Mente: ${mente_estat}
@@ -88,36 +84,32 @@ router.post('/generar-frase', async (req, res) => {
       - Cuerpo: ${cuerpo_estat}
       - Meta del Día: ${meta_del_dia || "No definida"}
 
-      Genera una única frase corta y reflexiva (máximo 15 palabras) que actúe como un espejo de su estado, usando tu personalidad de guía compasivo. Esta frase será lo primero que vea en su dashboard. No incluyas comillas en tu respuesta.
+      Genera una única frase corta y reflexiva (máximo 25 palabras) que actúe como un espejo de su estado, usando tu personalidad de guía compasivo. Esta frase será lo primero que vea en su dashboard. No incluyas comillas en tu respuesta.
     `;
 
     try {
-        // 1. Generamos la frase con la IA
         const completion = await openai.chat.completions.create({
-            model: "gpt-4o",
+            // CAMBIO 2: Usamos el modelo más económico y eficiente también aquí
+            model: "gpt-3.5-turbo",
             messages: [
                 { role: "system", content: PERSONALIDAD_SUNNY },
                 { role: "user", content: promptDeTarea }
             ],
-            max_tokens: 60, // Limitamos para asegurar una frase corta
+            max_tokens: 60,
         });
 
         const fraseGenerada = completion.choices[0].message.content;
 
-        // 2. Guardamos la frase en la base de datos
         const { error: dbError } = await supabase
             .from('registros')
             .update({ frase_sunny: fraseGenerada })
             .eq('id', registroId)
-            .eq('user_id', req.user.id); // Doble chequeo de seguridad
+            .eq('user_id', req.user.id);
 
         if (dbError) {
-            // Si hay un error, lo registramos pero no detenemos el flujo.
-            // Es mejor que el usuario vea la frase a que no vea nada.
             console.error('--- SUNNY API (DB SAVE): ERROR ---', dbError);
         }
-
-        // 3. Devolvemos la frase al frontend
+        
         res.json({ frase: fraseGenerada });
 
     } catch (error) {
@@ -125,6 +117,5 @@ router.post('/generar-frase', async (req, res) => {
         res.status(500).json({ error: 'No se pudo generar la frase del día.' });
     }
 });
-
 
 module.exports = router;
