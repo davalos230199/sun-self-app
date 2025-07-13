@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 import PageHeader from '../components/PageHeader';
-import './MuroDeSoles.css';
+import './MuroDeSoles.css'; // Usaremos el mismo archivo CSS, pero con nuevo contenido
 
+// Componente helper para obtener el emoji correcto
 const ClimaEmoji = ({ estado }) => {
     switch (estado) {
         case 'soleado': return '☀️';
@@ -22,7 +23,7 @@ export default function MuroDeSoles() {
       try {
         setLoading(true);
         const response = await api.getMuroEstados();
-        setRegistros(response.data); // Guardamos el array de registros
+        setRegistros(response.data);
         setError(null);
       } catch (err) {
         console.error("Error al cargar los estados del muro:", err);
@@ -48,15 +49,17 @@ export default function MuroDeSoles() {
       return <p className="muro-mensaje">El muro está en calma. Nadie ha compartido su reflejo hoy.</p>;
     }
 
+    // El contenedor principal ahora es una grilla
     return (
       <div className="muro-grid">
         {registros.map((registro, index) => (
+          // Cada item es una "tarjeta" que contiene el emoji y la burbuja
           <div key={index} className="muro-card">
-            <div className="muro-emoji">
+            <div className="muro-emoji-container">
                 <ClimaEmoji estado={registro.estado_general} />
             </div>
             <div className="muro-frase-burbuja">
-              <p>{registro.frase_sunny}</p>
+              <p>"{registro.frase_sunny}"</p>
             </div>
           </div>
         ))}
