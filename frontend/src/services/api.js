@@ -29,10 +29,13 @@ export const getRegistroById = (id) => { return apiClient.get(`/api/registros/${
 export const saveHojaAtras = (id, texto) => { return apiClient.put(`/api/registros/${id}/hoja_atras`, { texto }); };
 export const generarFraseInteligente = (payload) => { return apiClient.post('/api/sunny/generar-frase', payload); };
 export const postToSunny = (payload) => { return apiClient.post('/api/sunny', payload); };
-export const getInspiracion = (orbe) => { return apiClient.get(`/api/inspiracion?orbe=${orbe}`);};
-// --- CAMBIO: NUEVA FUNCIÓN PARA EL MURO DE SOLES ---
-export const getMuroEstados = () => {
-  return apiClient.get('/api/muro/estados');
+export const getMuroEstados = () => { return apiClient.get('/api/muro/estados'); };
+export const getInspiracion = (orbe) => { return apiClient.get(`/api/inspiracion?orbe=${orbe}`); };
+
+// --- CAMBIO: NUEVA FUNCIÓN PARA LOS DATOS DEL GRÁFICO ---
+export const getChartData = (filter) => {
+  // Pasamos el filtro como un query param
+  return apiClient.get(`/api/registros/chart-data?filter=${filter}`);
 };
 
 // --- CAMBIO: AÑADIMOS LA NUEVA FUNCIÓN AL OBJETO API ---
@@ -47,8 +50,9 @@ const api = {
   saveHojaAtras,
   generarFraseInteligente,
   postToSunny,
-  getMuroEstados, // <-- Exportamos la nueva función del muro
-  getInspiracion
+  getMuroEstados,
+  getInspiracion,
+  getChartData // <-- Exportamos la nueva función
 };
 
 export default api;
