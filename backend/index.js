@@ -1,5 +1,3 @@
-// backend/index.js
-
 // =================================================================
 // 1. IMPORTACIONES
 // =================================================================
@@ -13,10 +11,6 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// --- CLAVE: CONFIGURACIÓN DE CORS CORREGIDA ---
-// Le decimos explícitamente a nuestro servidor que permita
-// la nueva cabecera 'x-client-timezone' en TODAS las rutas.
-// También mantenemos las cabeceras estándar como Authorization.
 app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'x-client-timezone']
 }));
@@ -34,13 +28,12 @@ app.get('/health', (req, res) => {
 const authRoutes = require('./routes/auth');
 const registrosRoutes = require('./routes/registros');
 const sunnyRoutes = require('./routes/sunny');
-const muroRoutes = require('./routes/muro');
-const inspiracionRoutes = require('./routes/inspiracion'); // <-- AÑADIR
+const inspiracionRoutes = require('./routes/inspiracion'); // <-- CAMBIO: Importamos la nueva ruta
 
 app.use('/api/auth', authRoutes);
 app.use('/api/registros', registrosRoutes);
 app.use('/api/sunny', sunnyRoutes);
-app.use('/api/muro', muroRoutes);
+app.use('/api/inspiracion', inspiracionRoutes); // <-- CAMBIO: Le decimos a Express que use la nueva ruta
 
 // =================================================================
 // 4. INICIO DEL SERVIDOR
