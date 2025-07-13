@@ -1,9 +1,5 @@
 .muro-container {
   padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100%;
   width: 100%;
 }
 
@@ -11,87 +7,72 @@
   font-size: 1.2rem;
   color: #666;
   margin-top: -10px;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
   text-align: center;
 }
 
 .muro-mensaje {
+  text-align: center;
   color: #888;
   font-style: italic;
+  padding: 40px 0;
 }
 
 .muro-mensaje.error {
   color: #c0392b;
 }
 
-.estados-display {
-  display: flex;
-  justify-content: space-around;
-  align-items: stretch; /* Asegura que las tarjetas tengan la misma altura */
-  width: 100%;
-  max-width: 700px;
-  gap: 20px;
+.muro-grid {
+  display: grid;
+  /* Creamos 4 columnas, pero se adaptarán en pantallas pequeñas */
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 25px;
 }
 
-.estado-card {
-  flex: 1;
+.muro-card {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.muro-emoji {
+  font-size: 2.5rem;
+  line-height: 1;
+  background-color: #fff;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  padding: 25px 20px;
-  border-radius: 16px;
-  background-color: #f9f9f9;
-  border: 1px solid #eee;
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.07);
+  z-index: 2;
+  border: 3px solid #f0f0f0;
+}
+
+.muro-frase-burbuja {
+  position: relative;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 18px;
   text-align: center;
+  font-size: 0.9rem;
+  color: #333;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+  border: 1px solid #eee;
+  margin-top: -30px; /* Se solapa con el emoji */
+  padding-top: 40px; /* Dejamos espacio para el emoji solapado */
+  width: 100%;
 }
 
-.estado-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-}
-
-.estado-emoji {
-  font-size: 3.5rem; /* Un poco más grande */
-  margin-bottom: 15px;
-  line-height: 1;
-}
-
-.estado-conteo {
-  font-size: 3rem; /* Un poco más grande */
-  font-weight: 700;
-  margin-bottom: 8px;
-  line-height: 1;
-}
-
-.estado-label {
-  font-size: 1.1rem; /* Un poco más grande */
-  font-weight: 500;
-  color: #555;
-}
-
-/* Colores específicos */
-.estado-card.soleado {
-  background-color: #fffde7;
-  border-color: #fff9c4;
-}
-.estado-card.soleado .estado-conteo {
-  color: #f57f17;
-}
-
-.estado-card.nublado {
-  background-color: #f5f5f5;
-  border-color: #e0e0e0;
-}
-.estado-card.nublado .estado-conteo {
-  color: #546e7a;
-}
-
-.estado-card.lluvioso {
-  background-color: #e3f2fd;
-  border-color: #bbdefb;
-}
-.estado-card.lluvioso .estado-conteo {
-  color: #1565c0;
+/* La "colita" de la burbuja de diálogo */
+.muro-frase-burbuja::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 10px 10px 10px;
+  border-style: solid;
+  border-color: transparent transparent #ffffff transparent;
 }
