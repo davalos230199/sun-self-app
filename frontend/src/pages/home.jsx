@@ -5,19 +5,42 @@ import './home.css';
 
 const opciones = [ { valor: 'bajo', emoji: '🌧️' }, { valor: 'neutral', emoji: '⛅' }, { valor: 'alto', emoji: '☀️' } ];
 
-const PostItOrbe = ({ orbe, estados, onSeleccion, onComentario }) => (
-  <div className="post-it-orbe">
-    <div className="post-it-header">
-      <h3>{orbe}</h3>
-      <div className="orbe-buttons">
-        {opciones.map(({ valor, emoji }) => (
-          <button key={valor} className={`icon-button ${estados[orbe].seleccion === valor ? 'selected' : ''}`} onClick={() => onSeleccion(orbe, valor)} type="button" title={valor}>{emoji}</button>
-        ))}
+// CAMBIO: El componente PostItOrbe ahora es más inteligente y tiene el botón de inspiración
+const PostItOrbe = ({ orbe, estados, onSeleccion, onComentario, onInspiracion }) => {
+  const [pidiendoInspiracion, setPidiendoInspiracion] = useState(false);
+
+  const handleInspiracionClick = async () => {
+    setPidiendoInspiracion(true);
+    await onInspiracion(orbe);
+    setPidiendoInspiracion(false);
+  };
+
+  return (
+    <div className="post-it-orbe">
+      <div className="post-it-header">
+        <h3>{orbe}</h3>
+        <div className="orbe-buttons">
+          {opciones.map(({ valor, emoji }) => (
+            <button key={valor} className={`icon-button ${estados[orbe].seleccion === valor ? 'selected' : ''}`} onClick={() => onSeleccion(orbe, valor)} type="button" title={valor}>{emoji}</button>
+          ))}
+        </div>
+      </div>
+      <textarea
+        placeholder={pidiendoInspiracion ? "Buscando inspiración..." : `¿Algún pensamiento sobre tu ${orbe}?`}
+        value={estados[orbe].comentario}
+        onChange={(e) => onComentario(orbe, e.target.value)}
+        rows="2"
+      />
+      <div className="post-it-actions">
+        <button onClick={handleInspiracionClick} className="inspiracion-btn" type="button" disabled={pidiendoInspiracion}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <span>Ver Ejemplo</span>
+        </button>
       </div>
     </div>
-    <textarea placeholder={`¿Algún pensamiento sobre tu ${orbe}?`} value={estados[orbe].comentario} onChange={(e) => onComentario(orbe, e.target.value)} rows="2" />
-  </div>
-);
+  );
+};
+
 
 export default function Home() {
     const { user } = useOutletContext();
@@ -35,13 +58,16 @@ export default function Home() {
     const [registroTimestamp, setRegistroTimestamp] = useState(null);
     const fechaDeHoy = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
 
-    // CAMBIO 1: Eliminamos la función 'generarFrase' vieja.
-    // En su lugar, creamos una función de fallback para registros antiguos que no tengan frase.
+    // CAMBIO: Nuevos estados para la funcionalidad de inspiración
+    const [compartirAnonimo, setCompartirAnonimo] = useState(false);
+    const [inspiracionSolicitada, setInspiracionSolicitada] = useState({ mente: false, emocion: false, cuerpo: false });
+    const [error, setError] = useState('');
+
+
     const obtenerFraseDelRegistro = useCallback((registro) => {
         if (registro && registro.frase_sunny) {
             return registro.frase_sunny;
         }
-        // Lógica simple para registros viejos sin frase de IA o por si algo falla.
         return 'Cada registro es un paso en tu camino de autoconocimiento.';
     }, []);
 
@@ -51,7 +77,6 @@ export default function Home() {
         if (!user) return;
         const cargarRegistroDelDia = async () => {
             try {
-                // Esta llamada ya es inteligente gracias a la cabecera X-Client-Timezone y la RPC
                 const registroResponse = await api.getRegistroDeHoy();
                 const registroDeHoy = registroResponse.data.registro;
 
@@ -59,10 +84,7 @@ export default function Home() {
                     const estadosGuardados = { mente: { seleccion: registroDeHoy.mente_estat, comentario: registroDeHoy.mente_coment }, emocion: { seleccion: registroDeHoy.emocion_estat, comentario: registroDeHoy.emocion_coment }, cuerpo: { seleccion: registroDeHoy.cuerpo_estat, comentario: registroDeHoy.cuerpo_coment } };
                     setEstados(estadosGuardados);
                     setMetaDelDia(registroDeHoy.meta_del_dia || '');
-                    
-                    // CAMBIO 2: Usamos la frase guardada en la DB o la de fallback.
                     setFraseDelDia(obtenerFraseDelRegistro(registroDeHoy));
-
                     setClimaVisual(determinarClima(registroDeHoy));
                     setEstadoFinalizado(true);
                     setTieneRegistroPrevio(true);
@@ -71,14 +93,12 @@ export default function Home() {
                 }
             } catch (error) { 
               console.error("No se pudo verificar el registro de hoy:", error); 
-              // Aquí podrías mostrar un mensaje al usuario si lo deseas
             } 
             finally { setIsLoading(false); }
         };
         cargarRegistroDelDia();
-    }, [user, determinarClima, obtenerFraseDelRegistro]); // Dependemos de la nueva función
+    }, [user, determinarClima, obtenerFraseDelRegistro]);
 
-     // useEffect del contador (sin cambios)
     useEffect(() => {
         if (!estadoFinalizado || !registroTimestamp) {
             setTiempoRestante(0);
@@ -99,10 +119,42 @@ export default function Home() {
         return () => clearInterval(intervalo);
     }, [estadoFinalizado, registroTimestamp]);
 
+    // CAMBIO: Nueva función para manejar la petición de inspiración
+    const handleInspiracion = async (orbe) => {
+      try {
+        const response = await api.getInspiracion(orbe);
+        const textoInspiracion = response.data.inspiracion;
+        
+        setEstados(prev => ({
+          ...prev,
+          [orbe]: { ...prev[orbe], comentario: textoInspiracion }
+        }));
+  
+        setInspiracionSolicitada(prev => ({ ...prev, [orbe]: true }));
+  
+      } catch (err) {
+        console.error("Error al obtener inspiración:", err);
+        setEstados(prev => ({
+            ...prev,
+            [orbe]: { ...prev[orbe], comentario: "Hubo un problema al buscar ejemplos. Inténtalo de nuevo." }
+        }));
+      }
+    };
 
     const handleGuardar = async () => {
+        setError(''); // Limpiamos errores previos
+
+        // CAMBIO: Lógica de validación antes de guardar
+        for (const orbe in inspiracionSolicitada) {
+          if (inspiracionSolicitada[orbe] && !estados[orbe].comentario.trim()) {
+            setError(`Al pedir un ejemplo para "${orbe}", es necesario que escribas tu propia reflexión.`);
+            return; // Detenemos el guardado
+          }
+        }
+
         try {
-            const payload = { ...estados, meta_del_dia: metaDelDia };
+            // CAMBIO: Añadimos el consentimiento al payload
+            const payload = { ...estados, meta_del_dia: metaDelDia, compartir_anonimo: compartirAnonimo };
             const response = await api.saveRegistro(payload);
             const registroGuardado = response.data.registro;
 
@@ -127,11 +179,10 @@ export default function Home() {
 
         } catch (error) { 
             console.error("Error al guardar o generar frase:", error);
-            setFraseDelDia(obtenerFraseDelRegistro(null)); // Usamos el fallback
+            setFraseDelDia(obtenerFraseDelRegistro(null));
         }
     };
 
-    // El resto del componente (formatTiempo, handleCancel, JSX) no necesita cambios...
     const formatTiempo = (ms) => {
         if (ms <= 0) return "00:00:00";
         const totalSegundos = Math.floor(ms / 1000);
@@ -155,7 +206,6 @@ export default function Home() {
 
     return (
         <div className="home-content">
-          {/* El JSX no cambia */}
           <header className="home-header"> <span className="greeting">Hola, {user.nombre}</span> <span className="date-display">{fechaDeHoy}</span> </header>
           {estadoFinalizado ? (
             <div className="daily-dashboard">
@@ -173,13 +223,29 @@ export default function Home() {
             </div>
           ) : (
             <div className="formulario-estado">
+              {/* CAMBIO: Se muestra el mensaje de error si existe */}
+              {error && <p className="error-mensaje">{error}</p>}
               <p className="form-subtitle">¿Cómo estás hoy?</p>
               <div className="orbes-container">
-                {['mente', 'emocion', 'cuerpo'].map((orbe) => ( <PostItOrbe key={orbe} orbe={orbe} estados={estados} onSeleccion={handleSeleccion} onComentario={handleComentario} /> ))}
+                {['mente', 'emocion', 'cuerpo'].map((orbe) => ( 
+                  <PostItOrbe key={orbe} orbe={orbe} estados={estados} onSeleccion={handleSeleccion} onComentario={handleComentario} onInspiracion={handleInspiracion} /> 
+                ))}
                 <div className="post-it-orbe">
                   <div className="post-it-header"> <h3>Meta del Día (opcional)</h3> <span className="meta-icon">🎯</span> </div>
                   <textarea placeholder="¿Cuál es tu pequeño gran objetivo para hoy?" value={metaDelDia} onChange={(e) => setMetaDelDia(e.target.value)} rows="2" />
                 </div>
+              </div>
+              {/* CAMBIO: Se añade el contenedor para el consentimiento */}
+              <div className="consentimiento-container">
+                <input 
+                  type="checkbox" 
+                  id="compartir" 
+                  checked={compartirAnonimo} 
+                  onChange={(e) => setCompartirAnonimo(e.target.checked)}
+                />
+                <label htmlFor="compartir">
+                  <span className="emoji-label">💌</span> Compartir mis comentarios (anónimamente) para inspirar a otros.
+                </label>
               </div>
               <footer className="form-actions"> <button onClick={handleCancel} className="secondary">Cancelar</button> <button onClick={handleGuardar} className="primary">Guardar</button> </footer>
             </div>

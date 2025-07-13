@@ -35,6 +35,7 @@ const authRoutes = require('./routes/auth');
 const registrosRoutes = require('./routes/registros');
 const sunnyRoutes = require('./routes/sunny');
 const muroRoutes = require('./routes/muro');
+const inspiracionRoutes = require('./routes/inspiracion'); // <-- AÑADIR
 
 app.use('/api/auth', authRoutes);
 app.use('/api/registros', registrosRoutes);

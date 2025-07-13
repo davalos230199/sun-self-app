@@ -29,7 +29,7 @@ export const getRegistroById = (id) => { return apiClient.get(`/api/registros/${
 export const saveHojaAtras = (id, texto) => { return apiClient.put(`/api/registros/${id}/hoja_atras`, { texto }); };
 export const generarFraseInteligente = (payload) => { return apiClient.post('/api/sunny/generar-frase', payload); };
 export const postToSunny = (payload) => { return apiClient.post('/api/sunny', payload); };
-
+export const getInspiracion = (orbe) => { return apiClient.get(`/api/inspiracion?orbe=${orbe}`);};
 // --- CAMBIO: NUEVA FUNCIÓN PARA EL MURO DE SOLES ---
 export const getMuroEstados = () => {
   return apiClient.get('/api/muro/estados');
@@ -47,7 +47,8 @@ const api = {
   saveHojaAtras,
   generarFraseInteligente,
   postToSunny,
-  getMuroEstados // <-- Exportamos la nueva función del muro
+  getMuroEstados, // <-- Exportamos la nueva función del muro
+  getInspiracion
 };
 
 export default api;

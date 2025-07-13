@@ -14,7 +14,7 @@ router.use(authMiddleware);
 router.post('/', async (req, res) => {
   try {
     const { id: userId } = req.user;
-    const { mente, emocion, cuerpo, meta_del_dia } = req.body;
+    const { mente, emocion, cuerpo, meta_del_dia, compartir_anonimo } = req.body;
     if (!mente?.seleccion || !emocion?.seleccion || !cuerpo?.seleccion) {
       return res.status(400).json({ error: 'Se requiere la selección de todos los orbes.' });
     }
@@ -28,7 +28,7 @@ router.post('/', async (req, res) => {
     if (puntaje >= 2) { estado_general = 'soleado'; } 
     else if (puntaje <= -2) { estado_general = 'lluvioso'; } 
     else { estado_general = 'nublado'; }
-    const { data, error } = await supabase.from('registros').insert([{ user_id: userId, mente_estat: mente.seleccion, mente_coment: mente.comentario, emocion_estat: emocion.seleccion, emocion_coment: emocion.comentario, cuerpo_estat: cuerpo.seleccion, cuerpo_coment: cuerpo.comentario, estado_general: estado_general, meta_del_dia: meta_del_dia }]).select();
+    const { data, error } = await supabase.from('registros').insert([{ user_id: userId, mente_estat: mente.seleccion, mente_coment: mente.comentario, emocion_estat: emocion.seleccion, emocion_coment: emocion.comentario, cuerpo_estat: cuerpo.seleccion, cuerpo_coment: cuerpo.comentario, estado_general: estado_general, meta_del_dia: meta_del_dia, compartir_anonimo: !!compartir_anonimo  }]).select();
     if (error) throw error;
     res.status(201).json({ message: 'Registro guardado con éxito', registro: data[0] });
   } catch (err) {
