@@ -29,11 +29,13 @@ const authRoutes = require('./routes/auth');
 const registrosRoutes = require('./routes/registros');
 const sunnyRoutes = require('./routes/sunny');
 const inspiracionRoutes = require('./routes/inspiracion'); // <-- CAMBIO: Importamos la nueva ruta
+const muroRoutes = require('./routes/muro');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/registros', registrosRoutes);
 app.use('/api/sunny', sunnyRoutes);
 app.use('/api/inspiracion', inspiracionRoutes); // <-- CAMBIO: Le decimos a Express que use la nueva ruta
+app.use('/api/muro', muroRoutes);
 
 // =================================================================
 // 4. INICIO DEL SERVIDOR
