@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import WelcomeModal from '../components/WelcomeModal';
 import api from '../services/api';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import './home.css';
@@ -7,9 +8,9 @@ const opciones = [ { valor: 'bajo', emoji: '🌧️' }, { valor: 'neutral', emoj
 
 // CAMBIO: El componente PostItOrbe ahora es más inteligente y tiene el botón de inspiración
 const PostItOrbe = ({ orbe, estados, onSeleccion, onComentario, onInspiracion }) => {
-  const [pidiendoInspiracion, setPidiendoInspiracion] = useState(false);
+const [pidiendoInspiracion, setPidiendoInspiracion] = useState(false);
 
-  const handleInspiracionClick = async () => {
+const handleInspiracionClick = async () => {
     setPidiendoInspiracion(true);
     await onInspiracion(orbe);
     setPidiendoInspiracion(false);
@@ -52,6 +53,7 @@ export default function Home() {
     const [tieneRegistroPrevio, setTieneRegistroPrevio] = useState(false);
     const [registroId, setRegistroId] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [showWelcomeModal, setShowWelcomeModal] = useState(false);      // 2. Añadimos un nuevo estado para controlar la visibilidad del modal
     const navigate = useNavigate();
 
     const [tiempoRestante, setTiempoRestante] = useState(0);
@@ -74,6 +76,11 @@ export default function Home() {
     const determinarClima = useCallback((registro) => { const valores = [registro.mente_estat, registro.emocion_estat, registro.cuerpo_estat]; const puntaje = valores.reduce((acc, val) => { if (val === 'alto') return acc + 1; if (val === 'bajo') return acc - 1; return acc; }, 0); if (puntaje >= 2) return '☀️'; if (puntaje <= -2) return '🌧️'; return '⛅'; }, []);
     
     useEffect(() => {
+        const haVistoManifiesto = localStorage.getItem('sunself_manifiesto_visto');
+        if (!haVistoManifiesto) {
+        setShowWelcomeModal(true);
+       }
+       
         if (!user) return;
         const cargarRegistroDelDia = async () => {
             try {
@@ -206,6 +213,9 @@ export default function Home() {
 
     return (
         <div className="home-content">
+                    {/* Esto renderizará el modal encima de todo lo demás */}
+          {showWelcomeModal && <WelcomeModal onAccept={() => setShowWelcomeModal(false)} />}
+
           <header className="home-header"> <span className="greeting">Hola, {user.nombre}</span> <span className="date-display">{fechaDeHoy}</span> </header>
           {estadoFinalizado ? (
             <div className="daily-dashboard">
