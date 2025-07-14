@@ -17,20 +17,14 @@ router.get('/estados', async (req, res) => {
         // Usamos una función RPC para obtener los registros del "día local" del cliente.
         // Esto es más complejo pero soluciona el problema de la zona horaria.
         // Primero, necesitas crear esta función en tu SQL Editor de Supabase (ver siguiente paso).
-        const { data, error } = await supabase.rpc('get_shared_records_for_today', {
-            client_timezone: clientTimezone
-        });
+        const { data, error } = await supabase
+            .rpc('get_muro_data', { client_timezone: clientTimezone });
 
-        if (error) {
-            console.error("Error en RPC get_shared_records_for_today:", error);
-            throw error;
-        }
-
-        res.json(data || []);
-
+        if (error) throw error;
+        res.json(data);
     } catch (err) {
         console.error("Error en GET /api/muro/estados:", err);
-        res.status(500).json({ error: 'Error al obtener los estados del muro.' });
+        res.status(500).json({ error: 'Error al obtener los estados del muro' });
     }
 });
 

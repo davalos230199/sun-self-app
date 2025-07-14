@@ -93,7 +93,7 @@ router.post('/', async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const { id: userId } = req.user;
-    const { data, error } = await supabase.from('registros').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+    const { data, error } = await supabase.rpc('get_registros_for_user', { p_user_id: userId });
     if (error) throw error;
     res.json(data);
   } catch (err) {
@@ -107,11 +107,7 @@ router.get('/today', async (req, res) => {
   try {
     const { id: userId } = req.user;
     const clientTimezone = req.headers['x-client-timezone'] || 'UTC';
-    const { data, error } = await supabase
-      .rpc('get_today_record_for_user', {
-        user_id_param: userId,
-        client_timezone: clientTimezone
-      });
+    const { data: todosLosRegistros, error } = await supabase.rpc('get_registros_for_user', { p_user_id: userId });
     if (error) throw error;
     res.json({ registro: data.length > 0 ? data[0] : null });
   } catch (err) {
