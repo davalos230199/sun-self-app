@@ -72,23 +72,100 @@
 }
 
 .modal-footer button {
-  padding: 10px 25px;
+  padding: 12px 30px; /* Ajustamos el padding */
   border: none;
-  border-radius: 6px;
-  background-color: #4a90e2; /* Un azul amigable */
+  border-radius: 8px; /* Mismo radio que el botón de login */
   color: white;
-  font-size: 1rem;
+  font-size: 1rem; /* Mantenemos un tamaño legible */
+  font-weight: 600; /* Mismo grosor de fuente */
   cursor: pointer;
-  transition: background-color 0.2s, opacity 0.2s;
+  /* CAMBIO: Aplicamos el gradiente del botón de login */
+  background: linear-gradient(45deg, #ff8f00, #ffc107);
+  /* CAMBIO: Aplicamos la misma transición */
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
 }
 
-/* Estilo para el botón cuando está deshabilitado */
 .modal-footer button:disabled {
-  background-color: #ccc;
-  opacity: 0.7;
+  /* CAMBIO: Estilo de deshabilitado coherente */
+  background: #ccc;
   cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 .modal-footer button:not(:disabled):hover {
-    background-color: #357ABD;
+  /* CAMBIO: Mismo efecto de sombra y elevación */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 143, 0, 0.4);
 }
+
+
+/* 1. Contenedor principal del checkbox */
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  position: relative; /* Necesario para posicionar el checkmark */
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #666;
+  -webkit-user-select: none; /* Evita que el texto se seleccione al hacer clic */
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* 2. Ocultamos el checkbox real, pero lo mantenemos accesible */
+.checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* 3. Creamos la "caja" del checkbox personalizado */
+.checkbox-container label::before {
+  content: '';
+  display: inline-block; /* Para que se alinee con el texto */
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  vertical-align: middle; /* Alinea la caja con el texto */
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Transición suave */
+}
+
+/* 4. Cambiamos el color de la caja cuando el checkbox está seleccionado */
+.checkbox-container input:checked + label::before {
+  background-color: #4a90e2; /* Mismo azul que el botón */
+  border-color: #4a90e2;
+}
+
+/* 5. Creamos el "tick" o "palomita" (estará oculto por defecto) */
+.checkbox-container label::after {
+  content: '';
+  position: absolute;
+  left: 6px; /* Posición horizontal del tick */
+  top: 3px;  /* Posición vertical del tick */
+  width: 6px;
+  height: 12px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg) scale(0); /* Oculto y escalado a 0 */
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Animación de aparición */
+}
+
+/* 6. Mostramos el "tick" cuando el checkbox está seleccionado */
+.checkbox-container input:checked + label::after {
+  transform: rotate(45deg) scale(1); /* Hacemos que aparezca */
+}
+
+/* 7. (Opcional pero recomendado) Estilo de foco para accesibilidad */
+.checkbox-container input:focus + label::before {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.4);
+}
+
+/* --- FIN DE MEJORAS PARA EL CHECKBOX --- */
