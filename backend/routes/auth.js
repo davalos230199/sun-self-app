@@ -1,15 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
 const authMiddleware = require('../middleware/auth');
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY; // Usamos la service key
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY; // Usamos la service key para tener privilegios de admin
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-
-// --- RUTA DE REGISTRO (Sin cambios, ya está bien) ---
+// --- RUTA DE REGISTRO ---
 router.post('/register', async (req, res) => {
     const { email, password, nombre, apellido, apodo } = req.body;
 
@@ -18,6 +16,7 @@ router.post('/register', async (req, res) => {
     }
 
     try {
+        // Usamos la función RPC para verificar si el apodo ya existe
         const { data: apodoExistente, error: rpcError } = await supabase
             .rpc('check_if_apodo_exists', { p_apodo: apodo });
 
@@ -27,15 +26,12 @@ router.post('/register', async (req, res) => {
             return res.status(409).json({ error: 'Ese apodo ya está en uso. Elige otro.' });
         }
 
+        // Usamos el método oficial de Supabase para registrar
         const { data, error } = await supabase.auth.signUp({
             email: email,
             password: password,
             options: {
-                data: {
-                    nombre: nombre,
-                    apellido: apellido,
-                    apodo: apodo
-                }
+                data: { nombre, apellido, apodo }
             }
         });
 
@@ -56,7 +52,7 @@ router.post('/register', async (req, res) => {
 });
 
 
-// --- RUTA DE LOGIN INTELIGENTE (Versión Final) ---
+// --- RUTA DE LOGIN INTELIGENTE ---
 router.post('/login', async (req, res) => {
     const { identifier, password } = req.body;
     if (!identifier || !password) {
@@ -66,33 +62,28 @@ router.post('/login', async (req, res) => {
     let userEmail = identifier;
 
     try {
-        // Paso 1: Determinar si el identificador es un email o un apodo
+        // Si no es un email, buscamos el email correspondiente al apodo
         if (!identifier.includes('@')) {
-            // No es un email, asumimos que es un apodo y buscamos su email con la función RPC
             const { data: emailFromApodo, error: rpcError } = await supabase
                 .rpc('get_email_by_apodo', { p_apodo: identifier });
 
-            if (rpcError) throw rpcError;
-
-            if (!emailFromApodo) {
-                // Si no encontramos un email para ese apodo, las credenciales son incorrectas
+            if (rpcError || !emailFromApodo) {
                 return res.status(401).json({ message: 'Credenciales incorrectas.' });
             }
             userEmail = emailFromApodo;
         }
 
-        // Paso 2: Intentar el inicio de sesión con el email determinado
+        // Intentamos el inicio de sesión con el email
         const { data, error } = await supabase.auth.signInWithPassword({
             email: userEmail,
             password: password,
         });
 
         if (error) {
-            // Si Supabase devuelve un error (ej: contraseña incorrecta), lo pasamos al frontend
             return res.status(error.status || 401).json({ message: 'Credenciales incorrectas.' });
         }
 
-        // Si el login es exitoso, devolvemos el token JWT
+        // Devolvemos el token JWT de la sesión de Supabase
         res.json({ token: data.session.access_token });
 
     } catch (err) {
@@ -102,8 +93,11 @@ router.post('/login', async (req, res) => {
 });
 
 
-// La ruta /me no cambia, ya que simplemente decodifica el token que ahora contiene el apodo.
+// --- RUTA PARA OBTENER DATOS DEL USUARIO ---
+// NOTA: Esta ruta ahora es manejada por el nuevo middleware.
+// El middleware obtiene el usuario de Supabase y lo adjunta a req.user.
 router.get('/me', authMiddleware, (req, res) => {
+    // Simplemente devolvemos el usuario que el middleware ya validó y adjuntó.
     res.json({ user: req.user });
 });
 
