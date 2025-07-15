@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import WelcomeModal from '../components/WelcomeModal';
 import api from '../services/api';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import './home.css';
+import './Home.css';
 
 const opciones = [ { valor: 'bajo', emoji: '🌧️' }, { valor: 'neutral', emoji: '⛅' }, { valor: 'alto', emoji: '☀️' } ];
 
