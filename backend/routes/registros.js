@@ -45,7 +45,7 @@ router.get('/chart-data', async (req, res) => {
 // RUTA PARA CREAR UN REGISTRO
 router.post('/', async (req, res) => {
     try {
-        const { id: userId } = req.user; // Este ID ahora es UUID
+        const { id: userId } = req.user;
         const { mente, emocion, cuerpo, meta_del_dia, compartir_anonimo, minimetas } = req.body;
         
         if (!mente?.seleccion || !emocion?.seleccion || !cuerpo?.seleccion) {
@@ -79,6 +79,7 @@ router.post('/', async (req, res) => {
                 user_id: userId,
                 registro_id: registroData.id
             }));
+            // Este insert funciona por la política de RLS en la tabla mini_metas
             await supabase.from('mini_metas').insert(minimetasParaInsertar);
         }
 
@@ -92,7 +93,7 @@ router.post('/', async (req, res) => {
 // RUTA GET PARA TODO EL HISTORIAL
 router.get('/', async (req, res) => {
     try {
-        const { id: userId } = req.user; // Este ID ahora es UUID
+        const { id: userId } = req.user;
         const { data, error } = await supabase.rpc('get_registros_for_user', { p_user_id: userId });
         if (error) throw error;
         res.json(data || []);
@@ -105,7 +106,7 @@ router.get('/', async (req, res) => {
 // RUTA GET PARA EL REGISTRO DE HOY
 router.get('/today', async (req, res) => {
     try {
-        const { id: userId } = req.user; // Este ID ahora es UUID
+        const { id: userId } = req.user;
         const clientTimezone = req.headers['x-client-timezone'] || 'UTC';
         
         const { data: todosLosRegistros, error } = await supabase.rpc('get_registros_for_user', { p_user_id: userId });
@@ -125,6 +126,30 @@ router.get('/today', async (req, res) => {
     } catch (err) {
         console.error("Error en GET /today:", err);
         res.status(500).json({ error: 'Error al verificar el registro de hoy.' });
+    }
+});
+
+
+// RUTA PUT PARA "LA HOJA DE ATRÁS"
+router.put('/:id/hoja_atras', async (req, res) => {
+    try {
+        const { id: recordId } = req.params;
+        const { id: userId } = req.user;
+        const { texto } = req.body;
+        
+        const { data, error } = await supabase.rpc('update_hoja_atras', {
+            p_user_id: userId,
+            p_registro_id: Number(recordId),
+            p_texto: texto
+        });
+
+        if (error) throw error;
+        if (!data) return res.status(404).json({ error: 'Registro no encontrado o sin permiso.' });
+        
+        res.status(200).json({ message: 'Hoja de atrás guardada con éxito.', registro: data });
+    } catch (err) {
+        console.error("Error en PUT /:id/hoja_atras:", err);
+        res.status(500).json({ error: 'Error interno al guardar la entrada.' });
     }
 });
 

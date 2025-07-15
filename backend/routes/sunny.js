@@ -6,12 +6,12 @@ const { createClient } = require('@supabase/supabase-js');
 
 // --- Conexión a Supabase ---
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // --- Inicialización de OpenAI ---
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY,
 });
 
 // =================================================================
@@ -41,37 +41,37 @@ router.use(authMiddleware);
 // 2. RUTA DE CHAT
 // =================================================================
 router.post('/', async (req, res) => {
-  const { history } = req.body;
-  if (!history || !Array.isArray(history) || history.length === 0) {
-    return res.status(400).json({ error: 'Se requiere un historial de mensajes (history).' });
-  }
+    const { history } = req.body;
+    if (!history || !Array.isArray(history) || history.length === 0) {
+        return res.status(400).json({ error: 'Se requiere un historial de mensajes (history).' });
+    }
 
-  try {
-    const completion = await openai.chat.completions.create({
-      // CAMBIO 1: Usamos el modelo más económico y eficiente
-      model: "gpt-3.5-turbo",
-      messages: [
-        { 
-          role: "system", 
-          content: PERSONALIDAD_SUNNY
-        },
-        ...history
-      ],
-    });
-    
-    res.json({ reply: completion.choices[0].message.content });
+    try {
+        const completion = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: [
+                { 
+                    role: "system", 
+                    content: PERSONALIDAD_SUNNY
+                },
+                ...history
+            ],
+        });
+        
+        res.json({ reply: completion.choices[0].message.content });
 
-  } catch (error) {
-    console.error('--- SUNNY API (CHAT): ERROR ---', error);
-    res.status(500).json({ error: 'No se pudo obtener una respuesta de Sunny.' });
-  }
+    } catch (error) {
+        console.error('--- SUNNY API (CHAT): ERROR ---', error);
+        res.status(500).json({ error: 'No se pudo obtener una respuesta de Sunny.' });
+    }
 });
 
 // =================================================================
-// 3. RUTA: GENERAR FRASE DEL DÍA
+// 3. RUTA: GENERAR Y GUARDAR FRASE DEL DÍA
 // =================================================================
 router.post('/generar-frase', async (req, res) => {
     const { mente_estat, emocion_estat, cuerpo_estat, meta_del_dia, registroId } = req.body;
+    const { id: userId } = req.user;
 
     if (!mente_estat || !emocion_estat || !cuerpo_estat || !registroId) {
         return res.status(400).json({ error: 'Faltan datos del estado o el ID del registro.' });
@@ -89,7 +89,6 @@ router.post('/generar-frase', async (req, res) => {
 
     try {
         const completion = await openai.chat.completions.create({
-            // CAMBIO 2: Usamos el modelo más económico y eficiente también aquí
             model: "gpt-3.5-turbo",
             messages: [
                 { role: "system", content: PERSONALIDAD_SUNNY },
@@ -98,16 +97,18 @@ router.post('/generar-frase', async (req, res) => {
             max_tokens: 60,
         });
 
-        const fraseGenerada = completion.choices[0].message.content;
+        const fraseGenerada = completion.choices[0].message.content.trim();
 
-        const { error: dbError } = await supabase
-            .from('registros')
-            .update({ frase_sunny: fraseGenerada })
-            .eq('id', registroId)
-            .eq('user_id', req.user.id);
+        // Usamos la nueva función RPC para actualizar la frase
+        const { error: dbError } = await supabase.rpc('update_frase_sunny', {
+            p_user_id: userId,
+            p_registro_id: registroId,
+            p_frase: fraseGenerada
+        });
 
         if (dbError) {
             console.error('--- SUNNY API (DB SAVE): ERROR ---', dbError);
+            // No detenemos el flujo, el usuario igual recibe su frase.
         }
         
         res.json({ frase: fraseGenerada });
