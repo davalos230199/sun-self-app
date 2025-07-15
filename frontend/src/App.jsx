@@ -24,6 +24,12 @@ const router = createBrowserRouter([
       { path: '/register', element: <Auth /> }
     ]
   },
+    // CAMBIO: Añadimos la ruta para actualizar la contraseña como una ruta pública
+    // No está dentro de ProtectedRoute ni de GuestRoute. Es accesible para todos.
+    {
+        path: '/update-password',
+        element: <UpdatePassword />
+    },
   {
     path: '/',
     element: <ProtectedRoute />,
@@ -33,8 +39,7 @@ const router = createBrowserRouter([
       { path: '/sunny', element: <Sunny /> },
       { path: '/muro', element: <MuroDeSoles /> },
       { path: '/settings', element: <Settings /> },
-      { path: '/journal/:id', element: <Journal /> },
-      { path: '/update-password', element: <UpdatePassword />}
+      { path: '/journal/:id', element: <Journal /> }
     ]
   }
 ]);
