@@ -31,6 +31,7 @@ export const generarFraseInteligente = (payload) => { return apiClient.post('/ap
 export const postToSunny = (payload) => { return apiClient.post('/api/sunny', payload); };
 export const getMuroEstados = () => { return apiClient.get('/api/muro/estados'); };
 export const getInspiracion = (orbe) => { return apiClient.get(`/api/inspiracion?orbe=${orbe}`); };
+export const forgotPassword = (payload) => apiClient.post('/api/auth/forgot-password', payload);
 
 // --- CAMBIO: NUEVA FUNCIÓN PARA LOS DATOS DEL GRÁFICO ---
 export const getChartData = (filter) => {
@@ -52,7 +53,8 @@ const api = {
   postToSunny,
   getMuroEstados,
   getInspiracion,
-  getChartData // <-- Exportamos la nueva función
+  getChartData,
+  forgotPassword // <-- Añadir aquí // <-- Exportamos la nueva función
 };
 
 export default api;

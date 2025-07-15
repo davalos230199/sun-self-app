@@ -84,6 +84,33 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// --- CAMBIO: NUEVA RUTA PARA OLVIDÉ MI CONTRASEÑA ---
+router.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ error: 'Se requiere un email.' });
+    }
+
+    // Usamos el método de Supabase para enviar el email de restablecimiento.
+    // IMPORTANTE: Debes configurar la URL de redirección en tu dashboard de Supabase.
+    // Vaya a Authentication -> URL Configuration y establezca la URL base de su sitio.
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        // Opcional: puede especificar una URL de redirección aquí si es diferente a la de su configuración.
+        // redirectTo: 'https://sun-self.onrender.com/update-password',
+    });
+
+    if (error) {
+        console.error("Error al enviar email de restablecimiento:", error);
+        // No revelamos si el email existe o no por seguridad.
+        // Siempre enviamos una respuesta genérica de éxito.
+    }
+
+    res.status(200).json({ 
+        message: 'Si existe una cuenta con ese email, se ha enviado un enlace para restablecer la contraseña.' 
+    });
+});
+
 // RUTA PARA OBTENER DATOS DEL USUARIO
 router.get('/me', authMiddleware, (req, res) => {
     res.json({ user: req.user });
