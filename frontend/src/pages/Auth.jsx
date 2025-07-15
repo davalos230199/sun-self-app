@@ -128,13 +128,19 @@ const ForgotPasswordForm = ({ onSwitchToLogin }) => {
         setSuccess('');
         setLoading(true);
         try {
-            const response = await api.forgotPassword(form);
-            setSuccess(response.data.message);
-        } catch (err) {
-            setError(err.response?.data?.error || 'No se pudo procesar la solicitud.');
-        } finally {
-            setLoading(false);
-        }
+        const response = await api.forgotPassword({ email: form.email });
+        setSuccess(response.data.message);
+             
+        // CAMBIO: Añadimos un temporizador para redirigir al usuario
+        setTimeout(() => {
+            onSwitchToLogin(); // Esta es la función que cambia la vista a 'login'
+        }, 3000); // Esperamos 3 segundos para que el usuario pueda leer el mensaje
+
+           } catch (err) {
+        setError(err.response?.data?.error || 'No se pudo procesar la solicitud.');
+        setLoading(false); // Aseguramos que el loading se quite en caso de error
+         }
+          // No ponemos el setLoading(false) aquí para que el botón permanezca deshabilitado
     };
 
     return (

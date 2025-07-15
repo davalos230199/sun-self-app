@@ -111,6 +111,47 @@ router.post('/forgot-password', async (req, res) => {
     });
 });
 
+// --- CAMBIO: NUEVA RUTA PARA ACTUALIZAR LA CONTRASEÑA ---
+router.post('/update-password', async (req, res) => {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+        return res.status(400).json({ error: 'Se requieren el token y la nueva contraseña.' });
+    }
+
+    // Usamos el token para identificar al usuario y actualizar su contraseña
+    const { error } = await supabase.auth.updateUser(
+        { password: password },
+        { jwt: token } // Pasamos el token aquí para que Supabase sepa a quién actualizar
+    );
+
+    // CORRECCIÓN: El método updateUser con JWT no funciona como se espera desde el backend.
+    // La forma correcta es que el frontend llame directamente a Supabase.
+    // Sin embargo, para mantener la lógica en el backend, usaremos un método alternativo.
+    // El frontend debe pasar el token que obtuvo de la URL.
+    // El backend lo usa para obtener la identidad del usuario y luego realizar la actualización como admin.
+    
+    // Decodificamos el token para obtener el ID del usuario de forma segura
+    const { data: { user } } = await supabase.auth.getUser(token);
+
+    if (!user) {
+        return res.status(401).json({ error: 'Token inválido o expirado.' });
+    }
+
+    // Como administradores, actualizamos la contraseña para ese usuario específico
+    const { error: updateError } = await supabase.auth.admin.updateUserById(
+        user.id,
+        { password: password }
+    );
+
+    if (updateError) {
+        console.error("Error al actualizar la contraseña:", updateError);
+        return res.status(500).json({ error: 'No se pudo actualizar la contraseña.' });
+    }
+
+    res.status(200).json({ message: 'Contraseña actualizada con éxito. Ya puedes iniciar sesión.' });
+});
+
 // RUTA PARA OBTENER DATOS DEL USUARIO
 router.get('/me', authMiddleware, (req, res) => {
     res.json({ user: req.user });

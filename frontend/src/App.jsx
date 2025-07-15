@@ -8,6 +8,7 @@ import ProtectedRoute from './components/protectedroute';
 import GuestRoute from './components/guestroute';
 import Journal from './pages/Journal';
 import MuroDeSoles from './pages/MuroDeSoles';
+import UpdatePassword from './pages/UpdatePassword'; 
 
 const router = createBrowserRouter([
   {
@@ -32,7 +33,8 @@ const router = createBrowserRouter([
       { path: '/sunny', element: <Sunny /> },
       { path: '/muro', element: <MuroDeSoles /> },
       { path: '/settings', element: <Settings /> },
-      { path: '/journal/:id', element: <Journal /> }
+      { path: '/journal/:id', element: <Journal /> },
+      { path: '/update-password', element: <UpdatePassword />}
     ]
   }
 ]);
