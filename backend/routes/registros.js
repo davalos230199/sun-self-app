@@ -129,6 +129,29 @@ router.get('/today', async (req, res) => {
     }
 });
 
+// RUTA GET PARA UN SOLO REGISTRO (para la "Hoja de atrás")
+router.get('/:id', async (req, res) => {
+    try {
+        const { id: recordId } = req.params;
+        const { id: userId } = req.user;
+        
+        const { data, error } = await supabase.rpc('get_registro_by_id', {
+            p_user_id: userId,
+            p_registro_id: Number(recordId)
+        });
+
+        if (error) throw error;
+        if (!data) {
+            return res.status(404).json({ error: 'Registro no encontrado.' });
+        }
+        
+        res.status(200).json(data);
+    } catch (err) {
+        console.error("Error en GET /registros/:id :", err);
+        res.status(500).json({ error: 'Error interno al obtener el registro.' });
+    }
+});
+
 
 // RUTA PUT PARA "LA HOJA DE ATRÁS"
 router.put('/:id/hoja_atras', async (req, res) => {

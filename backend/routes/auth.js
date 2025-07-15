@@ -4,10 +4,10 @@ const { createClient } = require('@supabase/supabase-js');
 const authMiddleware = require('../middleware/auth');
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY; // Usamos la service key para tener privilegios de admin
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// --- RUTA DE REGISTRO ---
+// RUTA DE REGISTRO
 router.post('/register', async (req, res) => {
     const { email, password, nombre, apellido, apodo } = req.body;
 
@@ -16,7 +16,6 @@ router.post('/register', async (req, res) => {
     }
 
     try {
-        // Usamos la función RPC para verificar si el apodo ya existe
         const { data: apodoExistente, error: rpcError } = await supabase
             .rpc('check_if_apodo_exists', { p_apodo: apodo });
 
@@ -26,13 +25,10 @@ router.post('/register', async (req, res) => {
             return res.status(409).json({ error: 'Ese apodo ya está en uso. Elige otro.' });
         }
 
-        // Usamos el método oficial de Supabase para registrar
         const { data, error } = await supabase.auth.signUp({
             email: email,
             password: password,
-            options: {
-                data: { nombre, apellido, apodo }
-            }
+            options: { data: { nombre, apellido, apodo } }
         });
 
         if (error) {
@@ -51,8 +47,7 @@ router.post('/register', async (req, res) => {
     }
 });
 
-
-// --- RUTA DE LOGIN INTELIGENTE ---
+// RUTA DE LOGIN INTELIGENTE
 router.post('/login', async (req, res) => {
     const { identifier, password } = req.body;
     if (!identifier || !password) {
@@ -62,7 +57,6 @@ router.post('/login', async (req, res) => {
     let userEmail = identifier;
 
     try {
-        // Si no es un email, buscamos el email correspondiente al apodo
         if (!identifier.includes('@')) {
             const { data: emailFromApodo, error: rpcError } = await supabase
                 .rpc('get_email_by_apodo', { p_apodo: identifier });
@@ -73,7 +67,6 @@ router.post('/login', async (req, res) => {
             userEmail = emailFromApodo;
         }
 
-        // Intentamos el inicio de sesión con el email
         const { data, error } = await supabase.auth.signInWithPassword({
             email: userEmail,
             password: password,
@@ -83,7 +76,6 @@ router.post('/login', async (req, res) => {
             return res.status(error.status || 401).json({ message: 'Credenciales incorrectas.' });
         }
 
-        // Devolvemos el token JWT de la sesión de Supabase
         res.json({ token: data.session.access_token });
 
     } catch (err) {
@@ -92,12 +84,8 @@ router.post('/login', async (req, res) => {
     }
 });
 
-
-// --- RUTA PARA OBTENER DATOS DEL USUARIO ---
-// NOTA: Esta ruta ahora es manejada por el nuevo middleware.
-// El middleware obtiene el usuario de Supabase y lo adjunta a req.user.
+// RUTA PARA OBTENER DATOS DEL USUARIO
 router.get('/me', authMiddleware, (req, res) => {
-    // Simplemente devolvemos el usuario que el middleware ya validó y adjuntó.
     res.json({ user: req.user });
 });
 
