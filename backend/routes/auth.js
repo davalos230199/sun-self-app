@@ -5,10 +5,11 @@ const { createClient } = require('@supabase/supabase-js');
 const authMiddleware = require('../middleware/auth');
 
 const supabaseUrl = process.env.SUPABASE_URL;
-// Usamos la clave de servicio (service_role) para poder crear y gestionar usuarios desde el backend
-const supabase = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_KEY);
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY; // Usamos la service key
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-// --- RUTA DE REGISTRO (Corregida para usar RPC) ---
+
+// --- RUTA DE REGISTRO (Sin cambios, ya está bien) ---
 router.post('/register', async (req, res) => {
     const { email, password, nombre, apellido, apodo } = req.body;
 
@@ -17,7 +18,6 @@ router.post('/register', async (req, res) => {
     }
 
     try {
-        // CAMBIO: Usamos la función RPC para verificar si el apodo existe de forma segura
         const { data: apodoExistente, error: rpcError } = await supabase
             .rpc('check_if_apodo_exists', { p_apodo: apodo });
 
@@ -27,7 +27,6 @@ router.post('/register', async (req, res) => {
             return res.status(409).json({ error: 'Ese apodo ya está en uso. Elige otro.' });
         }
 
-        // Usamos supabase.auth.signUp() que es el método oficial y seguro
         const { data, error } = await supabase.auth.signUp({
             email: email,
             password: password,
@@ -67,7 +66,7 @@ router.post('/login', async (req, res) => {
     let userEmail = identifier;
 
     try {
-        // CAMBIO: Lógica para determinar si el identificador es un email o un apodo
+        // Paso 1: Determinar si el identificador es un email o un apodo
         if (!identifier.includes('@')) {
             // No es un email, asumimos que es un apodo y buscamos su email con la función RPC
             const { data: emailFromApodo, error: rpcError } = await supabase
@@ -82,7 +81,7 @@ router.post('/login', async (req, res) => {
             userEmail = emailFromApodo;
         }
 
-        // Ahora, intentamos el inicio de sesión con el email que hemos determinado
+        // Paso 2: Intentar el inicio de sesión con el email determinado
         const { data, error } = await supabase.auth.signInWithPassword({
             email: userEmail,
             password: password,
