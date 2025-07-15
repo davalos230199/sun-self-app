@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import Auth from './pages/Auth';
+// CAMBIO: Se asegura que la importación use 'Home' con H mayúscula.
 import Home from './pages/Home';
 import Tracking from './pages/Tracking';
 import Sunny from './pages/Sunny';
@@ -10,8 +11,6 @@ import Journal from './pages/Journal';
 import MuroDeSoles from './pages/MuroDeSoles';
 import UpdatePassword from './pages/UpdatePassword';
 
-// CAMBIO: Se reestructura el router para ser más claro y evitar conflictos.
-// Ahora hay un grupo para rutas de invitados y otro para rutas protegidas.
 const router = createBrowserRouter([
     // Grupo de rutas para invitados (usuarios no autenticados)
     {
@@ -61,7 +60,7 @@ const router = createBrowserRouter([
             },
         ],
     },
-    // Redirección para la ruta raíz. Debe ir al final para no interferir.
+    // Redirección para la ruta raíz.
     {
         path: '/',
         element: <Navigate to="/login" replace />,
