@@ -10,35 +10,62 @@ import Journal from './pages/Journal';
 import MuroDeSoles from './pages/MuroDeSoles';
 import UpdatePassword from './pages/UpdatePassword';
 
+// CAMBIO: Se reestructura el router para ser más claro y evitar conflictos.
+// Ahora hay un grupo para rutas de invitados y otro para rutas protegidas.
 const router = createBrowserRouter([
+    // Grupo de rutas para invitados (usuarios no autenticados)
     {
-        path: '/',
-        element: <Navigate to="/login" replace />
-    },
-    {
-        path: '/',
         element: <GuestRoute />,
         children: [
-            { path: '/login', element: <Auth /> },
-            { path: '/register', element: <Auth /> },
-            // CAMBIO: La ruta para actualizar la contraseña ahora vive aquí,
-            // dentro de las rutas para invitados. Esto evita que ProtectedRoute
-            // se ejecute y queme el token.
-            { path: '/update-password', element: <UpdatePassword /> }
-        ]
+            {
+                path: 'login',
+                element: <Auth />,
+            },
+            {
+                path: 'register',
+                element: <Auth />,
+            },
+            {
+                path: 'update-password',
+                element: <UpdatePassword />,
+            },
+        ],
     },
+    // Grupo de rutas protegidas (usuarios autenticados)
     {
-        path: '/',
         element: <ProtectedRoute />,
         children: [
-            { path: '/home', element: <Home /> },
-            { path: '/tracking', element: <Tracking /> },
-            { path: '/sunny', element: <Sunny /> },
-            { path: '/muro', element: <MuroDeSoles /> },
-            { path: '/settings', element: <Settings /> },
-            { path: '/journal/:id', element: <Journal /> }
-        ]
-    }
+            {
+                path: 'home',
+                element: <Home />,
+            },
+            {
+                path: 'tracking',
+                element: <Tracking />,
+            },
+            {
+                path: 'sunny',
+                element: <Sunny />,
+            },
+            {
+                path: 'muro',
+                element: <MuroDeSoles />,
+            },
+            {
+                path: 'settings',
+                element: <Settings />,
+            },
+            {
+                path: 'journal/:id',
+                element: <Journal />,
+            },
+        ],
+    },
+    // Redirección para la ruta raíz. Debe ir al final para no interferir.
+    {
+        path: '/',
+        element: <Navigate to="/login" replace />,
+    },
 ]);
 
 function App() {
