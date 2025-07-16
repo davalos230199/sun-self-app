@@ -1,40 +1,22 @@
-// frontend/src/components/protectedroute.jsx
-import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import api from '../services/api';
-import AppLayout from './AppLayout';
+import { useAuth } from '../contexts/AuthContext'; // 1. Usamos el hook de nuestro nuevo contexto
+import AppLayout from './AppLayout'; // 2. Importamos tu componente de layout
 
 export default function ProtectedRoute() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  // 1. Necesitamos el estado del usuario aquí para poder pasarlo hacia abajo.
-  const [user, setUser] = useState(null);
+    // 3. Obtenemos el usuario y el estado de carga del contexto global
+    const { user, loading } = useAuth();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await api.getMe();
-        setIsAuthenticated(true);
-        // 2. Guardamos los datos del usuario cuando la verificación es exitosa.
-        setUser(response.data.user);
-      } catch (error) {
-        localStorage.removeItem('token');
-        setIsAuthenticated(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    checkAuth();
-  }, []);
+    // Si todavía estamos verificando la sesión, no mostramos nada para evitar parpadeos
+    if (loading) {
+        return <div style={{ textAlign: 'center', marginTop: '50px' }}>Verificando tu sesión...</div>;
+    }
 
-  if (isLoading) {
-    return <div style={{ textAlign: 'center', marginTop: '50px' }}>Verificando tu sesión...</div>;
-  }
+    // Si, después de cargar, no hay usuario, redirigimos al login
+    if (!user) {
+        return <Navigate to="/login" replace />;
+    }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  // 3. ¡AQUÍ ESTÁ EL ARREGLO! Pasamos los datos del usuario como una prop a nuestro AppLayout.
-  return <AppLayout user={user} />;
+    // 4. ¡AQUÍ ESTÁ LA MAGIA! Si hay un usuario, renderizamos tu AppLayout
+    //    y le pasamos la información del usuario, restaurando todo el diseño.
+    return <AppLayout user={user} />;
 }

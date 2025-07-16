@@ -2,12 +2,15 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import './Auth.css';
+import { useAuth } from '../contexts/AuthContext';
 
-// --- Formulario de Login ---
-const LoginForm = ({ onSwitchToRegister, onSwitchToForgot, onLogin }) => {
+// --- Formulario de Login (Lógica Corregida y Centralizada) ---
+const LoginForm = ({ onSwitchToRegister, onSwitchToForgot }) => {
     const [form, setForm] = useState({ identifier: '', password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const { setUser } = useAuth(); // Obtenemos la función para actualizar el usuario global
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -16,7 +19,19 @@ const LoginForm = ({ onSwitchToRegister, onSwitchToForgot, onLogin }) => {
         setError('');
         setLoading(true);
         try {
-            await onLogin(form);
+            // 1. Hacemos el login y obtenemos el token
+            const res = await api.login(form);
+            localStorage.setItem('token', res.data.token);
+
+            // 2. Usamos el nuevo token para obtener los datos del usuario
+            const { data: userData } = await api.getMe();
+            
+            // 3. ¡LA CLAVE! Actualizamos el estado global con la información del usuario
+            setUser(userData.user);
+
+            // 4. Finalmente, navegamos a home
+            navigate('/home');
+
         } catch (err) {
             setError(err.response?.data?.message || 'Credenciales incorrectas.');
             setLoading(false);
@@ -40,7 +55,6 @@ const LoginForm = ({ onSwitchToRegister, onSwitchToForgot, onLogin }) => {
                 {loading ? 'Entrando...' : 'Entrar'}
             </button>
             <div className="auth-switch-container">
-                {/* CAMBIO: Se añade el enlace para "Olvidé mi contraseña" */}
                 <p className="auth-switch">
                     <span className="auth-link" onClick={onSwitchToForgot} role="button" tabIndex="0">
                         Olvidé mi contraseña
@@ -57,14 +71,13 @@ const LoginForm = ({ onSwitchToRegister, onSwitchToForgot, onLogin }) => {
     );
 };
 
+
 // --- Formulario de Registro (Sin cambios) ---
 const RegisterForm = ({ onSwitchToLogin }) => {
-    // ... tu código existente para RegisterForm no cambia ...
     const [form, setForm] = useState({ nombre: '', apellido: '', apodo: '', email: '', password: '' });
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -113,7 +126,7 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 };
 
 
-// --- CAMBIO: Nuevo Formulario para Olvidé mi Contraseña ---
+// --- Formulario para Olvidé mi Contraseña (Sin cambios) ---
 const ForgotPasswordForm = ({ onSwitchToLogin }) => {
     const [form, setForm] = useState({ email: '' });
     const [error, setError] = useState('');
@@ -128,19 +141,15 @@ const ForgotPasswordForm = ({ onSwitchToLogin }) => {
         setSuccess('');
         setLoading(true);
         try {
-        const response = await api.forgotPassword({ email: form.email });
-        setSuccess(response.data.message);
-             
-        // CAMBIO: Añadimos un temporizador para redirigir al usuario
-        setTimeout(() => {
-            onSwitchToLogin(); // Esta es la función que cambia la vista a 'login'
-        }, 3000); // Esperamos 3 segundos para que el usuario pueda leer el mensaje
-
-           } catch (err) {
-        setError(err.response?.data?.error || 'No se pudo procesar la solicitud.');
-        setLoading(false); // Aseguramos que el loading se quite en caso de error
-         }
-          // No ponemos el setLoading(false) aquí para que el botón permanezca deshabilitado
+            const response = await api.forgotPassword({ email: form.email });
+            setSuccess(response.data.message);
+            setTimeout(() => {
+                onSwitchToLogin();
+            }, 3000);
+        } catch (err) {
+            setError(err.response?.data?.error || 'No se pudo procesar la solicitud.');
+            setLoading(false);
+        }
     };
 
     return (
@@ -166,17 +175,12 @@ const ForgotPasswordForm = ({ onSwitchToLogin }) => {
 };
 
 
-// --- Componente Principal de Autenticación (Modificado) ---
+// --- Componente Principal de Autenticación (Simplificado) ---
 export default function Auth() {
-    const navigate = useNavigate();
-    // CAMBIO: El estado de la vista ahora puede ser 'forgot'
     const [view, setView] = useState('intro');
-
-    const handleLogin = async (credentials) => {
-        const res = await api.login(credentials);
-        localStorage.setItem('token', res.data.token);
-        navigate('/home');
-    };
+    
+    // CAMBIO: Se elimina la lógica de 'handleLogin' de aquí, ya que ahora
+    // vive directamente dentro del componente LoginForm.
     
     return (
         <div className={`auth-scene ${view !== 'intro' ? 'form-active' : ''}`}>
@@ -191,16 +195,15 @@ export default function Auth() {
             <div className="auth-form-container">
                 <div className="auth-card">
                     <div className={`form-wrapper ${view === 'login' ? 'visible' : ''}`}>
+                        {/* El componente LoginForm ya no necesita la prop onLogin */}
                         <LoginForm 
                             onSwitchToRegister={() => setView('register')} 
-                            onSwitchToForgot={() => setView('forgot')} // <-- Se pasa la nueva función
-                            onLogin={handleLogin} 
+                            onSwitchToForgot={() => setView('forgot')}
                         />
                     </div>
                     <div className={`form-wrapper ${view === 'register' ? 'visible' : ''}`}>
                         <RegisterForm onSwitchToLogin={() => setView('login')} />
                     </div>
-                    {/* CAMBIO: Se añade el nuevo formulario al renderizado condicional */}
                     <div className={`form-wrapper ${view === 'forgot' ? 'visible' : ''}`}>
                         <ForgotPasswordForm onSwitchToLogin={() => setView('login')} />
                     </div>
