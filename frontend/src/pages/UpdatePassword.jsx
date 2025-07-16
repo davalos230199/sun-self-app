@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// Usamos el cliente de Supabase directamente, no nuestra API customizada
-import { supabase } from '../services/supabaseClient';
+import { supabase } from '../services/supabaseClient'; // Importamos el cliente
 import './Auth.css';
 
 export default function UpdatePassword() {
@@ -11,12 +10,26 @@ export default function UpdatePassword() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
+    // Este componente ahora es responsable de escuchar su propio evento.
     useEffect(() => {
-        // Este efecto solo se ejecuta una vez para mostrar un error si el usuario
-        // llega a esta página sin el enlace correcto.
+        // Verificamos si el usuario llegó aquí sin el enlace correcto.
         if (!window.location.hash.includes('type=recovery')) {
             setError('Enlace inválido. Por favor, solicita un nuevo enlace desde la página de login.');
+            return; // Detenemos la ejecución si el enlace no es de recuperación
         }
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            // Escuchamos específicamente el evento de recuperación.
+            if (event === 'PASSWORD_RECOVERY') {
+                // Cuando el evento ocurre, la sesión temporal ya está activa.
+                // No necesitamos el token, solo necesitamos saber que el evento ocurrió.
+                setError('');
+            }
+        });
+
+        return () => {
+            subscription.unsubscribe();
+        };
     }, []);
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -37,30 +50,24 @@ export default function UpdatePassword() {
         setLoading(true);
 
         try {
-            // ESTA ES LA LÍNEA CLAVE Y LA FORMA CORRECTA DE HACERLO.
-            // La librería de Supabase ya ha procesado el token de la URL y ha establecido
-            // una sesión temporal. Esta llamada simplemente usa esa sesión para actualizar la contraseña.
-            const { error: updateError } = await supabase.auth.updateUser({
-                password: form.password
+            // La librería de Supabase usa la sesión temporal que se estableció
+            // gracias al token en la URL para actualizar la contraseña del usuario correcto.
+            const { error: updateError } = await supabase.auth.updateUser({ 
+                password: form.password 
             });
 
-            if (updateError) {
-                throw updateError;
-            }
+            if (updateError) throw updateError;
             
             setSuccess('Contraseña actualizada con éxito. Serás redirigido para iniciar sesión.');
             setTimeout(() => {
                 navigate('/login');
             }, 3000);
-
         } catch (err) {
             setError(err.message || 'No se pudo actualizar la contraseña. El enlace puede haber expirado.');
             setLoading(false);
         }
     };
 
-    // El formulario ya no necesita la condición 'disabled={!token}' porque confiamos
-    // en que la sesión de Supabase está activa.
     return (
         <div className="auth-scene form-active">
             <div className="auth-form-container">

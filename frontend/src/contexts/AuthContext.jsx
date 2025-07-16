@@ -1,6 +1,6 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import api from '../services/api';
-// Importamos el cliente de Supabase para poder escuchar los eventos de autenticación
+// CAMBIO: Importamos el cliente de Supabase para escuchar eventos
 import { supabase } from '../services/supabaseClient';
 
 const AuthContext = createContext(null);
@@ -10,7 +10,7 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // 1. Verificamos la sesión inicial desde localStorage como antes
+        // Verificamos la sesión inicial desde localStorage como antes
         const checkUserSession = async () => {
             const token = localStorage.getItem('token');
             if (token) {
@@ -27,7 +27,8 @@ export function AuthProvider({ children }) {
 
         checkUserSession();
 
-        // 2. CAMBIO CLAVE: Añadimos un listener para los eventos de Supabase
+        // CAMBIO CLAVE: Añadimos un listener para eventos de login y logout normales,
+        // pero ignoramos el de recuperación de contraseña.
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             (event, session) => {
                 // Solo actualizamos el estado global si es un login normal (SIGNED_IN)
@@ -42,7 +43,7 @@ export function AuthProvider({ children }) {
             }
         );
 
-        // 3. Limpiamos el listener cuando el componente se desmonta
+        // Limpiamos el listener cuando el componente se desmonta
         return () => {
             subscription.unsubscribe();
         };
@@ -58,7 +59,6 @@ export function AuthProvider({ children }) {
     );
 }
 
-// Hook personalizado para usar el contexto (sin cambios)
 export function useAuth() {
     const context = useContext(AuthContext);
     if (!context) {
