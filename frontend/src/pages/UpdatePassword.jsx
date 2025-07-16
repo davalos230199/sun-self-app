@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-// 1. Importamos el cliente de Supabase para poder escuchar los cambios de autenticación
-import { supabase } from '../services/supabaseClient';
 import './Auth.css';
 
 export default function UpdatePassword() {
@@ -13,24 +11,27 @@ export default function UpdatePassword() {
     const [token, setToken] = useState(null);
     const navigate = useNavigate();
 
-    // CAMBIO CLAVE: Usamos onAuthStateChange de una forma más robusta
+    // CAMBIO CLAVE: Se simplifica la lógica para leer el token directamente de la URL.
     useEffect(() => {
-        // Esta función se ejecuta cuando Supabase detecta un cambio en la sesión
-        // (como cuando el usuario llega desde un enlace de recuperación).
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            // No nos importa el tipo de evento. Si se establece una sesión Y la URL
-            // confirma que es un flujo de recuperación, capturamos el token.
-            if (session?.access_token && window.location.hash.includes('type=recovery')) {
-                setToken(session.access_token);
-                setError(''); // Limpiamos cualquier error previo
-            }
-        });
+        // Parseamos el "hash" de la URL (la parte que viene después del #)
+        const hash = window.location.hash;
+        
+        // Verificamos si es un enlace de recuperación de contraseña
+        if (hash.includes('type=recovery')) {
+            const params = new URLSearchParams(hash.substring(1)); // Quitamos el '#'
+            const accessToken = params.get('access_token');
 
-        // Limpiamos el listener cuando el componente se desmonta para evitar fugas de memoria
-        return () => {
-            subscription.unsubscribe();
-        };
-    }, []);
+            if (accessToken) {
+                // Si encontramos el token, lo guardamos en el estado.
+                // Esto habilitará el formulario.
+                setToken(accessToken);
+            } else {
+                setError('El enlace de recuperación parece estar dañado. No se encontró el token.');
+            }
+        } else if (!token) {
+             setError('Token de recuperación no encontrado o inválido. Por favor, solicita un nuevo enlace.');
+        }
+    }, []); // El array vacío asegura que esto se ejecute solo una vez
 
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
