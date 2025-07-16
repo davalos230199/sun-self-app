@@ -4,34 +4,30 @@ const { createClient } = require('@supabase/supabase-js');
 const authMiddleware = require('../middleware/auth');
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 router.use(authMiddleware);
 
-// RUTA GET /api/inspiracion?orbe=mente
+// GET /api/inspiracion?orbe=mente
 router.get('/', async (req, res) => {
-    const { orbe } = req.query; // 'mente', 'emocion', o 'cuerpo'
-    const validOrbes = ['mente', 'emocion', 'cuerpo'];
+    const { orbe } = req.query;
 
-    if (!orbe || !validOrbes.includes(orbe)) {
-        return res.status(400).json({ error: 'Se requiere un "orbe" válido (mente, emocion, cuerpo).' });
+    if (!['mente', 'emocion', 'cuerpo'].includes(orbe)) {
+        return res.status(400).json({ error: 'Orbe no válido.' });
     }
 
-    const commentColumn = `${orbe}_coment`;
-
     try {
-        // Usamos una función RPC para obtener una fila aleatoria de manera eficiente
-        const { data, error } = await supabase.rpc('get_random_shared_comment', {
-            orbe_column: commentColumn
+        // CAMBIO CLAVE: Nos aseguramos de que estamos llamando a la función correcta y más reciente.
+        const { data, error } = await supabase.rpc('get_inspiracion_aleatoria', { 
+            p_orbe: orbe 
         });
 
         if (error) throw error;
 
-        res.json({ inspiracion: data || 'No se encontraron ejemplos por ahora. ¡Sé el primero en compartir!' });
-
+        res.json({ inspiracion: data || 'No hay ejemplos disponibles aún. ¡Sé el primero en compartir!' });
     } catch (err) {
-        console.error("Error en GET /api/inspiracion:", err);
+        console.error(`Error en GET /api/inspiracion para el orbe ${orbe}:`, err);
         res.status(500).json({ error: 'Error al obtener inspiración.' });
     }
 });
