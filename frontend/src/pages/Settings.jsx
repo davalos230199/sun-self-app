@@ -10,8 +10,10 @@ export default function Settings() {
     const handleLogout = () => {
         // 3. Borramos el token del almacenamiento local
         localStorage.removeItem('token');
+        
         // 4. ¡LA CLAVE! Actualizamos el estado global, informando a toda la app que no hay usuario
         setUser(null);
+        
         // 5. Redirigimos al usuario a la página de login
         navigate('/login');
     };
