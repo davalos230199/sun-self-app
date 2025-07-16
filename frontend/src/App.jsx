@@ -11,29 +11,28 @@ import Journal from './pages/Journal';
 import MuroDeSoles from './pages/MuroDeSoles';
 import UpdatePassword from './pages/UpdatePassword';
 
-// 1. Creamos un nuevo componente "inteligente" para la ruta raíz
+// El componente "inteligente" para la ruta raíz, ahora corregido
 const RootHandler = () => {
     const { user, loading } = useAuth();
     const location = useLocation();
 
-    // Mientras se verifica la sesión inicial, no hacemos nada para evitar errores
     if (loading) {
         return <div style={{ textAlign: 'center', marginTop: '50px' }}>Iniciando...</div>;
     }
 
-    // Si detectamos que la URL contiene un token de recuperación de contraseña...
+    // CAMBIO CLAVE: En lugar de redirigir, renderizamos el componente directamente.
+    // Si la URL contiene la señal de recuperación...
     if (location.hash.includes('type=recovery')) {
-        // ...redirigimos al usuario a la página correcta para que pueda cambiar su clave.
-        // Navigate preservará el #hash en la URL, que es lo que necesita UpdatePassword.jsx
-        return <Navigate to="/update-password" replace />;
+        // ...mostramos la página para actualizar la contraseña.
+        // Esto preserva la URL completa, incluyendo el token en el hash.
+        return <UpdatePassword />;
     }
 
-    // Si ya hay un usuario logueado, lo mandamos a home
+    // La lógica de redirección normal se mantiene para los otros casos.
     if (user) {
         return <Navigate to="/home" replace />;
     }
 
-    // En cualquier otro caso (sin usuario, sin token de recuperación), lo mandamos a login
     return <Navigate to="/login" replace />;
 };
 
@@ -44,6 +43,8 @@ const router = createBrowserRouter([
         children: [
             { path: 'login', element: <Auth /> },
             { path: 'register', element: <Auth /> },
+            // CAMBIO: Ya no necesitamos esta ruta aquí porque la maneja el RootHandler.
+            // La dejamos por si el usuario navega manualmente, pero el flujo principal ya no la usa.
             { path: 'update-password', element: <UpdatePassword /> },
         ],
     },
@@ -54,12 +55,12 @@ const router = createBrowserRouter([
             { path: 'home', element: <Home /> },
             { path: 'tracking', element: <Tracking /> },
             { path: 'sunny', element: <Sunny /> },
-            { path: 'muro', element: <MuroDeSoles /> },
             { path: 'settings', element: <Settings /> },
             { path: 'journal/:id', element: <Journal /> },
+            { path: 'muro', element: <MuroDeSoles /> },
         ],
     },
-    // 2. CAMBIO CLAVE: La ruta raíz ahora usa nuestro nuevo componente "inteligente"
+    // La ruta raíz ahora usa nuestro nuevo componente "inteligente"
     {
         path: '/',
         element: <RootHandler />,
