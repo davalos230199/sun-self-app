@@ -92,12 +92,12 @@ router.post('/forgot-password', async (req, res) => {
         return res.status(400).json({ error: 'Se requiere un email.' });
     }
 
-    // Usamos el método de Supabase para enviar el email de restablecimiento.
-    // IMPORTANTE: Debes configurar la URL de redirección en tu dashboard de Supabase.
-    // Vaya a Authentication -> URL Configuration y establezca la URL base de su sitio.
+    // CAMBIO: Especificamos la URL exacta a la que debe redirigir Supabase.
+    // Esto asegura que el usuario aterrice en la página correcta.
+    const redirectTo = `${process.env.FRONTEND_URL}/update-password`;
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        // Opcional: puede especificar una URL de redirección aquí si es diferente a la de su configuración.
-        // redirectTo: 'https://sun-self.onrender.com/update-password',
+        redirectTo: redirectTo,
     });
 
     if (error) {
