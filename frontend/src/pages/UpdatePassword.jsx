@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import './Auth.css'; // Reutilizamos los estilos de la página de autenticación
+// 1. Importamos el cliente de Supabase para poder escuchar los cambios de autenticación
+import { supabase } from '../services/supabaseClient'; // Asumimos que tienes un archivo que exporta el cliente
+import './Auth.css';
 
 export default function UpdatePassword() {
     const [form, setForm] = useState({ password: '', confirmPassword: '' });
@@ -11,18 +13,27 @@ export default function UpdatePassword() {
     const [token, setToken] = useState(null);
     const navigate = useNavigate();
 
-    // Este useEffect se ejecuta una sola vez para extraer el token de la URL
+    // CAMBIO CLAVE: Usamos onAuthStateChange para obtener el token de forma segura
     useEffect(() => {
-        const hash = window.location.hash;
-        const params = new URLSearchParams(hash.substring(1)); // Quita el '#' inicial
-        const accessToken = params.get('access_token');
+        // Esta función se ejecuta cuando Supabase detecta un cambio en la sesión
+        // (como cuando el usuario llega desde un enlace de recuperación).
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'PASSWORD_RECOVERY') {
+                if (session?.access_token) {
+                    setToken(session.access_token);
+                    setError(''); // Limpiamos cualquier error previo
+                } else {
+                    setError('No se pudo obtener el token de la sesión. El enlace puede haber expirado.');
+                }
+            }
+        });
 
-        if (accessToken) {
-            setToken(accessToken);
-        } else {
-            setError('Token de recuperación no encontrado o inválido. Por favor, solicita un nuevo enlace.');
-        }
+        // Limpiamos el listener cuando el componente se desmonta para evitar fugas de memoria
+        return () => {
+            subscription.unsubscribe();
+        };
     }, []);
+
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -42,6 +53,7 @@ export default function UpdatePassword() {
         setLoading(true);
 
         try {
+            // Ahora usamos la función de la API que actualiza la contraseña en el backend
             const response = await api.updatePassword({ token, password: form.password });
             setSuccess(response.data.message);
             setTimeout(() => {
@@ -54,7 +66,7 @@ export default function UpdatePassword() {
     };
 
     return (
-        <div className="auth-scene form-active"> {/* Mostramos directamente la vista de formulario */}
+        <div className="auth-scene form-active">
             <div className="auth-form-container">
                 <div className="auth-card">
                     <form onSubmit={handleSubmit} noValidate>
