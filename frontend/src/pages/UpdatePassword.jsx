@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../services/supabaseClient'; // Importamos el cliente
+import { supabase } from '../services/supabaseClient';
 import './Auth.css';
 
 export default function UpdatePassword() {
@@ -10,26 +10,10 @@ export default function UpdatePassword() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    // Este componente ahora es responsable de escuchar su propio evento.
     useEffect(() => {
-        // Verificamos si el usuario llegó aquí sin el enlace correcto.
         if (!window.location.hash.includes('type=recovery')) {
             setError('Enlace inválido. Por favor, solicita un nuevo enlace desde la página de login.');
-            return; // Detenemos la ejecución si el enlace no es de recuperación
         }
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            // Escuchamos específicamente el evento de recuperación.
-            if (event === 'PASSWORD_RECOVERY') {
-                // Cuando el evento ocurre, la sesión temporal ya está activa.
-                // No necesitamos el token, solo necesitamos saber que el evento ocurrió.
-                setError('');
-            }
-        });
-
-        return () => {
-            subscription.unsubscribe();
-        };
     }, []);
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -50,8 +34,7 @@ export default function UpdatePassword() {
         setLoading(true);
 
         try {
-            // La librería de Supabase usa la sesión temporal que se estableció
-            // gracias al token en la URL para actualizar la contraseña del usuario correcto.
+            // 1. Actualizamos la contraseña del usuario usando la sesión temporal
             const { error: updateError } = await supabase.auth.updateUser({ 
                 password: form.password 
             });
@@ -59,9 +42,15 @@ export default function UpdatePassword() {
             if (updateError) throw updateError;
             
             setSuccess('Contraseña actualizada con éxito. Serás redirigido para iniciar sesión.');
+
+            // 2. ¡LA CLAVE! Cerramos la sesión temporal para limpiar el token sb-....-auth-token
+            await supabase.auth.signOut();
+
+            // 3. Redirigimos al usuario a la página de login
             setTimeout(() => {
                 navigate('/login');
             }, 3000);
+
         } catch (err) {
             setError(err.message || 'No se pudo actualizar la contraseña. El enlace puede haber expirado.');
             setLoading(false);
