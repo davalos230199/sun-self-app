@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 // 1. Importamos el cliente de Supabase para poder escuchar los cambios de autenticación
-import { supabase } from '../services/supabaseClient'; // Asumimos que tienes un archivo que exporta el cliente
+import { supabase } from '../services/supabaseClient';
 import './Auth.css';
 
 export default function UpdatePassword() {
@@ -13,18 +13,16 @@ export default function UpdatePassword() {
     const [token, setToken] = useState(null);
     const navigate = useNavigate();
 
-    // CAMBIO CLAVE: Usamos onAuthStateChange para obtener el token de forma segura
+    // CAMBIO CLAVE: Usamos onAuthStateChange de una forma más robusta
     useEffect(() => {
         // Esta función se ejecuta cuando Supabase detecta un cambio en la sesión
         // (como cuando el usuario llega desde un enlace de recuperación).
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'PASSWORD_RECOVERY') {
-                if (session?.access_token) {
-                    setToken(session.access_token);
-                    setError(''); // Limpiamos cualquier error previo
-                } else {
-                    setError('No se pudo obtener el token de la sesión. El enlace puede haber expirado.');
-                }
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            // No nos importa el tipo de evento. Si se establece una sesión Y la URL
+            // confirma que es un flujo de recuperación, capturamos el token.
+            if (session?.access_token && window.location.hash.includes('type=recovery')) {
+                setToken(session.access_token);
+                setError(''); // Limpiamos cualquier error previo
             }
         });
 
@@ -53,7 +51,6 @@ export default function UpdatePassword() {
         setLoading(true);
 
         try {
-            // Ahora usamos la función de la API que actualiza la contraseña en el backend
             const response = await api.updatePassword({ token, password: form.password });
             setSuccess(response.data.message);
             setTimeout(() => {
