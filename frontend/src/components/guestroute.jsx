@@ -1,22 +1,22 @@
-// src/components/guestroute.jsx (Código completo)
-
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext'; // <-- Usa nuestro hook
+import { useAuth } from '../contexts/AuthContext';
 
 export default function GuestRoute() {
-    const { user, loading } = useAuth(); // Obtiene el usuario y el estado de carga del contexto
-    const location = useLocation();
+    const { user, loading } = useAuth();
+    const location = useLocation(); // 1. Obtenemos la ubicación actual
 
-    // Si aún estamos verificando la sesión inicial, no mostramos nada para evitar redirecciones incorrectas
+    // Si todavía estamos verificando la sesión inicial, no hacemos nada para evitar redirecciones incorrectas
     if (loading) {
         return null; // O un componente de carga si lo prefieres
     }
 
-    // Si hay un usuario y NO está en la página de cambiar contraseña, lo redirigimos a home
+    // 2. CAMBIO CLAVE: La condición para redirigir ahora es más inteligente.
+    // Redirigimos a /home SOLAMENTE si hay un usuario Y NO estamos en la página de cambiar contraseña.
     if (user && location.pathname !== '/update-password') {
         return <Navigate to="/home" replace />;
     }
 
-    // De lo contrario, muestra la página de invitado (Login, Register, UpdatePassword)
+    // En cualquier otro caso (sin usuario, o en la página de cambiar contraseña),
+    // simplemente muestra la página que corresponde (Login, Register, o UpdatePassword).
     return <Outlet />;
 }
