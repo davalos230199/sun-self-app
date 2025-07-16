@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
+import { useState, useEffect } from 'react'; // Se añaden useState y useEffect
 import Auth from './pages/Auth';
 import Home from './pages/Home';
 import Tracking from './pages/Tracking';
@@ -11,28 +12,37 @@ import Journal from './pages/Journal';
 import MuroDeSoles from './pages/MuroDeSoles';
 import UpdatePassword from './pages/UpdatePassword';
 
-// El componente "inteligente" para la ruta raíz, ahora corregido
+// El componente "inteligente" para la ruta raíz, ahora corregido para evitar condiciones de carrera
 const RootHandler = () => {
     const { user, loading } = useAuth();
     const location = useLocation();
+    const [isRecovery, setIsRecovery] = useState(false);
+    const [hasChecked, setHasChecked] = useState(false);
 
-    if (loading) {
+    // Este efecto se ejecuta una sola vez para verificar la URL de forma segura
+    useEffect(() => {
+        if (location.hash.includes('type=recovery')) {
+            setIsRecovery(true);
+        }
+        setHasChecked(true);
+    }, [location.hash]); // Se ejecuta si el hash de la URL cambia
+
+    // Mientras se verifica la sesión inicial o el hash, mostramos un estado de carga
+    if (loading || !hasChecked) {
         return <div style={{ textAlign: 'center', marginTop: '50px' }}>Iniciando...</div>;
     }
 
-    // CAMBIO CLAVE: En lugar de redirigir, renderizamos el componente directamente.
-    // Si la URL contiene la señal de recuperación...
-    if (location.hash.includes('type=recovery')) {
-        // ...mostramos la página para actualizar la contraseña.
-        // Esto preserva la URL completa, incluyendo el token en el hash.
+    // Si es un flujo de recuperación, renderizamos el componente y detenemos cualquier otra lógica
+    if (isRecovery) {
         return <UpdatePassword />;
     }
 
-    // La lógica de redirección normal se mantiene para los otros casos.
+    // Si hay un usuario (y no es un flujo de recuperación), lo llevamos a home
     if (user) {
         return <Navigate to="/home" replace />;
     }
 
+    // Por defecto, si no hay usuario ni es recuperación, va al login
     return <Navigate to="/login" replace />;
 };
 
@@ -43,8 +53,8 @@ const router = createBrowserRouter([
         children: [
             { path: 'login', element: <Auth /> },
             { path: 'register', element: <Auth /> },
-            // CAMBIO: Ya no necesitamos esta ruta aquí porque la maneja el RootHandler.
-            // La dejamos por si el usuario navega manualmente, pero el flujo principal ya no la usa.
+            // La ruta update-password se queda aquí por si se navega manualmente,
+            // pero el flujo principal lo maneja el RootHandler.
             { path: 'update-password', element: <UpdatePassword /> },
         ],
     },
