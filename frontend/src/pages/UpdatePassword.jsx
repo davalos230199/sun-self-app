@@ -11,27 +11,29 @@ export default function UpdatePassword() {
     const [token, setToken] = useState(null);
     const navigate = useNavigate();
 
-    // CAMBIO CLAVE: Se simplifica la lógica para leer el token directamente de la URL.
+    // CAMBIO CLAVE: Se reestructura la lógica para evitar condiciones de carrera.
     useEffect(() => {
         // Parseamos el "hash" de la URL (la parte que viene después del #)
         const hash = window.location.hash;
-        
-        // Verificamos si es un enlace de recuperación de contraseña
-        if (hash.includes('type=recovery')) {
-            const params = new URLSearchParams(hash.substring(1)); // Quitamos el '#'
-            const accessToken = params.get('access_token');
+        let foundToken = null;
 
-            if (accessToken) {
-                // Si encontramos el token, lo guardamos en el estado.
-                // Esto habilitará el formulario.
-                setToken(accessToken);
-            } else {
-                setError('El enlace de recuperación parece estar dañado. No se encontró el token.');
-            }
-        } else if (!token) {
-             setError('Token de recuperación no encontrado o inválido. Por favor, solicita un nuevo enlace.');
+        // Primero, verificamos si la URL contiene un token de recuperación.
+        if (hash.includes('type=recovery') && hash.includes('access_token')) {
+            const params = new URLSearchParams(hash.substring(1)); // Quitamos el '#'
+            foundToken = params.get('access_token');
         }
-    }, []); // El array vacío asegura que esto se ejecute solo una vez
+
+        // Después de verificar, tomamos una decisión.
+        if (foundToken) {
+            // Si encontramos el token, lo guardamos en el estado.
+            // Esto habilitará el formulario.
+            setToken(foundToken);
+            setError(''); // Limpiamos cualquier error previo.
+        } else {
+            // Si no se encontró ningún token, mostramos el error.
+            setError('Token de recuperación no encontrado o inválido. Por favor, solicita un nuevo enlace.');
+        }
+    }, []); // El array vacío asegura que esto se ejecute solo una vez al cargar la página.
 
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
