@@ -3,20 +3,22 @@ import { useAuth } from '../contexts/AuthContext';
 
 export default function GuestRoute() {
     const { user, loading } = useAuth();
-    const location = useLocation(); // 1. Obtenemos la ubicación actual
+    const location = useLocation(); // Obtenemos la ubicación actual, incluyendo el #hash
 
-    // Si todavía estamos verificando la sesión inicial, no hacemos nada para evitar redirecciones incorrectas
+    // Si todavía estamos verificando la sesión inicial, no hacemos nada
     if (loading) {
-        return null; // O un componente de carga si lo prefieres
+        return null;
     }
 
-    // 2. CAMBIO CLAVE: La condición para redirigir ahora es más inteligente.
-    // Redirigimos a /home SOLAMENTE si hay un usuario Y NO estamos en la página de cambiar contraseña.
-    if (user && location.pathname !== '/update-password') {
+    // CAMBIO DEFINITIVO: La condición para redirigir ahora es a prueba de fallos.
+    // Redirigimos a /home SOLAMENTE si:
+    // 1. Hay un usuario.
+    // 2. Y la URL NO contiene la señal 'type=recovery', que es única del flujo de cambio de contraseña.
+    if (user && !location.hash.includes('type=recovery')) {
         return <Navigate to="/home" replace />;
     }
 
-    // En cualquier otro caso (sin usuario, o en la página de cambiar contraseña),
-    // simplemente muestra la página que corresponde (Login, Register, o UpdatePassword).
+    // En cualquier otro caso (sin usuario, o durante la recuperación de contraseña),
+    // se muestra la página que corresponde.
     return <Outlet />;
 }
