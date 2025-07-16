@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+// Usamos el cliente de Supabase directamente, no nuestra API customizada
+import { supabase } from '../services/supabaseClient';
 import './Auth.css';
 
 export default function UpdatePassword() {
@@ -8,33 +9,15 @@ export default function UpdatePassword() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
-    const [token, setToken] = useState(null);
     const navigate = useNavigate();
 
-    // CAMBIO CLAVE: Se reestructura la lógica para evitar condiciones de carrera.
     useEffect(() => {
-        // Parseamos el "hash" de la URL (la parte que viene después del #)
-        const hash = window.location.hash;
-        let foundToken = null;
-
-        // Primero, verificamos si la URL contiene un token de recuperación.
-        if (hash.includes('type=recovery') && hash.includes('access_token')) {
-            const params = new URLSearchParams(hash.substring(1)); // Quitamos el '#'
-            foundToken = params.get('access_token');
+        // Este efecto solo se ejecuta una vez para mostrar un error si el usuario
+        // llega a esta página sin el enlace correcto.
+        if (!window.location.hash.includes('type=recovery')) {
+            setError('Enlace inválido. Por favor, solicita un nuevo enlace desde la página de login.');
         }
-
-        // Después de verificar, tomamos una decisión.
-        if (foundToken) {
-            // Si encontramos el token, lo guardamos en el estado.
-            // Esto habilitará el formulario.
-            setToken(foundToken);
-            setError(''); // Limpiamos cualquier error previo.
-        } else {
-            // Si no se encontró ningún token, mostramos el error.
-            setError('Token de recuperación no encontrado o inválido. Por favor, solicita un nuevo enlace.');
-        }
-    }, []); // El array vacío asegura que esto se ejecute solo una vez al cargar la página.
-
+    }, []);
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -54,17 +37,30 @@ export default function UpdatePassword() {
         setLoading(true);
 
         try {
-            const response = await api.updatePassword({ token, password: form.password });
-            setSuccess(response.data.message);
+            // ESTA ES LA LÍNEA CLAVE Y LA FORMA CORRECTA DE HACERLO.
+            // La librería de Supabase ya ha procesado el token de la URL y ha establecido
+            // una sesión temporal. Esta llamada simplemente usa esa sesión para actualizar la contraseña.
+            const { error: updateError } = await supabase.auth.updateUser({
+                password: form.password
+            });
+
+            if (updateError) {
+                throw updateError;
+            }
+            
+            setSuccess('Contraseña actualizada con éxito. Serás redirigido para iniciar sesión.');
             setTimeout(() => {
                 navigate('/login');
             }, 3000);
+
         } catch (err) {
-            setError(err.response?.data?.error || 'No se pudo actualizar la contraseña.');
+            setError(err.message || 'No se pudo actualizar la contraseña. El enlace puede haber expirado.');
             setLoading(false);
         }
     };
 
+    // El formulario ya no necesita la condición 'disabled={!token}' porque confiamos
+    // en que la sesión de Supabase está activa.
     return (
         <div className="auth-scene form-active">
             <div className="auth-form-container">
@@ -75,15 +71,15 @@ export default function UpdatePassword() {
                         {error && <p className="error-message">{error}</p>}
                         
                         <div className="input-group">
-                            <input type="password" name="password" id="update-password" placeholder=" " onChange={handleChange} required disabled={!token || loading || !!success} />
+                            <input type="password" name="password" id="update-password" placeholder=" " onChange={handleChange} required disabled={loading || !!success} />
                             <label htmlFor="update-password">Nueva Contraseña</label>
                         </div>
                         <div className="input-group">
-                            <input type="password" name="confirmPassword" id="update-confirm-password" placeholder=" " onChange={handleChange} required disabled={!token || loading || !!success} />
+                            <input type="password" name="confirmPassword" id="update-confirm-password" placeholder=" " onChange={handleChange} required disabled={loading || !!success} />
                             <label htmlFor="update-confirm-password">Confirmar Contraseña</label>
                         </div>
                         
-                        <button type="submit" className="auth-button" disabled={!token || loading || !!success}>
+                        <button type="submit" className="auth-button" disabled={loading || !!success}>
                             {loading ? 'Actualizando...' : 'Actualizar Contraseña'}
                         </button>
                     </form>
