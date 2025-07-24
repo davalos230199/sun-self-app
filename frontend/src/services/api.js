@@ -33,12 +33,14 @@ export const getMuroEstados = () => { return apiClient.get('/api/muro/estados');
 export const getInspiracion = (orbe) => { return apiClient.get(`/api/inspiracion?orbe=${orbe}`); };
 export const forgotPassword = (payload) => apiClient.post('/api/auth/forgot-password', payload);
 export const updatePassword = (payload) => apiClient.post('/api/auth/update-password', payload);
+// --- NUEVAS FUNCIONES PARA MINI-METAS ---
+// Función para obtener las mini-metas de un registro diario
+export const getMiniMetas = async (registroId) => {const { data, error } = await supabase.rpc('get_mini_metas_for_registro', {registro_id_in: registroId,});if (error) {console.error('Error al obtener mini-metas:', error);throw error;}return data;};
+export const createMiniMeta = async (descripcion, horaObjetivo, registroId) => {const { error } = await supabase.rpc('create_mini_meta', { descripcion_in: descripcion,hora_objetivo_in: horaObjetivo,registro_id_in: registroId,});if (error) {console.error('Error al crear la mini-meta:', error);throw error;}return true;};
+export const updateMiniMetaStatus = async (miniMetaId, completada) => {const { error } = await supabase.rpc('update_mini_meta_status', {mini_meta_id_in: miniMetaId,completada_in: completada,});if (error) {console.error('Error al actualizar la mini-meta:', error);throw error;}return true;};
 
-// --- CAMBIO: NUEVA FUNCIÓN PARA LOS DATOS DEL GRÁFICO ---
-export const getChartData = (filter) => {
-  // Pasamos el filtro como un query param
-  return apiClient.get(`/api/registros/chart-data?filter=${filter}`);
-};
+// FUNCIÓN PARA LOS DATOS DEL GRÁFICO ---
+export const getChartData = (filter) => {return apiClient.get(`/api/registros/chart-data?filter=${filter}`);};
 
 // --- CAMBIO: AÑADIMOS LA NUEVA FUNCIÓN AL OBJETO API ---
 const api = { 
@@ -56,7 +58,10 @@ const api = {
   getInspiracion,
   getChartData,
   forgotPassword,
-  updatePassword
+  updatePassword,
+  getMiniMetas,
+  createMiniMeta,
+  updateMiniMetaStatus
 };
 
 export default api;
