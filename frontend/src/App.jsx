@@ -11,6 +11,7 @@ import GuestRoute from './components/guestroute';
 import Journal from './pages/Journal';
 import MuroDeSoles from './pages/MuroDeSoles';
 import UpdatePassword from './pages/UpdatePassword';
+import MiniMetasPage from './pages/MiniMetasPage'; 
 
 // El componente "inteligente" para la ruta raíz, ahora corregido para evitar condiciones de carrera
 const RootHandler = () => {
@@ -68,6 +69,7 @@ const router = createBrowserRouter([
             { path: 'settings', element: <Settings /> },
             { path: 'journal/:id', element: <Journal /> },
             { path: 'muro', element: <MuroDeSoles /> },
+            { path: 'metas', element: <MiniMetasPage /> },
         ],
     },
     // La ruta raíz ahora usa nuestro nuevo componente "inteligente"
