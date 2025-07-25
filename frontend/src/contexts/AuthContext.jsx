@@ -1,24 +1,28 @@
-import { createContext, useState, useEffect, useContext } from 'react';
-import api from '../services/api';
-// CAMBIO: Importamos el cliente de Supabase para escuchar eventos
-import { supabase } from '../services/supabaseClient';
+import { createContext, useContext, useState, useEffect } from 'react';
+import api from '../services/api'; // Tu api.js
+import { supabase } from '../services/supabaseClient'; // Tu cliente de supabase
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    // Este useEffect se encarga de verificar la sesión al cargar la app
     useEffect(() => {
-        // Verificamos la sesión inicial desde localStorage como antes
         const checkUserSession = async () => {
             const token = localStorage.getItem('token');
             if (token) {
                 try {
+                    // Sincronizamos la sesión de Supabase con nuestro token
+                    await supabase.auth.setSession({ access_token: token, refresh_token: '' });
+                    // Y obtenemos los datos del usuario desde nuestro backend
                     const response = await api.getMe();
                     setUser(response.data.user);
                 } catch (error) {
+                    console.error("Token inválido o sesión expirada:", error);
                     localStorage.removeItem('token');
+                    await supabase.auth.signOut();
                     setUser(null);
                 }
             }
@@ -27,42 +31,57 @@ export function AuthProvider({ children }) {
 
         checkUserSession();
 
-        // CAMBIO CLAVE: Añadimos un listener para eventos de login y logout normales,
-        // pero ignoramos el de recuperación de contraseña.
+        // Mantenemos tu listener para eventos de Supabase, es una buena práctica
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             (event, session) => {
-                // Solo actualizamos el estado global si es un login normal (SIGNED_IN)
-                // o un cierre de sesión (SIGNED_OUT).
-                if (event === 'SIGNED_IN') {
-                    setUser(session.user);
-                } else if (event === 'SIGNED_OUT') {
+                // Si Supabase detecta un cierre de sesión, actualizamos el estado
+                if (event === 'SIGNED_OUT') {
                     setUser(null);
                 }
-                // Al ignorar explícitamente el evento 'PASSWORD_RECOVERY', evitamos que el AuthContext
-                // establezca un usuario global y provoque la redirección del GuestRoute.
             }
         );
 
-        // Limpiamos el listener cuando el componente se desmonta
         return () => {
             subscription.unsubscribe();
         };
-
     }, []);
 
-    const value = { user, setUser, loading };
+    // Nueva función de login que sincroniza todo
+    const login = async (credentials) => {
+        // 1. Hacemos login contra nuestro backend en Render
+        const response = await api.login(credentials);
+        const { token, user } = response.data;
 
+        // 2. Guardamos el token de nuestro backend en localStorage
+        localStorage.setItem('token', token);
+        
+        // 3. ¡LA CLAVE! Usamos el mismo token para establecer la sesión en el cliente de Supabase
+        await supabase.auth.setSession({ access_token: token, refresh_token: '' });
+
+        // 4. Actualizamos el estado del usuario en la app
+        setUser(user);
+    };
+
+    // Nueva función de logout que limpia todo
+    const logout = async () => {
+        await supabase.auth.signOut();
+        localStorage.removeItem('token');
+        setUser(null);
+    };
+
+    // Ahora el contexto provee las funciones 'login' y 'logout'
     return (
-        <AuthContext.Provider value={value}>
+        <AuthContext.Provider value={{ user, login, logout, loading }}>
             {!loading && children}
         </AuthContext.Provider>
     );
-}
+};
 
-export function useAuth() {
+// El hook para usar el contexto no cambia
+export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
         throw new Error('useAuth debe ser usado dentro de un AuthProvider');
     }
     return context;
-}
+};

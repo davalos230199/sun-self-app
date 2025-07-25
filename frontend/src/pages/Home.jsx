@@ -9,54 +9,45 @@ import './Home.css';
 
 export default function Home() {
     const { user } = useOutletContext();
-    const [isLoading, setIsLoading] = useState(true);
-    
-    // Todos los datos del día ahora viven aquí, en el componente padre.
     const [registroDeHoy, setRegistroDeHoy] = useState(null);
-    const [miniMetas, setMiniMetas] = useState([]);
-    
+    const [isLoading, setIsLoading] = useState(true);
     const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+    
+    // Declaramos el estado para las miniMetas aquí, en el componente padre.
+    const [miniMetas, setMiniMetas] = useState([]);
 
-    // Esta única función se encarga de buscar TODO lo necesario para la página.
-    const cargarDatosDelDia = useCallback(async () => {
+    const cargarRegistroDelDia = useCallback(async () => {
         if (!user) {
             setIsLoading(false);
             return;
         }
         setIsLoading(true);
         try {
-            // 1. Buscamos el registro principal.
             const registroResponse = await api.getRegistroDeHoy();
             const registro = registroResponse.data.registro;
             setRegistroDeHoy(registro);
 
-            // 2. Si existe el registro, buscamos sus mini-metas.
             if (registro) {
+                // Le pasamos el user.id a la función de la API.
                 const metasData = await api.getMiniMetas(registro.id, user.id);
                 setMiniMetas(metasData || []);
-            } else {
-                // Si no hay registro, nos aseguramos de que las metas estén vacías.
-                setMiniMetas([]);
             }
 
         } catch (error) {
-            // Si getRegistroDeHoy falla (ej. 404), es normal. Reseteamos los estados.
-            setRegistroDeHoy(null);
-            setMiniMetas([]);
-            console.log("No se encontró registro para hoy o hubo un error:", error);
+            setRegistroDeHoy(null); 
+            console.log("No se encontró registro para hoy o hubo un error en la carga:", error);
         } finally {
             setIsLoading(false);
         }
     }, [user]);
 
-    // El único useEffect que necesitamos para cargar datos.
     useEffect(() => {
         const haVistoManifiesto = localStorage.getItem('sunself_manifiesto_visto');
         if (!haVistoManifiesto) {
             setShowWelcomeModal(true);
         }
-        cargarDatosDelDia();
-    }, [cargarDatosDelDia]);
+        cargarRegistroDelDia();
+    }, [cargarRegistroDelDia]);
 
     const handleEdit = () => {
         setRegistroDeHoy(null);
@@ -85,15 +76,14 @@ export default function Home() {
             </header>
 
             {registroDeHoy ? (
-                // Ahora le pasamos la información ya cocinada a RegistroDashboard.
+                // Le pasamos el estado 'miniMetas' que ya cargamos.
                 <RegistroDashboard 
                     registro={registroDeHoy} 
                     miniMetas={miniMetas}
                     onEdit={handleEdit} 
                 />
             ) : (
-                // Al guardar, volvemos a cargar TODOS los datos.
-                <RegistroForm onSaveSuccess={cargarDatosDelDia} />
+                <RegistroForm onSaveSuccess={cargarRegistroDelDia} />
             )}
         </div>
     );
