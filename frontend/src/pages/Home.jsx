@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import api from '../services/api';
 
-// 1. Importamos los nuevos componentes que vamos a crear.
 import RegistroDashboard from '../components/RegistroDashboard';
 import RegistroForm from '../components/RegistroForm';
 import WelcomeModal from '../components/WelcomeModal';
@@ -10,39 +9,56 @@ import './Home.css';
 
 export default function Home() {
     const { user } = useOutletContext();
-    const [registroDeHoy, setRegistroDeHoy] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [showWelcomeModal, setShowWelcomeModal] = useState(false);
     
-    // Esta función se encarga de recargar los datos desde la API.
-    const cargarRegistroDelDia = useCallback(async () => {
-        if (!user) return;
+    // Todos los datos del día ahora viven aquí, en el componente padre.
+    const [registroDeHoy, setRegistroDeHoy] = useState(null);
+    const [miniMetas, setMiniMetas] = useState([]);
+    
+    const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+
+    // Esta única función se encarga de buscar TODO lo necesario para la página.
+    const cargarDatosDelDia = useCallback(async () => {
+        if (!user) {
+            setIsLoading(false);
+            return;
+        }
         setIsLoading(true);
         try {
+            // 1. Buscamos el registro principal.
             const registroResponse = await api.getRegistroDeHoy();
-            setRegistroDeHoy(registroResponse.data.registro);
+            const registro = registroResponse.data.registro;
+            setRegistroDeHoy(registro);
+
+            // 2. Si existe el registro, buscamos sus mini-metas.
+            if (registro) {
+                const metasData = await api.getMiniMetas(registro.id, user.id);
+                setMiniMetas(metasData || []);
+            } else {
+                // Si no hay registro, nos aseguramos de que las metas estén vacías.
+                setMiniMetas([]);
+            }
+
         } catch (error) {
-            // Si el backend devuelve un error (ej. 404 Not Found), es normal.
-            // Significa que no hay registro y debemos mostrar el formulario.
-            setRegistroDeHoy(null); 
-            console.log("No se encontró registro para hoy, se mostrará el formulario.");
+            // Si getRegistroDeHoy falla (ej. 404), es normal. Reseteamos los estados.
+            setRegistroDeHoy(null);
+            setMiniMetas([]);
+            console.log("No se encontró registro para hoy o hubo un error:", error);
         } finally {
             setIsLoading(false);
         }
     }, [user]);
 
-    // Efecto para la carga inicial de datos.
+    // El único useEffect que necesitamos para cargar datos.
     useEffect(() => {
         const haVistoManifiesto = localStorage.getItem('sunself_manifiesto_visto');
         if (!haVistoManifiesto) {
             setShowWelcomeModal(true);
         }
-        cargarRegistroDelDia();
-    }, [cargarRegistroDelDia]);
+        cargarDatosDelDia();
+    }, [cargarDatosDelDia]);
 
-    // Esta función se activará cuando el usuario quiera editar su registro.
     const handleEdit = () => {
-        // Al poner el registro en null, forzamos que se renderice el formulario.
         setRegistroDeHoy(null);
     };
     
@@ -69,12 +85,15 @@ export default function Home() {
             </header>
 
             {registroDeHoy ? (
-                // Si tenemos un registro, mostramos el Dashboard.
-                <RegistroDashboard registro={registroDeHoy} onEdit={handleEdit} />
+                // Ahora le pasamos la información ya cocinada a RegistroDashboard.
+                <RegistroDashboard 
+                    registro={registroDeHoy} 
+                    miniMetas={miniMetas}
+                    onEdit={handleEdit} 
+                />
             ) : (
-                // Si no hay registro, mostramos el Formulario.
-                // Le pasamos la función para que pueda refrescar la página de Home tras guardar.
-                <RegistroForm onSaveSuccess={cargarRegistroDelDia} />
+                // Al guardar, volvemos a cargar TODOS los datos.
+                <RegistroForm onSaveSuccess={cargarDatosDelDia} />
             )}
         </div>
     );

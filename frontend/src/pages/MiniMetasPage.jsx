@@ -13,42 +13,38 @@ export default function MiniMetasPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const cargarDatos = useCallback(async () => {
+    if (!user) { setIsLoading(false); return; }
         setIsLoading(true);
         try {
-            // Primero, necesitamos el registro de hoy para saber a qué vincular las metas
             const registroResponse = await api.getRegistroDeHoy();
-            if (registroResponse.data.registro) {
-                setRegistroDeHoy(registroResponse.data.registro);
-                // Si hay registro, buscamos sus metas
-                const metasData = await api.getMiniMetas(registroResponse.data.registro.id);
+            const registro = registroResponse.data.registro;
+            if (registro) {
+                setRegistroDeHoy(registro);
+                const metasData = await api.getMiniMetas(registro.id, user.id);
                 setMiniMetas(metasData || []);
             }
-        } catch (error) {
+            } catch (error) {
             console.error("Error al cargar datos de la página de metas:", error);
-        } finally {
+            } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [user]);
 
     useEffect(() => {
         cargarDatos();
     }, [cargarDatos]);
 
-    if (isLoading) {
-        return <div>Cargando tu cielo de metas...</div>;
-    }
-
-    if (!registroDeHoy) {
-        return <div>Primero necesitas completar tu registro del día en la página de inicio.</div>;
-    }
+    if (isLoading) { return <div>Cargando...</div>; }
+    if (!registroDeHoy) { return <div>Completa tu registro del día.</div>; }
 
     return (
         <div className="mini-metas-page">
             {isModalOpen && (
                 <AddMiniMetaModal
                     registroId={registroDeHoy.id}
+                    userId={user.id} 
                     onClose={() => setIsModalOpen(false)}
-                    onSaveSuccess={cargarDatos} // Al guardar, recargamos todo
+                    onSaveSuccess={cargarDatos}
                 />
             )}
 

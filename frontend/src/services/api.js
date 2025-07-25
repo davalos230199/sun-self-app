@@ -41,12 +41,12 @@ const getChartData = (filter) => {return apiClient.get(`/api/registros/chart-dat
 
 
 // --- NUEVAS FUNCIONES PARA MINI-METAS (usando supabase directamente) ---
-const getMiniMetas = async (registroId) => {
-    const { data, error } = await supabase.rpc('get_mini_metas_for_registro', { registro_id_in: registroId });
-    if (error) {
-        console.error('Error al obtener mini-metas:', error);
-        throw error;
-    }
+const getMiniMetas = async (registroId, userId) => {
+    const { data, error } = await supabase.rpc('get_mini_metas_for_registro', { 
+        p_registro_id: registroId,
+        p_user_id: userId 
+    });
+    if (error) { console.error('Error al obtener mini-metas:', error); throw error; }
     return data;
 };
 

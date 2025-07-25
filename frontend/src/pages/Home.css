@@ -17,11 +17,75 @@
 .post-it-orbe textarea:focus { box-shadow: none; outline: none; }
 .meta-icon { font-size: 1.5rem; }
 .daily-dashboard { display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; }
-.post-it-display, .meta-post-it { width: 100%; max-width: 400px; box-sizing: border-box; margin-left: auto; margin-right: auto; }
-.post-it-display { background-color: #fffde7; padding: 20px; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); border: 1px solid #f0eec8; text-align: center; position: relative; display: flex; flex-direction: column; }
+
+/* --- REGLA CLAVE PARA ARREGLAR LOS ENLACES --- */
+/* Esto le dice a cualquier Link con esta clase que no parezca un link */
+.meta-link-wrapper, .meta-link-wrapper:hover {
+    text-decoration: none;
+    color: inherit; /* Hereda el color del texto normal */
+    width: 100%;
+}
+
+
+/* --- NUEVA CLASE BASE PARA LOS POST-ITS --- */
+.post-it-base {
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.post-it-display {
+    background-color: #fffde7; /* Amarillo */
+    border: 1px solid #f0eec8;
+    text-align: center;
+}
+
+.meta-post-it {
+    background-color: #E8F5E9; /* Verde */
+    border: 1px solid #dcedc8;
+    padding-top: 40px; /* Hacemos espacio para el icono */
+}
+
+/* --- NUEVOS ESTILOS PARA EL WIDGET DE METAS REDISEÑADO --- */
+.meta-icono-esquina {
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    font-size: 1.5rem;
+}
+
+.meta-principal {
+    font-family: var(--font-titulos);
+    font-size: 1.6rem;
+    text-align: center;
+    margin: 0 0 15px 0;
+    font-style: normal; /* Sobreescribimos el p italic */
+    color: #1B5E20; /* Un verde más oscuro para el título */
+}
+
+.mini-metas-widget-container {
+    margin-top: auto; /* Empuja el widget de mini-metas hacia abajo */
+    padding-top: 15px;
+    border-top: 1px dashed #a5d6a7;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #388E3C;
+}
+
+.nube-vacia-widget p, .nube-proxima-widget span {
+    margin: 0;
+    font-style: italic;
+}
 .post-it-footer { margin-top: 20px; padding-top: 15px; border-top: 1px dashed #ccc; }
 .post-it-footer a { font-family: var(--font-titulos); font-size: 1.1rem; color: #8a8a8a; cursor: pointer; text-decoration: none; }
-.meta-post-it { background-color: #E8F5E9; padding: 20px; border-radius: 8px; border: 1px solid #dcedc8; }
 .meta-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .meta-header span { font-size: 1.2rem; }
 .meta-header h4 { margin: 0; font-size: 1.2rem; font-family: var(--font-titulos); }
@@ -34,6 +98,9 @@
 .post-it-display h3 { font-size: 1.5rem; margin-top: 30px; }
 .post-it-display .clima-visual { font-size: 3rem; margin: 15px 0; }
 .post-it-display .frase-del-dia { font-style: italic; font-size: 1.1rem; flex-grow: 1; }
+
+
+
 
 /* --- ESTILOS PARA INSPIRACIÓN COMPARTIDA --- */
 .post-it-actions {
