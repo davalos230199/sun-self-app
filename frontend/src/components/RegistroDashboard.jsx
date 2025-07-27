@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import api from '../services/api';
+
+// Esta versión de RegistroDashboard no necesita 'api' porque ya no busca datos.
 
 const formatTiempo = (ms) => {
     if (ms <= 0) return "";
@@ -11,39 +12,36 @@ const formatTiempo = (ms) => {
     return `${horas}:${minutos}:${segundos}`;
 };
 
-// --- WIDGET DE METAS (REDiseñado según tu visión) ---
-const MetasWidget = ({ registro, proximaMeta }) => {
+// --- WIDGET DE METAS (Componente "tonto") ---
+// Solo recibe props y las muestra. No tiene 'useState' ni 'useEffect'.
+const MetasWidget = ({ registro, proximaMeta, isLoading }) => {
     return (
-        // El Link ahora tiene una clase para poder quitarle los estilos de enlace.
         <Link to="/metas" className="meta-link-wrapper">
             <div className="meta-post-it post-it-base">
-                {/* La meta del día ahora es el título principal */}
                 <h3 className="meta-principal">{registro.meta_del_dia || 'Define tu meta principal del día.'}</h3>
-                
                 <div className="mini-metas-widget-container">
-                    {!proximaMeta ? (
-                        <div className="nube-vacia-widget">
-                            <p>+ Define tus mini-metas para construir tu día</p>
-                        </div>
-                    ) : (
-                        <div className="nube-proxima-widget">
-                            <span>Próxima mini-meta: {proximaMeta.descripcion} a las {proximaMeta.hora_objetivo}</span>
-                        </div>
+                    {isLoading ? <p>Cargando metas...</p> : (
+                        !proximaMeta ? (
+                            <div className="nube-vacia-widget">
+                                <p>+ Define tus mini-metas para construir tu día</p>
+                            </div>
+                        ) : (
+                            <div className="nube-proxima-widget">
+                                <span>Próxima mini-meta: {proximaMeta.descripcion} a las {proximaMeta.hora_objetivo}</span>
+                            </div>
+                        )
                     )}
                 </div>
-
-                {/* El icono de la diana ahora está posicionado de forma absoluta */}
                 <div className="meta-icono-esquina">🎯</div>
             </div>
         </Link>
     );
 };
 
-// --- WIDGET DE ESTADO: El post-it del estado del día ---
-const EstadoWidget = ({ registro, onEdit }) => {
+// --- WIDGET DE ESTADO (Componente "tonto") ---
+// Recibe la frase y el tiempo como props. Ya no los calcula él mismo.
+const EstadoWidget = ({ registro, fraseDelDia, tiempoRestante, onEdit }) => {
     const navigate = useNavigate();
-    const [fraseDelDia, setFraseDelDia] = useState('...');
-    const [tiempoRestante, setTiempoRestante] = useState(0);
 
     const determinarClima = useCallback((reg) => {
         if (!reg) return '';
@@ -53,43 +51,6 @@ const EstadoWidget = ({ registro, onEdit }) => {
         }, 0);
         if (puntaje >= 2) return '☀️'; if (puntaje <= -2) return '🌧️'; return '⛅';
     }, []);
-
-    useEffect(() => {
-        if (!registro) return;
-        const generarFrase = async () => {
-            if (registro.frase_sunny) { setFraseDelDia(registro.frase_sunny); return; }
-            setFraseDelDia('Sunny está reflexionando...');
-            try {
-                const frasePayload = { 
-                    registroId: registro.id,
-                    mente_estat: registro.mente_estat,
-                    emocion_estat: registro.emocion_estat,
-                    cuerpo_estat: registro.cuerpo_estat,
-                    meta_del_dia: registro.meta_del_dia,
-                 };
-                const response = await api.generarFraseInteligente(frasePayload);
-                setFraseDelDia(response.data.frase);
-            } catch (error) {
-                console.error("Error al generar la frase de Sunny:", error);
-                setFraseDelDia("Hoy, las palabras descansan. Tu acción es el mejor poema.");
-            }
-        };
-        generarFrase();
-    }, [registro]);
-
-    useEffect(() => {
-        if (!registro?.created_at) return;
-        const PERIODO_BLOQUEO = 4 * 60 * 60 * 1000;
-        const registroTimestamp = new Date(registro.created_at).getTime();
-        const ahora = Date.now();
-        const tiempoPasado = ahora - registroTimestamp;
-        const restanteInicial = PERIODO_BLOQUEO - tiempoPasado;
-        setTiempoRestante(restanteInicial > 0 ? restanteInicial : 0);
-        const intervalo = setInterval(() => {
-            setTiempoRestante(prev => (prev > 1000 ? prev - 1000 : 0));
-        }, 1000);
-        return () => clearInterval(intervalo);
-    }, [registro?.created_at]);
 
     return (
         <div className="post-it-display post-it-base">
@@ -109,8 +70,39 @@ const EstadoWidget = ({ registro, onEdit }) => {
     );
 };
 
-// --- COMPONENTE PRINCIPAL: AHORA SÓLO UN CONTENEDOR ---
-export default function RegistroDashboard({ registro, miniMetas, onEdit }) {
+
+// --- COMPONENTE PRINCIPAL: AHORA SÓLO UN PRESENTADOR ---
+// Recibe toda la información de Home.jsx y la distribuye.
+export default function RegistroDashboard({ 
+    registro, 
+    miniMetas, 
+    fraseDelDia, 
+    isLoadingAdicional, 
+    onEdit 
+}) {
+    // El único estado que gestiona es el del timer, porque es un efecto visual.
+    const [tiempoRestante, setTiempoRestante] = useState(0);
+
+    // El único useEffect que queda es el del timer, que depende de una prop estable.
+    useEffect(() => {
+        const createdAt = registro?.created_at;
+        if (!createdAt) return;
+
+        const PERIODO_BLOQUEO = 4 * 60 * 60 * 1000;
+        const registroTimestamp = new Date(createdAt).getTime();
+        const ahora = Date.now();
+        const tiempoPasado = ahora - registroTimestamp;
+        const restanteInicial = PERIODO_BLOQUEO - tiempoPasado;
+        setTiempoRestante(restanteInicial > 0 ? restanteInicial : 0);
+        
+        const intervalo = setInterval(() => {
+            setTiempoRestante(prevTiempo => (prevTiempo > 1000 ? prevTiempo - 1000 : 0));
+        }, 1000);
+        
+        return () => clearInterval(intervalo);
+    }, [registro?.created_at]);
+    
+    // La lógica para encontrar la próxima meta se basa en las props, no en un estado local.
     const proximaMeta = miniMetas.find(meta => !meta.completada);
 
     return (
@@ -118,9 +110,12 @@ export default function RegistroDashboard({ registro, miniMetas, onEdit }) {
             <MetasWidget 
                 registro={registro}
                 proximaMeta={proximaMeta}
+                isLoading={isLoadingAdicional}
             />
             <EstadoWidget 
                 registro={registro}
+                fraseDelDia={fraseDelDia}
+                tiempoRestante={tiempoRestante}
                 onEdit={onEdit}
             />
         </div>
