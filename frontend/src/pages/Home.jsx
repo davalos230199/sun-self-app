@@ -57,7 +57,6 @@ export default function Home() {
                 // La respuesta de Axios contiene los datos en la propiedad .data
                 const metas = metasResponse?.data || [];
                 setMiniMetas(metas);
-                console.log("Mini-metas cargadas desde el backend:", metas); // Log para confirmar
 
                 setFraseDelDia(fraseResult);
                 setIsLoadingAdicional(false);

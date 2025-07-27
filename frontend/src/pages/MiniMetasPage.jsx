@@ -1,76 +1,140 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { Link, useOutletContext } from 'react-router-dom';
 import api from '../services/api';
-import AddMiniMetaModal from '../components/AddMiniMetaModal';
-// Necesitaremos un CSS para esta página
-// import './MiniMetasPage.css';
+import './MinimetasPage.css'; // Asegúrate de crear este archivo CSS
 
-export default function MiniMetasPage() {
-    const { user } = useOutletContext();
-    const [registroDeHoy, setRegistroDeHoy] = useState(null);
+export default function MinimetasPage() {
+    // --- ESTADOS DEL COMPONENTE ---
+    const { user } = useOutletContext(); // Obtenemos el usuario para el saludo
+    const [registro, setRegistro] = useState(null);
     const [miniMetas, setMiniMetas] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [error, setError] = useState('');
+    const [newMetaText, setNewMetaText] = useState('');
 
-    const cargarDatos = useCallback(async () => {
-    if (!user) { setIsLoading(false); return; }
+    // --- LÓGICA DE CARGA DE DATOS ---
+    const fetchData = useCallback(async () => {
         setIsLoading(true);
+        setError('');
         try {
-            const registroResponse = await api.getRegistroDeHoy();
-            const registro = registroResponse.data.registro;
-            if (registro) {
-                setRegistroDeHoy(registro);
-                const metasData = await api.getMiniMetas(registro.id, user.id);
-                setMiniMetas(metasData || []);
+            const registroRes = await api.getRegistroDeHoy();
+            const todayReg = registroRes?.data?.registro;
+
+            if (todayReg) {
+                setRegistro(todayReg);
+                const metasRes = await api.getMiniMetas(todayReg.id);
+                // La ordenación ya debería venir del backend, pero aseguramos por si acaso.
+                const sortedMetas = (metasRes?.data || []).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                setMiniMetas(sortedMetas);
+            } else {
+                setError('No has creado un registro para hoy. Ve a la página de inicio para empezar.');
             }
-            } catch (error) {
-            console.error("Error al cargar datos de la página de metas:", error);
-            } finally {
+        } catch (err) {
+            console.error("Error al cargar la página de metas:", err);
+            setError('Ocurrió un error al cargar tus metas. Por favor, intenta de nuevo.');
+        } finally {
             setIsLoading(false);
         }
-    }, [user]);
+    }, []);
 
     useEffect(() => {
-        cargarDatos();
-    }, [cargarDatos]);
+        fetchData();
+    }, [fetchData]);
 
-    if (isLoading) { return <div>Cargando...</div>; }
-    if (!registroDeHoy) { return <div>Completa tu registro del día.</div>; }
+    // --- MANEJADORES DE EVENTOS (CRUD) ---
+    const handleCreateMeta = async (e) => {
+        e.preventDefault();
+        if (!newMetaText.trim() || !registro) return;
+        try {
+            const payload = { descripcion: newMetaText, registro_id: registro.id };
+            const response = await api.createMiniMeta(payload);
+            setMiniMetas([...miniMetas, response.data]);
+            setNewMetaText('');
+        } catch (err) {
+            console.error("Error al crear mini-meta:", err);
+        }
+    };
+
+    const handleToggleComplete = async (metaId, currentStatus) => {
+        try {
+            const response = await api.updateMiniMetaStatus(metaId, !currentStatus);
+            setMiniMetas(prevMetas => 
+                prevMetas.map(meta => meta.id === metaId ? response.data : meta)
+            );
+        } catch (err) {
+            console.error("Error al actualizar mini-meta:", err);
+        }
+    };
+
+    const handleDeleteMeta = async (metaId) => {
+        try {
+            await api.deleteMiniMeta(metaId);
+            setMiniMetas(prevMetas => prevMetas.filter(meta => meta.id !== metaId));
+        } catch (err) {
+            console.error("Error al borrar mini-meta:", err);
+        }
+    };
+
+    // --- RENDERIZADO DEL COMPONENTE ---
+    if (isLoading) {
+        return <div className="minimetas-container loading">Cargando tus metas...</div>;
+    }
+
+    if (error) {
+        return (
+            <div className="minimetas-container error-page">
+                <p>{error}</p>
+                <Link to="/" className="btn-primary">Volver al Inicio</Link>
+            </div>
+        );
+    }
 
     return (
-        <div className="mini-metas-page">
-            {isModalOpen && (
-                <AddMiniMetaModal
-                    registroId={registroDeHoy.id}
-                    userId={user.id} 
-                    onClose={() => setIsModalOpen(false)}
-                    onSaveSuccess={cargarDatos}
-                />
-            )}
-
-            <header className="metas-header">
-                <h1>Tu Cielo de Hoy</h1>
-                <div className="metas-progreso">
-                    {/* Aquí irá el futuro gráfico de progreso */}
-                    <p>Progreso: X%</p>
+        <div className="minimetas-container">
+            <header className="minimetas-page-header">
+                <div className="subheader">
+                    <span>Hola, {user?.nombre || 'viajero'}</span>
+                    <span>{new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                 </div>
+                <h1 className="main-goal">
+                    🎯 {registro?.meta_del_dia || "Define tu meta principal"}
+                </h1>
             </header>
 
-            <div className="metas-lista">
-                {miniMetas.length > 0 ? (
-                    miniMetas.map(meta => (
-                        <div key={meta.id} className={`meta-item ${meta.completada ? 'completada' : ''}`}>
-                            <p>{meta.descripcion}</p>
-                            <span>{meta.hora_objetivo}</span>
-                            {!meta.completada && <button>Completar</button>}
-                        </div>
-                    ))
-                ) : (
-                    <p>Aún no has definido ninguna meta para hoy. ¡Añade una!</p>
-                )}
+            <div className="minimetas-content">
+                <form onSubmit={handleCreateMeta} className="add-meta-form">
+                    <input
+                        type="text"
+                        value={newMetaText}
+                        onChange={(e) => setNewMetaText(e.target.value)}
+                        placeholder="Añade una nueva mini-meta..."
+                        aria-label="Nueva mini-meta"
+                    />
+                    <button type="submit" disabled={!newMetaText.trim()}>Añadir</button>
+                </form>
+
+                <div className="minimetas-list">
+                    {miniMetas.length === 0 ? (
+                        <p className="empty-state">¡Añade una mini-meta para empezar a construir tu día!</p>
+                    ) : (
+                        miniMetas.map(meta => (
+                            <div key={meta.id} className={`meta-item ${meta.completada ? 'completada' : ''}`}>
+                                <div className="meta-clickable-area" onClick={() => handleToggleComplete(meta.id, meta.completada)}>
+                                    <span className="checkbox-visual">{meta.completada ? '✔' : ''}</span>
+                                    <p>{meta.descripcion}</p>
+                                </div>
+                                <button onClick={() => handleDeleteMeta(meta.id)} className="delete-btn" aria-label="Borrar meta">
+                                    🗑️
+                                </button>
+                            </div>
+                        ))
+                    )}
+                </div>
             </div>
-            
-            <button className="add-meta-fab" onClick={() => setIsModalOpen(true)}>+</button>
+
+             <div className="back-home-link">
+                <Link to="/">← Volver al Dashboard</Link>
+            </div>
         </div>
     );
 }
