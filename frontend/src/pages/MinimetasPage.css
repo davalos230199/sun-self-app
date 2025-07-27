@@ -1,127 +1,139 @@
-/* --- Contenedor Principal --- */
-.minimetas-container {
-    max-width: 800px;
+/* --- Contenedor Principal y Fondo --- */
+.minimetas-page-container {
+    max-width: 700px;
     margin: 2rem auto;
-    padding: 2rem;
-    background-color: #fff;
-    border-radius: 12px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    padding: 1rem;
     font-family: 'Inter', sans-serif;
-    color: #333;
-    animation: fadeIn 0.5s ease-out;
+    position: relative;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* --- Estados de Carga y Error --- */
-.minimetas-container.loading, .minimetas-container.error-page {
-    text-align: center;
-    font-size: 1.2rem;
-    color: #666;
-    padding: 4rem;
-}
-.error-page .btn-primary {
-    display: inline-block;
-    margin-top: 1.5rem;
-    padding: 0.8rem 1.5rem;
-    background-color: #ffc107;
-    color: #333;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: background-color 0.2s;
-}
-.error-page .btn-primary:hover {
-    background-color: #ffca2c;
-}
-
-/* --- Encabezado de la Página --- */
-.minimetas-page-header {
-    margin-bottom: 2rem;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 1.5rem;
-}
-
-.subheader {
+.page-background-header {
     display: flex;
     justify-content: space-between;
+    padding: 0 1rem;
+    color: #a0a0a0;
     font-size: 0.9rem;
-    color: #888;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
 }
 
-.main-goal {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #2c3e50;
-    text-align: center;
-}
-
-/* --- Formulario para Añadir Metas --- */
-.add-meta-form {
-    display: flex;
-    gap: 0.5rem;
+/* --- Estilo Base de Post-it --- */
+.post-it {
+    background-color: #eaf4ff; /* Celeste pastel elegante */
+    border-radius: 8px;
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.1);
+    position: relative;
+    padding: 1.5rem;
     margin-bottom: 2rem;
+    border: 1px solid #d1e0f1;
 }
 
-.add-meta-form input {
-    flex-grow: 1;
-    padding: 0.8rem 1rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
+/* --- Post-it de la Meta Principal (CORREGIDO) --- */
+.main-goal-post-it {
+    text-align: center;
+    padding: 1.5rem 2rem; /* Más compacto */
+    background-color: #fffde7; /* Amarillo post-it clásico */
+    border-color: #fbe69a;
 }
 
-.add-meta-form input:focus {
-    outline: none;
-    border-color: #ffc107;
-    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2);
-}
-
-.add-meta-form button {
-    padding: 0.8rem 1.5rem;
-    background-color: #ffc107;
+.main-goal-text {
+    font-size: 1.4rem; /* Tamaño reducido */
+    font-weight: 600; /* Ligeramente menos grueso */
     color: #333;
-    border: none;
+    margin: 0;
+    line-height: 1.4; /* Mejor espaciado de línea */
+}
+
+/* --- Contenedor de la lista y formulario --- */
+.post-it-container {
+    background-color: #eaf4ff;
     border-radius: 8px;
-    font-weight: 600;
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid #d1e0f1;
+    padding-top: 1rem;
+}
+
+/* --- Post-it del Formulario de Añadir --- */
+.add-meta-post-it {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    margin: 1rem;
+    box-shadow: none; /* Sin sombra interna */
+    border: none; /* Sin borde interno */
+    background: transparent;
+}
+
+.add-meta-post-it .form-content {
+    display: flex;
+    flex-grow: 1;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.time-input {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 0.5rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
     cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
 }
 
-.add-meta-form button:hover {
-    background-color: #ffca2c;
+.text-input {
+    flex-grow: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 2px dashed #b0c4de;
+    padding: 0.5rem 0;
+    font-size: 1.1rem;
+    color: #333;
+}
+.text-input:focus {
+    outline: none;
+    border-bottom-color: #5a9bd5;
 }
 
-.add-meta-form button:disabled {
-    background-color: #e0e0e0;
+.clip-button {
+    font-size: 1.8rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transform: rotate(20deg);
+    transition: transform 0.2s;
+    padding: 0.5rem;
+}
+.clip-button:hover {
+    transform: rotate(10deg) scale(1.1);
+}
+.clip-button:disabled {
+    opacity: 0.4;
     cursor: not-allowed;
 }
 
+
 /* --- Lista de Mini-Metas --- */
-.minimetas-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+.meta-item-wrapper {
+    padding: 0 1.5rem;
+    border-top: 2px dashed #b0c4de; /* Línea divisoria estilo recorte */
 }
 
 .meta-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    background-color: #fafafa;
-    border-radius: 8px;
-    padding: 0.5rem 1rem;
-    transition: background-color 0.2s, box-shadow 0.2s;
-    border-left: 4px solid #ffc107;
+    gap: 1rem;
+    padding: 1rem 0;
 }
 
-.meta-item:hover {
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+.meta-time {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #5a9bd5;
+    background-color: #fff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #d1e0f1;
 }
 
 .meta-clickable-area {
@@ -138,31 +150,25 @@
     justify-content: center;
     width: 24px;
     height: 24px;
-    border: 2px solid #ccc;
-    border-radius: 50%;
+    border: 2px solid #b0c4de;
+    border-radius: 6px;
     font-weight: bold;
-    color: #27ae60;
-    transition: border-color 0.2s, background-color 0.2s;
+    color: #333;
+    transition: all 0.2s;
 }
 
 .meta-item p {
     margin: 0;
     color: #333;
-    transition: color 0.2s, text-decoration 0.2s;
 }
 
 /* --- Estilos para Metas Completadas --- */
-.meta-item.completada {
-    background-color: #f0fdf4;
-    border-left-color: #27ae60;
+.meta-item-wrapper.completada .checkbox-visual {
+    background-color: #5a9bd5;
+    border-color: #5a9bd5;
 }
 
-.meta-item.completada .checkbox-visual {
-    background-color: #27ae60;
-    border-color: #27ae60;
-}
-
-.meta-item.completada p {
+.meta-item-wrapper.completada p {
     text-decoration: line-through;
     color: #888;
 }
@@ -174,34 +180,26 @@
     cursor: pointer;
     font-size: 1.2rem;
     color: #aaa;
-    padding: 0.5rem;
-    border-radius: 50%;
-    transition: color 0.2s, background-color 0.2s;
+    transition: color 0.2s;
 }
-
 .delete-btn:hover {
     color: #e74c3c;
-    background-color: #fbebeb;
 }
 
-/* --- Estado Vacío y Link de Volver --- */
-.empty-state {
-    text-align: center;
-    padding: 2rem;
-    color: #888;
-}
-
+/* --- Link de Volver --- */
 .back-home-link {
+    display: block;
     margin-top: 2rem;
     text-align: center;
-}
-
-.back-home-link a {
-    color: #2c3e50;
+    color: #888;
     text-decoration: none;
-    font-weight: 500;
+}
+.back-home-link:hover {
+    color: #333;
 }
 
-.back-home-link a:hover {
-    text-decoration: underline;
+/* --- Estados de Carga y Error --- */
+.minimetas-page-container.loading, .minimetas-page-container.error-page {
+    text-align: center;
+    padding: 4rem 1rem;
 }

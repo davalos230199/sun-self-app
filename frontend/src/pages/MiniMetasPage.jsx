@@ -1,18 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import api from '../services/api';
-import './MinimetasPage.css'; // Asegúrate de crear este archivo CSS
+import './MinimetasPage.css';
 
 export default function MinimetasPage() {
-    // --- ESTADOS DEL COMPONENTE ---
-    const { user } = useOutletContext(); // Obtenemos el usuario para el saludo
+    const { user } = useOutletContext();
     const [registro, setRegistro] = useState(null);
     const [miniMetas, setMiniMetas] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+    
+    // Estados para el nuevo formulario
     const [newMetaText, setNewMetaText] = useState('');
+    const [newMetaTime, setNewMetaTime] = useState('12:00');
 
-    // --- LÓGICA DE CARGA DE DATOS ---
     const fetchData = useCallback(async () => {
         setIsLoading(true);
         setError('');
@@ -23,15 +24,21 @@ export default function MinimetasPage() {
             if (todayReg) {
                 setRegistro(todayReg);
                 const metasRes = await api.getMiniMetas(todayReg.id);
-                // La ordenación ya debería venir del backend, pero aseguramos por si acaso.
-                const sortedMetas = (metasRes?.data || []).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                
+                // Hacemos la función de ordenación más robusta para manejar valores nulos.
+                const sortedMetas = (metasRes?.data || []).sort((a, b) => {
+                    if (!a.hora_objetivo) return 1;
+                    if (!b.hora_objetivo) return -1;
+                    return a.hora_objetivo.localeCompare(b.hora_objetivo);
+                });
+
                 setMiniMetas(sortedMetas);
             } else {
-                setError('No has creado un registro para hoy. Ve a la página de inicio para empezar.');
+                setError('Necesitas un registro diario para definir tus mini-metas.');
             }
         } catch (err) {
             console.error("Error al cargar la página de metas:", err);
-            setError('Ocurrió un error al cargar tus metas. Por favor, intenta de nuevo.');
+            setError('Ocurrió un error al cargar tus metas.');
         } finally {
             setIsLoading(false);
         }
@@ -41,14 +48,19 @@ export default function MinimetasPage() {
         fetchData();
     }, [fetchData]);
 
-    // --- MANEJADORES DE EVENTOS (CRUD) ---
     const handleCreateMeta = async (e) => {
         e.preventDefault();
         if (!newMetaText.trim() || !registro) return;
         try {
-            const payload = { descripcion: newMetaText, registro_id: registro.id };
-            const response = await api.createMiniMeta(payload);
-            setMiniMetas([...miniMetas, response.data]);
+            const payload = { 
+                descripcion: newMetaText, 
+                registro_id: registro.id,
+                hora_objetivo: newMetaTime // Incluimos la hora
+            };
+            await api.createMiniMeta(payload);
+            
+            // Volvemos a cargar y ordenar todo para mantener la consistencia
+            fetchData(); 
             setNewMetaText('');
         } catch (err) {
             console.error("Error al crear mini-meta:", err);
@@ -58,6 +70,7 @@ export default function MinimetasPage() {
     const handleToggleComplete = async (metaId, currentStatus) => {
         try {
             const response = await api.updateMiniMetaStatus(metaId, !currentStatus);
+            // Actualizamos solo el item modificado para una respuesta visual más rápida
             setMiniMetas(prevMetas => 
                 prevMetas.map(meta => meta.id === metaId ? response.data : meta)
             );
@@ -75,14 +88,13 @@ export default function MinimetasPage() {
         }
     };
 
-    // --- RENDERIZADO DEL COMPONENTE ---
     if (isLoading) {
-        return <div className="minimetas-container loading">Cargando tus metas...</div>;
+        return <div className="minimetas-page-container loading">Cargando...</div>;
     }
 
     if (error) {
         return (
-            <div className="minimetas-container error-page">
+            <div className="minimetas-page-container error-page">
                 <p>{error}</p>
                 <Link to="/" className="btn-primary">Volver al Inicio</Link>
             </div>
@@ -90,35 +102,48 @@ export default function MinimetasPage() {
     }
 
     return (
-        <div className="minimetas-container">
-            <header className="minimetas-page-header">
-                <div className="subheader">
-                    <span>Hola, {user?.nombre || 'viajero'}</span>
-                    <span>{new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                </div>
-                <h1 className="main-goal">
-                    🎯 {registro?.meta_del_dia || "Define tu meta principal"}
-                </h1>
-            </header>
+        <div className="minimetas-page-container">
+            <div className="page-background-header">
+                <span>Hola, {user?.nombre || 'viajero'}</span>
+                <span>{new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' })}</span>
+            </div>
 
-            <div className="minimetas-content">
-                <form onSubmit={handleCreateMeta} className="add-meta-form">
-                    <input
-                        type="text"
-                        value={newMetaText}
-                        onChange={(e) => setNewMetaText(e.target.value)}
-                        placeholder="Añade una nueva mini-meta..."
-                        aria-label="Nueva mini-meta"
-                    />
-                    <button type="submit" disabled={!newMetaText.trim()}>Añadir</button>
+            <div className="post-it main-goal-post-it">
+                <h1 className="main-goal-text">
+                    🎯 {registro?.meta_del_dia}
+                </h1>
+            </div>
+
+            <div className="post-it-container">
+                <form onSubmit={handleCreateMeta} className="post-it add-meta-post-it">
+                    <div className="form-content">
+                        <input 
+                            type="time" 
+                            value={newMetaTime}
+                            onChange={e => setNewMetaTime(e.target.value)}
+                            className="time-input"
+                        />
+                        <input
+                            type="text"
+                            value={newMetaText}
+                            onChange={(e) => setNewMetaText(e.target.value)}
+                            placeholder="Describe tu mini-meta..."
+                            className="text-input"
+                        />
+                    </div>
+                    <button type="submit" className="clip-button" aria-label="Añadir meta" disabled={!newMetaText.trim()}>
+                        📎
+                    </button>
                 </form>
 
-                <div className="minimetas-list">
-                    {miniMetas.length === 0 ? (
-                        <p className="empty-state">¡Añade una mini-meta para empezar a construir tu día!</p>
-                    ) : (
-                        miniMetas.map(meta => (
-                            <div key={meta.id} className={`meta-item ${meta.completada ? 'completada' : ''}`}>
+                <div className="minimetas-list-container">
+                    {miniMetas.map(meta => (
+                        <div key={meta.id} className={`meta-item-wrapper ${meta.completada ? 'completada' : ''}`}>
+                            <div className="meta-item">
+                                <div className="meta-time">
+                                    {/* Mostramos la hora solo si existe */}
+                                    {meta.hora_objetivo ? meta.hora_objetivo.substring(0, 5) : '--:--'}
+                                </div>
                                 <div className="meta-clickable-area" onClick={() => handleToggleComplete(meta.id, meta.completada)}>
                                     <span className="checkbox-visual">{meta.completada ? '✔' : ''}</span>
                                     <p>{meta.descripcion}</p>
@@ -127,14 +152,11 @@ export default function MinimetasPage() {
                                     🗑️
                                 </button>
                             </div>
-                        ))
-                    )}
+                        </div>
+                    ))}
                 </div>
             </div>
-
-             <div className="back-home-link">
-                <Link to="/">← Volver al Dashboard</Link>
-            </div>
+             <Link to="/" className="back-home-link">← Volver al Dashboard</Link>
         </div>
     );
 }

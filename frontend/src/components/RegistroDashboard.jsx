@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
-// Esta versión de RegistroDashboard no necesita 'api' porque ya no busca datos.
-
 const formatTiempo = (ms) => {
     if (ms <= 0) return "";
     const totalSegundos = Math.floor(ms / 1000);
@@ -12,8 +10,6 @@ const formatTiempo = (ms) => {
     return `${horas}:${minutos}:${segundos}`;
 };
 
-// --- WIDGET DE METAS (Componente "tonto") ---
-// Solo recibe props y las muestra. No tiene 'useState' ni 'useEffect'.
 const MetasWidget = ({ registro, proximaMeta, isLoading }) => {
     return (
         <Link to="/metas" className="meta-link-wrapper">
@@ -23,11 +19,11 @@ const MetasWidget = ({ registro, proximaMeta, isLoading }) => {
                     {isLoading ? <p>Cargando metas...</p> : (
                         !proximaMeta ? (
                             <div className="nube-vacia-widget">
-                                <p>+ Define tus mini-metas para construir tu día</p>
+                                <p>¡Todas las metas completadas! ✨</p>
                             </div>
                         ) : (
                             <div className="nube-proxima-widget">
-                                <span>Próxima mini-meta: {proximaMeta.descripcion} a las {proximaMeta.hora_objetivo}</span>
+                                <span>Próxima: {proximaMeta.descripcion} a las {proximaMeta.hora_objetivo.substring(0, 5)}</span>
                             </div>
                         )
                     )}
@@ -38,11 +34,8 @@ const MetasWidget = ({ registro, proximaMeta, isLoading }) => {
     );
 };
 
-// --- WIDGET DE ESTADO (Componente "tonto") ---
-// Recibe la frase y el tiempo como props. Ya no los calcula él mismo.
 const EstadoWidget = ({ registro, fraseDelDia, tiempoRestante, onEdit }) => {
     const navigate = useNavigate();
-
     const determinarClima = useCallback((reg) => {
         if (!reg) return '';
         const valores = [reg.mente_estat, reg.emocion_estat, reg.cuerpo_estat];
@@ -70,40 +63,46 @@ const EstadoWidget = ({ registro, fraseDelDia, tiempoRestante, onEdit }) => {
     );
 };
 
-
-// --- COMPONENTE PRINCIPAL: AHORA SÓLO UN PRESENTADOR ---
-// Recibe toda la información de Home.jsx y la distribuye.
-export default function RegistroDashboard({ 
-    registro, 
-    miniMetas, 
-    fraseDelDia, 
-    isLoadingAdicional, 
-    onEdit 
-}) {
-    // El único estado que gestiona es el del timer, porque es un efecto visual.
+export default function RegistroDashboard({ registro, miniMetas, fraseDelDia, isLoadingAdicional, onEdit }) {
     const [tiempoRestante, setTiempoRestante] = useState(0);
+    // --- NUEVO ESTADO PARA LA PRÓXIMA META ---
+    const [proximaMeta, setProximaMeta] = useState(null);
 
-    // El único useEffect que queda es el del timer, que depende de una prop estable.
+    // --- USEEFFECT PARA ACTUALIZAR LA PRÓXIMA META EN TIEMPO REAL ---
+    useEffect(() => {
+        const actualizarProximaMeta = () => {
+            const ahora = new Date();
+            const horaActual = ahora.getHours().toString().padStart(2, '0') + ':' + ahora.getMinutes().toString().padStart(2, '0');
+            
+            const metasPendientes = miniMetas
+                .filter(meta => !meta.completada && meta.hora_objetivo)
+                .sort((a, b) => a.hora_objetivo.localeCompare(b.hora_objetivo));
+
+            const siguiente = metasPendientes.find(meta => meta.hora_objetivo > horaActual) || metasPendientes[0] || null;
+            
+            setProximaMeta(siguiente);
+        };
+
+        actualizarProximaMeta(); // Ejecutar al inicio
+        const intervalo = setInterval(actualizarProximaMeta, 60000); // Y luego cada minuto
+
+        return () => clearInterval(intervalo); // Limpieza al desmontar
+    }, [miniMetas]);
+
     useEffect(() => {
         const createdAt = registro?.created_at;
         if (!createdAt) return;
-
         const PERIODO_BLOQUEO = 4 * 60 * 60 * 1000;
         const registroTimestamp = new Date(createdAt).getTime();
         const ahora = Date.now();
         const tiempoPasado = ahora - registroTimestamp;
         const restanteInicial = PERIODO_BLOQUEO - tiempoPasado;
         setTiempoRestante(restanteInicial > 0 ? restanteInicial : 0);
-        
         const intervalo = setInterval(() => {
             setTiempoRestante(prevTiempo => (prevTiempo > 1000 ? prevTiempo - 1000 : 0));
         }, 1000);
-        
         return () => clearInterval(intervalo);
     }, [registro?.created_at]);
-    
-    // La lógica para encontrar la próxima meta se basa en las props, no en un estado local.
-    const proximaMeta = miniMetas.find(meta => !meta.completada);
 
     return (
         <div className="daily-dashboard">
