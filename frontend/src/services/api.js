@@ -6,24 +6,7 @@ const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
-// --- SOLUCIÓN DE AUTENTICACIÓN ---
-// Esta función se asegura de que el cliente de Supabase conozca al usuario.
-const ensureSupabaseAuth = async () => {
-    const token = localStorage.getItem('token');
-    if (token) {
-        // Le decimos al cliente de Supabase: "Este es el token del usuario actual".
-        // Esto sincroniza la sesión entre tu backend y Supabase.
-        const { error } = await supabase.auth.setSession({
-            access_token: token,
-            refresh_token: '' // No es necesario para RPC si el access_token es válido
-        });
-        if (error) {
-            console.error('Error al sincronizar la sesión con Supabase:', error);
-        }
-    }
-};
-
-// ... (tu interceptor de axios sin cambios)
+// Función para sincronizar la sesión de Supabase
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -57,32 +40,29 @@ const updatePassword = (payload) => apiClient.post('/api/auth/update-password', 
 const getChartData = (filter) => {return apiClient.get(`/api/registros/chart-data?filter=${filter}`);};
 
 
-// --- NUEVAS FUNCIONES PARA MINI-METAS (usando supabase directamente) ---
-const getMiniMetas = async (registroId) => {
-    await ensureSupabaseAuth(); // Sincronizamos la sesión ANTES de la llamada.
-    const { data, error } = await supabase.rpc('get_mini_metas_for_registro', { registro_id_in: registroId });
-    if (error) { console.error('Error al obtener mini-metas:', error); throw error; }
-    return data;
+// --- NUEVAS FUNCIONES PARA MINI-METAS (AHORA USANDO apiClient) ---
+
+// Llama a: GET /api/minimetas/for-registro/:registroId
+const getMiniMetas = (registroId) => {
+    // No necesita 'await' aquí, apiClient devuelve la promesa
+    return apiClient.get(`/api/minimetas/for-registro/${registroId}`);
 };
 
-// La función ahora acepta y pasa el 'userId'.
-const createMiniMeta = async (descripcion, horaObjetivo, registroId, userId) => {
-    await ensureSupabaseAuth(); // Sincronizamos la sesión ANTES de la llamada.
-    const { error } = await supabase.rpc('create_mini_meta', { 
-        descripcion_in: descripcion, 
-        hora_objetivo_in: horaObjetivo, 
-        registro_id_in: registroId,
-        user_id_in: userId
-    });
-    if (error) { console.error('Error al crear la mini-meta:', error); throw error; }
-    return true;
+// Llama a: POST /api/minimetas
+const createMiniMeta = (payload) => {
+    // El payload debe ser un objeto: { descripcion, registro_id }
+    return apiClient.post('/api/minimetas', payload);
 };
 
-const updateMiniMetaStatus = async (miniMetaId, completada) => {
-    await ensureSupabaseAuth(); // Sincronizamos la sesión ANTES de la llamada.
-    const { error } = await supabase.rpc('update_mini_meta_status', { mini_meta_id_in: miniMetaId, completada_in: completada });
-    if (error) { console.error('Error al actualizar la mini-meta:', error); throw error; }
-    return true;
+// Llama a: PATCH /api/minimetas/:id
+const updateMiniMetaStatus = (miniMetaId, completada) => {
+    // El payload es: { completada: true/false }
+    return apiClient.patch(`/api/minimetas/${miniMetaId}`, { completada });
+};
+
+// Llama a: DELETE /api/minimetas/:id
+const deleteMiniMeta = (miniMetaId) => {
+    return apiClient.delete(`/api/minimetas/${miniMetaId}`);
 };
 
 // --- EXPORTACIÓN UNIFICADA ---
@@ -104,7 +84,8 @@ const api = {
   updatePassword,
   getMiniMetas,
   createMiniMeta,
-  updateMiniMetaStatus
+  updateMiniMetaStatus,
+  deleteMiniMeta 
 };
 
 export default api;
