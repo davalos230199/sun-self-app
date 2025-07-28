@@ -22,7 +22,7 @@ export default function Navbar() {
           <HomeIcon />
           <span className="link-text">Home</span>
         </NavLink>
-        <NavLink to="/tracking" className="nav-item">
+        <NavLink to="/metas" className="nav-item">
           <TrackingIcon />
           <span className="link-text">Diario</span>
         </NavLink>

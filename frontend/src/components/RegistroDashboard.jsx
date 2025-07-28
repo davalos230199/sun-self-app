@@ -45,21 +45,33 @@ const EstadoWidget = ({ registro, fraseDelDia, tiempoRestante, onEdit }) => {
         if (puntaje >= 2) return '☀️'; if (puntaje <= -2) return '🌧️'; return '⛅';
     }, []);
 
+  // ENVUELVE TODO EL RETURN EN UN <Link>
     return (
-        <div className="post-it-display post-it-base">
-            <div className="post-it-top-bar">
-                <div className="timer-display">
-                    {tiempoRestante > 0 && `⏳ ${formatTiempo(tiempoRestante)}`}
+        <Link to="/tracking" className="post-it-link-wrapper"> {/* ¡NUEVO LINK AQUÍ! */}
+            <div className="post-it-display post-it-base">
+                <div className="post-it-top-bar">
+                    <div className="timer-display">
+                        {tiempoRestante > 0 && `⏳ ${formatTiempo(tiempoRestante)}`}
+                    </div>
+                    {/* Hacemos que el botón de editar no propague el click al Link */}
+                    <button 
+                        className="edit-button" 
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(); }} 
+                        title="Registrar nuevo estado" 
+                        disabled={tiempoRestante > 0}
+                    >
+                        ✏️
+                    </button>
                 </div>
-                <button className="edit-button" onClick={onEdit} title="Registrar nuevo estado" disabled={tiempoRestante > 0}>✏️</button>
+                <h3>Tu estado de hoy</h3>
+                <div className="clima-visual">{determinarClima(registro)}</div>
+                <p className="frase-del-dia">{fraseDelDia}</p>
+                <footer className="post-it-footer">
+                     {/* Este link a "hoja de atrás" se puede quitar, ya que el calendario lo gestionará mejor */}
+                     <span>Toca para ver tu historial completo...</span>
+                </footer>
             </div>
-            <h3>Tu estado de hoy</h3>
-            <div className="clima-visual">{determinarClima(registro)}</div>
-            <p className="frase-del-dia">{fraseDelDia}</p>
-            <footer className="post-it-footer">
-                <a onClick={() => navigate(`/journal/${registro.id}`)}>Escribir en la hoja de atrás...</a>
-            </footer>
-        </div>
+        </Link>
     );
 };
 
