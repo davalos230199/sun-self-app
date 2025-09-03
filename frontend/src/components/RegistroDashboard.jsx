@@ -45,30 +45,42 @@ const EstadoWidget = ({ registro, fraseDelDia, tiempoRestante, onEdit }) => {
         if (puntaje >= 2) return '☀️'; if (puntaje <= -2) return '🌧️'; return '⛅';
     }, []);
 
-  // ENVUELVE TODO EL RETURN EN UN <Link>
     return (
-        <Link to="/tracking" className="post-it-link-wrapper"> {/* ¡NUEVO LINK AQUÍ! */}
+        <Link to="/tracking" className="post-it-link-wrapper">
             <div className="post-it-display post-it-base">
                 <div className="post-it-top-bar">
                     <div className="timer-display">
                         {tiempoRestante > 0 && `⏳ ${formatTiempo(tiempoRestante)}`}
                     </div>
-                    {/* Hacemos que el botón de editar no propague el click al Link */}
-                    <button 
-                        className="edit-button" 
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(); }} 
-                        title="Registrar nuevo estado" 
-                        disabled={tiempoRestante > 0}
-                    >
-                        ✏️
-                    </button>
+                    
+                    {/* NUEVO CONTENEDOR PARA LOS BOTONES */}
+                    <div className="post-it-actions">
+                        <button
+                            className="edit-button"
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(); }}
+                            title="Registrar nuevo estado"
+                            disabled={tiempoRestante > 0}
+                        >
+                            ✏️
+                        </button>
+                        <button
+                            className="journal-button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                navigate(`/journal/${registro.id}`);
+                            }}
+                            title="Escribir en La Hoja de Atrás"
+                        >
+                            📝
+                        </button>
+                    </div>
                 </div>
                 <h3>Tu estado de hoy</h3>
                 <div className="clima-visual">{determinarClima(registro)}</div>
                 <p className="frase-del-dia">{fraseDelDia}</p>
                 <footer className="post-it-footer">
-                     {/* Este link a "hoja de atrás" se puede quitar, ya que el calendario lo gestionará mejor */}
-                     <span>Toca para ver tu historial completo...</span>
+                    <span>Toca para ver tu historial completo...</span>
                 </footer>
             </div>
         </Link>
@@ -77,10 +89,8 @@ const EstadoWidget = ({ registro, fraseDelDia, tiempoRestante, onEdit }) => {
 
 export default function RegistroDashboard({ registro, miniMetas, fraseDelDia, isLoadingAdicional, onEdit }) {
     const [tiempoRestante, setTiempoRestante] = useState(0);
-    // --- NUEVO ESTADO PARA LA PRÓXIMA META ---
     const [proximaMeta, setProximaMeta] = useState(null);
 
-    // --- USEEFFECT PARA ACTUALIZAR LA PRÓXIMA META EN TIEMPO REAL ---
     useEffect(() => {
         const actualizarProximaMeta = () => {
             const ahora = new Date();
@@ -95,10 +105,10 @@ export default function RegistroDashboard({ registro, miniMetas, fraseDelDia, is
             setProximaMeta(siguiente);
         };
 
-        actualizarProximaMeta(); // Ejecutar al inicio
-        const intervalo = setInterval(actualizarProximaMeta, 60000); // Y luego cada minuto
+        actualizarProximaMeta();
+        const intervalo = setInterval(actualizarProximaMeta, 60000);
 
-        return () => clearInterval(intervalo); // Limpieza al desmontar
+        return () => clearInterval(intervalo);
     }, [miniMetas]);
 
     useEffect(() => {

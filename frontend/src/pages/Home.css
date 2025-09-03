@@ -168,3 +168,28 @@
   margin: 0 5px 15px 5px;
   font-weight: 500;
 }
+
+.post-it-link-wrapper, .post-it-link-wrapper:hover {
+    text-decoration: none;
+    color: inherit; /* Hereda el color del texto normal */
+    width: 100%;
+}
+
+/* Estilos para el botón de la "Hoja de Atrás" */
+.journal-button {
+  background: none; /* Elimina el fondo por defecto del botón */
+  border: none; /* Elimina el borde */
+  cursor: pointer; /* Cambia el cursor para indicar que es clickeable */
+  font-size: 1.2rem; /* Tamaño del emoji */
+  padding: 5px; /* Espaciado alrededor del emoji */
+  transition: transform 0.2s ease-in-out; /* Animación suave al pasar el mouse */
+  color: #333; /* Color para que no se vea gris en todos los navegadores */
+}
+
+/* Efecto al pasar el mouse sobre el botón */
+.journal-button:hover {
+  transform: scale(1.1); /* Agranda el botón ligeramente */
+}
+.journal-button:active {
+  transform: scale(0.95); /* Efecto de "presionar" al hacer clic */
+}
