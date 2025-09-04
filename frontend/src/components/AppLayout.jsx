@@ -18,40 +18,13 @@ function Navbar() {
         : 'text-zinc-400 hover:text-zinc-700' // Inactivos en gris, con hover
     }`;
   };
-
   return (
-    <nav className="
-      flex-shrink-0
-      w-full 
-      h-20
-      bg-white 
-      shadow-[0_-2px_10px_rgba(0,0,0,0.06)] 
-      border-t border-zinc-200
-      flex 
-      justify-around 
-      items-stretch 
-      px-2
-    ">
-      <NavLink to="/home" className={getLinkClassName}>
-        <HomeIcon />
-        <span className="text-xs font-semibold">Home</span>
-      </NavLink>
-      <NavLink to="/metas" className={getLinkClassName}>
-        <MetasIcon />
-        <span className="text-xs font-semibold">Metas</span>
-      </NavLink>
-      <NavLink to="/sunny" className={getLinkClassName}>
-        <SunnyIcon />
-        <span className="text-xs font-semibold">Sunny</span>
-      </NavLink>
-      <NavLink to="/muro" className={getLinkClassName}>
-        <MuroIcon />
-        <span className="text-xs font-semibold">Muro</span>
-      </NavLink>
-      <NavLink to="/settings" className={getLinkClassName}>
-        <SettingsIcon />
-        <span className="text-xs font-semibold">Ajustes</span>
-      </NavLink>
+    <nav className="flex-shrink-0 w-full h-20 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.06)] border-t border-zinc-200 flex justify-around items-stretch px-2">
+      <NavLink to="/home" className={getLinkClassName}><HomeIcon /><span className="text-xs font-semibold">Home</span></NavLink>
+      <NavLink to="/metas" className={getLinkClassName}><MetasIcon /><span className="text-xs font-semibold">Metas</span></NavLink>
+      <NavLink to="/sunny" className={getLinkClassName}><SunnyIcon /><span className="text-xs font-semibold">Sunny</span></NavLink>
+      <NavLink to="/muro" className={getLinkClassName}><MuroIcon /><span className="text-xs font-semibold">Muro</span></NavLink>
+      <NavLink to="/settings" className={getLinkClassName}><SettingsIcon /><span className="text-xs font-semibold">Ajustes</span></NavLink>
     </nav>
   );
 }
@@ -69,13 +42,16 @@ export default function AppLayout({ user }) {
   }
 
   return (
-    // Contenedor exterior que define el fondo y el padding
-    <div className="h-screen w-screen bg-zinc-100 p-2 sm:p-4">
+    // Contenedor exterior: ocupa toda la pantalla y sirve de 'ancla'
+    <div className="h-screen w-screen bg-zinc-100 relative">
       
-      {/* La "tarjeta" de la app. AHORA TIENE h-full para respetar el espacio del padre */}
+      {/* La "tarjeta" de la app: posicionada de forma absoluta para ignorar el bug de 100vh */}
       <div className="
-        h-full /* <--- CORRECCIÓN CLAVE */
-        w-full max-w-lg mx-auto /* Centrado y con ancho máximo */
+        absolute 
+        top-2 sm:top-4 
+        bottom-2 sm:bottom-4
+        left-1/2 -translate-x-1/2 /* Centra horizontalmente */
+        w-[calc(100%-1rem)] sm:w-full max-w-lg /* Ancho adaptable con máximo */
         bg-white 
         shadow-2xl 
         rounded-2xl
@@ -83,12 +59,10 @@ export default function AppLayout({ user }) {
         overflow-hidden
       ">
         
-        {/* el 'flex-1' es una forma abreviada que hace que este elemento crezca y ocupe el espacio sobrante */}
         <main className="flex-1 overflow-y-auto"> 
           <Outlet context={{ user }} />
         </main>
 
-        {/* Navbar ya no necesita clases de crecimiento, solo se posiciona al final */}
         <Navbar />
       </div>
     </div>
