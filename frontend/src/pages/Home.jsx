@@ -2,25 +2,21 @@ import { useState, useEffect, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import api from '../services/api';
 
-// Componentes refactorizados
-import PageHeader from '../components/PageHeader';
 import RegistroDashboard from '../components/RegistroDashboard';
 import RegistroForm from '../components/RegistroForm';
 import WelcomeModal from '../components/WelcomeModal';
-// Ya no necesitamos Home.css
+import PageHeader from '../components/PageHeader';
 
 export default function Home() {
     const { user } = useOutletContext();
     const [isLoading, setIsLoading] = useState(true);
-    
     const [registroDeHoy, setRegistroDeHoy] = useState(null);
     const [miniMetas, setMiniMetas] = useState([]);
     const [fraseDelDia, setFraseDelDia] = useState('');
-    
     const [isLoadingAdicional, setIsLoadingAdicional] = useState(false);
     const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
-    // --- Lógica de carga de datos (sin cambios funcionales) ---
+    // ... toda tu lógica (cargarDatosDelDia, useEffect, handleEdit) se mantiene exactamente igual ...
     const cargarDatosDelDia = useCallback(async () => {
         if (!user) {
             setIsLoading(false);
@@ -44,7 +40,7 @@ export default function Home() {
                             emocion_estat: registro.emocion_estat,
                             cuerpo_estat: registro.cuerpo_estat,
                             meta_del_dia: registro.meta_del_dia,
-                          }).then(res => res.data.frase).catch(() => "Hoy, las palabras descansan.")
+                        }).then(res => res.data.frase).catch(() => "Hoy, las palabras descansan.")
                 ]);
                 
                 const metas = metasResponse?.data || [];
@@ -76,29 +72,27 @@ export default function Home() {
     const handleEdit = () => {
         setRegistroDeHoy(null);
     };
-    
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-full">
-                <p className="text-zinc-500 animate-pulse">Cargando tu día...</p>
-            </div>
-        );
-    }
+
+    // ELIMINAMOS EL if (isLoading) DE AQUÍ
 
     return (
-        // CAMBIO ESTRUCTURAL: Aplicamos el layout estándar
-        <div className="p-2 sm:p-4 h-full w-full flex flex-col">
-            {/* Usamos el PageHeader estandarizado */}
-            <PageHeader title="Tu Día" showBackButton={false} />
-            
+        // LA ESTRUCTURA PRINCIPAL SIEMPRE SE RENDERIZA
+        <div className="p-2 sm:p-4 w-full max-w-lg mx-auto flex flex-col h-full">
             {showWelcomeModal && <WelcomeModal onAccept={() => {
                 setShowWelcomeModal(false);
                 localStorage.setItem('sunself_manifiesto_visto', 'true');
             }} />}
             
-            {/* El contenido principal ahora vive dentro de <main> */}
-            <main className="flex-grow overflow-y-auto mt-4">
-                {registroDeHoy ? (
+            <PageHeader 
+                title={registroDeHoy ? "Tu Día" : "¿Cómo estás hoy?"} 
+                showBackButton={false} 
+            />
+
+            <main className="mt-4 flex-grow">
+                {/* LA CONDICIÓN AHORA ESTÁ AQUÍ DENTRO */}
+                {isLoading ? (
+                    <p className="text-center text-zinc-500 italic py-10">Preparando tu día...</p>
+                ) : registroDeHoy ? (
                     <RegistroDashboard 
                         registro={registroDeHoy} 
                         miniMetas={miniMetas}
@@ -113,4 +107,3 @@ export default function Home() {
         </div>
     );
 }
-

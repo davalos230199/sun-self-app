@@ -2,8 +2,12 @@ import axios from 'axios';
 // Asegúrate de que esta importación sea correcta y use llaves si es una exportación nombrada
 import { supabase } from './supabaseClient'; 
 
+// DESPUÉS
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+  headers: {
+    'Content-Type': 'application/json'
+  }
 });
 
 // Función para sincronizar la sesión de Supabase
