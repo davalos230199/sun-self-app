@@ -10,7 +10,6 @@ const SettingsIcon = () => <svg width="28" height="28" viewBox="0 0 24 24" fill=
 const MuroIcon = () => <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>;
 
 function Navbar() {
-  
   const getLinkClassName = ({ isActive }) => {
     const baseStyle = "flex flex-col items-center justify-center gap-1 w-full h-full transition-colors duration-200";
     return `${baseStyle} ${
@@ -70,13 +69,13 @@ export default function AppLayout({ user }) {
   }
 
   return (
-    // CAMBIO: El contenedor exterior ahora es un flexbox en columna
-    <div className="h-screen w-screen bg-zinc-100 p-2 sm:p-4 flex flex-col items-center">
+    // Contenedor exterior que define el fondo y el padding
+    <div className="h-screen w-screen bg-zinc-100 p-2 sm:p-4">
       
-      {/* CAMBIO: La tarjeta de la app ya no necesita 'h-full', 'flex-grow' se encarga */}
+      {/* La "tarjeta" de la app. AHORA TIENE h-full para respetar el espacio del padre */}
       <div className="
-        flex-grow /* <--- ESTA ES LA CLAVE: Ocupa el espacio disponible */
-        w-full max-w-lg
+        h-full /* <--- CORRECCIÓN CLAVE */
+        w-full max-w-lg mx-auto /* Centrado y con ancho máximo */
         bg-white 
         shadow-2xl 
         rounded-2xl
@@ -84,10 +83,12 @@ export default function AppLayout({ user }) {
         overflow-hidden
       ">
         
-        <main className="flex-grow overflow-y-auto"> 
+        {/* el 'flex-1' es una forma abreviada que hace que este elemento crezca y ocupe el espacio sobrante */}
+        <main className="flex-1 overflow-y-auto"> 
           <Outlet context={{ user }} />
         </main>
 
+        {/* Navbar ya no necesita clases de crecimiento, solo se posiciona al final */}
         <Navbar />
       </div>
     </div>
