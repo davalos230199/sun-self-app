@@ -31,7 +31,7 @@ html, body {
 
 body {
   font-family: var(--font-cuerpo);
-  background-color: #f0f2f5; /* Un fondo general suave */
+  background-color: #f4f4f5; /* Un fondo general suave */
   color: var(--color-lapiz);
 }
 

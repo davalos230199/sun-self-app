@@ -2,8 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import PageHeader from '../components/PageHeader';
-// El archivo .css ya no es necesario si todas las clases están en Tailwind
-// import './MinimetasPage.css'; 
 
 export default function MinimetasPage() {
     const [registro, setRegistro] = useState(null);
@@ -109,14 +107,14 @@ export default function MinimetasPage() {
                     // 3. Contenido Exitoso (dentro del main)
                     <>
                         {/* Post-it de la Meta Principal */}
-                        <div className="bg-yellow-100 border border-yellow-200 p-4 sm:p-6 rounded-lg shadow-md text-center mb-6">
+                        <div className="bg-yellow-100 border border-amber-300 p-4 sm:p-6 rounded-lg shadow-md text-center mb-6">
                             <h1 className="font-['Patrick_Hand'] text-2xl sm:text-3xl text-yellow-800 break-words">
                                 🎯 {registro?.meta_del_dia || "Define tu meta principal"}
                             </h1>
                         </div>
 
                         {/* Contenedor de la lista y formulario */}
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg shadow-md">
+                        <div className="bg-blue-50 border border-amber-300 rounded-lg shadow-md">
                             {/* Formulario para añadir metas */}
                             <form onSubmit={handleCreateMeta} className="p-4 flex items-center gap-2 sm:gap-4 border-b-2 border-dashed border-blue-200">
                                 <input 

@@ -29,7 +29,7 @@ const determinarClima = (reg) => {
 const MetasWidget = ({ registro, proximaMeta, isLoading }) => {
     return (
         <Link to="/metas" className="no-underline text-inherit block">
-            <div className="relative flex flex-col bg-green-100 border border-green-200 rounded-lg shadow-md p-5 text-center min-h-[180px]">
+            <div className="relative flex flex-col bg-green-100 border border-amber-300 rounded-lg shadow-md p-5 text-center min-h-[180px]">
                 <div className="absolute top-4 left-4 text-2xl">🎯</div>
                 <h3 className="font-['Patrick_Hand'] text-2xl text-green-800 mt-8 mb-4 break-words">
                     {registro.meta_del_dia || 'Define tu meta principal del día.'}
@@ -53,7 +53,7 @@ const EstadoWidget = ({ registro, fraseDelDia, tiempoRestante, onEdit }) => {
     
     return (
         <Link to="/tracking" className="no-underline text-inherit block">
-            <div className="relative flex flex-col bg-yellow-100 border border-yellow-200 rounded-lg shadow-md p-5 text-center min-h-[180px]">
+            <div className="relative flex flex-col bg-yellow-100 border border-amber-300 rounded-lg shadow-md p-5 text-center min-h-[180px]">
                 {/* Header del post-it con timer y botones */}
                 <div className="absolute top-2 left-2 right-2 flex justify-between items-center">
                     <div className="text-xs font-semibold text-zinc-500 bg-black/5 px-2 py-1 rounded-full min-w-[70px] text-center">
