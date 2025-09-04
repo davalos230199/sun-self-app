@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+// Mantenemos el import del CSS por ahora, pero su contenido será mínimo.
 import './Auth.css';
 import { useAuth } from '../contexts/AuthContext';
 
-// --- Formulario de Login (Lógica Corregida y Centralizada) ---
+// --- Formulario de Login ---
 const LoginForm = ({ onSwitchToRegister, onSwitchToForgot }) => {
     const [form, setForm] = useState({ identifier: '', password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const { setUser } = useAuth(); // Obtenemos la función para actualizar el usuario global
+    const { setUser } = useAuth();
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -19,19 +20,11 @@ const LoginForm = ({ onSwitchToRegister, onSwitchToForgot }) => {
         setError('');
         setLoading(true);
         try {
-            // 1. Hacemos el login y obtenemos el token
             const res = await api.login(form);
             localStorage.setItem('token', res.data.token);
-
-            // 2. Usamos el nuevo token para obtener los datos del usuario
             const { data: userData } = await api.getMe();
-            
-            // 3. ¡LA CLAVE! Actualizamos el estado global con la información del usuario
             setUser(userData.user);
-
-            // 4. Finalmente, navegamos a home
             navigate('/home');
-
         } catch (err) {
             setError(err.response?.data?.message || 'Credenciales incorrectas.');
             setLoading(false);
@@ -40,29 +33,42 @@ const LoginForm = ({ onSwitchToRegister, onSwitchToForgot }) => {
 
     return (
         <form onSubmit={handleSubmit} noValidate>
-            <h2>Bienvenido de vuelta</h2>
-            <p className="form-description">Ingresa con tu apodo o email.</p>
-            {error && <p className="error-message">{error}</p>}
-            <div className="input-group">
-                <input type="text" name="identifier" id="login-identifier" placeholder=" " onChange={handleChange} required />
-                <label htmlFor="login-identifier">Apodo o Email</label>
+            <h2 className="font-['Patrick_Hand'] text-3xl mb-2 text-zinc-800">Bienvenido de vuelta</h2>
+            <p className="mb-8 text-zinc-500 text-sm">Ingresa con tu apodo o email.</p>
+            {error && <p className="p-2.5 rounded-md mb-5 bg-red-100 text-red-700 text-sm">{error}</p>}
+            
+            <div className="relative mb-6">
+                <input type="text" name="identifier" id="login-identifier" placeholder=" " onChange={handleChange} required 
+                       className="peer w-full border-b-2 border-zinc-300 p-2 bg-transparent text-base outline-none focus:border-orange-400" />
+                <label htmlFor="login-identifier" 
+                       className="absolute top-2 left-2 text-zinc-500 pointer-events-none transition-all duration-200 ease-in-out peer-focus:-top-5 peer-focus:left-0 peer-focus:text-xs peer-focus:text-orange-500 peer-[:not(:placeholder-shown)]:-top-5 peer-[:not(:placeholder-shown)]:left-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-orange-500">
+                    Apodo o Email
+                </label>
             </div>
-            <div className="input-group">
-                <input type="password" name="password" id="login-password" placeholder=" " onChange={handleChange} required />
-                <label htmlFor="login-password">Contraseña</label>
+            
+            <div className="relative mb-6">
+                <input type="password" name="password" id="login-password" placeholder=" " onChange={handleChange} required 
+                       className="peer w-full border-b-2 border-zinc-300 p-2 bg-transparent text-base outline-none focus:border-orange-400" />
+                <label htmlFor="login-password" 
+                       className="absolute top-2 left-2 text-zinc-500 pointer-events-none transition-all duration-200 ease-in-out peer-focus:-top-5 peer-focus:left-0 peer-focus:text-xs peer-focus:text-orange-500 peer-[:not(:placeholder-shown)]:-top-5 peer-[:not(:placeholder-shown)]:left-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-orange-500">
+                    Contraseña
+                </label>
             </div>
-            <button type="submit" className="auth-button" disabled={loading}>
+            
+            <button type="submit" disabled={loading}
+                    className="w-full p-3 border-none rounded-lg bg-gradient-to-r from-orange-500 to-amber-400 text-white text-lg font-semibold cursor-pointer transition-all duration-200 hover:enabled:-translate-y-0.5 hover:enabled:shadow-lg hover:enabled:shadow-orange-500/30 disabled:bg-zinc-300 disabled:cursor-not-allowed">
                 {loading ? 'Entrando...' : 'Entrar'}
             </button>
-            <div className="auth-switch-container">
-                <p className="auth-switch">
-                    <span className="auth-link" onClick={onSwitchToForgot} role="button" tabIndex="0">
+            
+            <div className="mt-5 text-sm">
+                <p className="mb-2">
+                    <span className="text-orange-500 font-semibold cursor-pointer p-1 transition-all hover:underline" onClick={onSwitchToForgot} role="button" tabIndex="0">
                         Olvidé mi contraseña
                     </span>
                 </p>
-                <p className="auth-switch">
+                <p>
                     ¿Es tu primera vez aquí?{' '}
-                    <span className="auth-link" onClick={onSwitchToRegister} role="button" tabIndex="0">
+                    <span className="text-orange-500 font-semibold cursor-pointer p-1 transition-all hover:underline" onClick={onSwitchToRegister} role="button" tabIndex="0">
                         Regístrate
                     </span>
                 </p>
@@ -71,8 +77,7 @@ const LoginForm = ({ onSwitchToRegister, onSwitchToForgot }) => {
     );
 };
 
-
-// --- Formulario de Registro (Sin cambios) ---
+// --- Formulario de Registro ---
 const RegisterForm = ({ onSwitchToLogin }) => {
     const [form, setForm] = useState({ nombre: '', apellido: '', apodo: '', email: '', password: '' });
     const [error, setError] = useState('');
@@ -83,15 +88,11 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        setSuccess('');
-        setLoading(true);
+        setError(''); setSuccess(''); setLoading(true);
         try {
             await api.register(form);
-            setSuccess('¡Refugio creado! Revisa tu email para la confirmación.');
-            setTimeout(() => {
-                onSwitchToLogin();
-            }, 3000);
+            setSuccess('¡Cuenta creada! Revisa tu email para la confirmación.');
+            setTimeout(() => { onSwitchToLogin(); }, 3000);
         } catch (err) {
             setError(err.response?.data?.error || 'Error al registrar la cuenta.');
         } finally {
@@ -101,23 +102,32 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
     return (
         <form onSubmit={handleSubmit} noValidate>
-            <h2>Crea tu Refugio</h2>
-            <p className="form-description">Tu apodo será tu identidad aquí.</p>
-            {success && <p className="success-message">{success}</p>}
-            {error && <p className="error-message">{error}</p>}
-            <div className="form-row">
-                <div className="input-group"><input type="text" name="nombre" id="register-nombre" placeholder=" " onChange={handleChange} required /><label htmlFor="register-nombre">Nombre</label></div>
-                <div className="input-group"><input type="text" name="apellido" id="register-apellido" placeholder=" " onChange={handleChange} required /><label htmlFor="register-apellido">Apellido</label></div>
+            {/* CAMBIO DE TEXTO */}
+            <h2 className="font-['Patrick_Hand'] text-3xl mb-2 text-zinc-800">Aquí comienza tu auto-descubrimiento</h2>
+            <p className="mb-8 text-zinc-500 text-sm">Crea tu cuenta para guardar tu progreso.</p>
+            {success && <p className="p-2.5 rounded-md mb-5 bg-green-100 text-green-800 text-sm">{success}</p>}
+            {error && <p className="p-2.5 rounded-md mb-5 bg-red-100 text-red-700 text-sm">{error}</p>}
+            
+            <div className="flex flex-col sm:flex-row sm:gap-5">
+                <div className="relative mb-6 w-full">
+                    <input type="text" name="nombre" id="register-nombre" placeholder=" " onChange={handleChange} required className="peer w-full border-b-2 border-zinc-300 p-2 bg-transparent text-base outline-none focus:border-orange-400" />
+                    <label htmlFor="register-nombre" className="absolute top-2 left-2 text-zinc-500 pointer-events-none transition-all duration-200 ease-in-out peer-focus:-top-5 peer-focus:left-0 peer-focus:text-xs peer-focus:text-orange-500 peer-[:not(:placeholder-shown)]:-top-5 peer-[:not(:placeholder-shown)]:left-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-orange-500">Nombre</label>
+                </div>
+                <div className="relative mb-6 w-full">
+                    <input type="text" name="apellido" id="register-apellido" placeholder=" " onChange={handleChange} required className="peer w-full border-b-2 border-zinc-300 p-2 bg-transparent text-base outline-none focus:border-orange-400" />
+                    <label htmlFor="register-apellido" className="absolute top-2 left-2 text-zinc-500 pointer-events-none transition-all duration-200 ease-in-out peer-focus:-top-5 peer-focus:left-0 peer-focus:text-xs peer-focus:text-orange-500 peer-[:not(:placeholder-shown)]:-top-5 peer-[:not(:placeholder-shown)]:left-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-orange-500">Apellido</label>
+                </div>
             </div>
-            <div className="input-group"><input type="text" name="apodo" id="register-apodo" placeholder=" " onChange={handleChange} required /><label htmlFor="register-apodo">Apodo (único)</label></div>
-            <div className="input-group"><input type="email" name="email" id="register-email" placeholder=" " onChange={handleChange} required /><label htmlFor="register-email">Email</label></div>
-            <div className="input-group"><input type="password" name="password" id="register-password" placeholder=" " onChange={handleChange} required /><label htmlFor="register-password">Contraseña</label></div>
-            <button type="submit" className="auth-button" disabled={loading || !!success}>
+            <div className="relative mb-6"><input type="text" name="apodo" id="register-apodo" placeholder=" " onChange={handleChange} required className="peer w-full border-b-2 border-zinc-300 p-2 bg-transparent text-base outline-none focus:border-orange-400" /><label htmlFor="register-apodo" className="absolute top-2 left-2 text-zinc-500 pointer-events-none transition-all duration-200 ease-in-out peer-focus:-top-5 peer-focus:left-0 peer-focus:text-xs peer-focus:text-orange-500 peer-[:not(:placeholder-shown)]:-top-5 peer-[:not(:placeholder-shown)]:left-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-orange-500">Apodo (único)</label></div>
+            <div className="relative mb-6"><input type="email" name="email" id="register-email" placeholder=" " onChange={handleChange} required className="peer w-full border-b-2 border-zinc-300 p-2 bg-transparent text-base outline-none focus:border-orange-400" /><label htmlFor="register-email" className="absolute top-2 left-2 text-zinc-500 pointer-events-none transition-all duration-200 ease-in-out peer-focus:-top-5 peer-focus:left-0 peer-focus:text-xs peer-focus:text-orange-500 peer-[:not(:placeholder-shown)]:-top-5 peer-[:not(:placeholder-shown)]:left-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-orange-500">Email</label></div>
+            <div className="relative mb-6"><input type="password" name="password" id="register-password" placeholder=" " onChange={handleChange} required className="peer w-full border-b-2 border-zinc-300 p-2 bg-transparent text-base outline-none focus:border-orange-400" /><label htmlFor="register-password" className="absolute top-2 left-2 text-zinc-500 pointer-events-none transition-all duration-200 ease-in-out peer-focus:-top-5 peer-focus:left-0 peer-focus:text-xs peer-focus:text-orange-500 peer-[:not(:placeholder-shown)]:-top-5 peer-[:not(:placeholder-shown)]:left-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-orange-500">Contraseña</label></div>
+            
+            <button type="submit" disabled={loading || !!success} className="w-full p-3 border-none rounded-lg bg-gradient-to-r from-orange-500 to-amber-400 text-white text-lg font-semibold cursor-pointer transition-all duration-200 hover:enabled:-translate-y-0.5 hover:enabled:shadow-lg hover:enabled:shadow-orange-500/30 disabled:bg-zinc-300 disabled:cursor-not-allowed">
                 {loading ? 'Creando...' : 'Crear cuenta'}
             </button>
-            <p className="auth-switch">
-                ¿Ya tienes un refugio?{' '}
-                <span className="auth-link" onClick={onSwitchToLogin} role="button" tabIndex="0">
+            <p className="mt-5 text-sm">
+                ¿Ya tienes una cuenta?{' '}
+                <span className="text-orange-500 font-semibold cursor-pointer p-1 transition-all hover:underline" onClick={onSwitchToLogin} role="button" tabIndex="0">
                     Inicia sesión
                 </span>
             </p>
@@ -125,9 +135,9 @@ const RegisterForm = ({ onSwitchToLogin }) => {
     );
 };
 
-
-// --- Formulario para Olvidé mi Contraseña (Sin cambios) ---
+// --- Formulario Olvidé Contraseña ---
 const ForgotPasswordForm = ({ onSwitchToLogin }) => {
+    // ... (sin cambios en esta función)
     const [form, setForm] = useState({ email: '' });
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -137,15 +147,11 @@ const ForgotPasswordForm = ({ onSwitchToLogin }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        setSuccess('');
-        setLoading(true);
+        setError(''); setSuccess(''); setLoading(true);
         try {
             const response = await api.forgotPassword({ email: form.email });
             setSuccess(response.data.message);
-            setTimeout(() => {
-                onSwitchToLogin();
-            }, 3000);
+            setTimeout(() => { onSwitchToLogin(); }, 3000);
         } catch (err) {
             setError(err.response?.data?.error || 'No se pudo procesar la solicitud.');
             setLoading(false);
@@ -154,19 +160,19 @@ const ForgotPasswordForm = ({ onSwitchToLogin }) => {
 
     return (
         <form onSubmit={handleSubmit} noValidate>
-            <h2>Restablecer Contraseña</h2>
-            <p className="form-description">Ingresa tu email y te enviaremos un enlace para recuperarla.</p>
-            {success && <p className="success-message">{success}</p>}
-            {error && <p className="error-message">{error}</p>}
-            <div className="input-group">
-                <input type="email" name="email" id="forgot-email" placeholder=" " onChange={handleChange} required />
-                <label htmlFor="forgot-email">Email</label>
+            <h2 className="font-['Patrick_Hand'] text-3xl mb-2 text-zinc-800">Restablecer Contraseña</h2>
+            <p className="mb-8 text-zinc-500 text-sm">Ingresa tu email y te enviaremos un enlace.</p>
+            {success && <p className="p-2.5 rounded-md mb-5 bg-green-100 text-green-800 text-sm">{success}</p>}
+            {error && <p className="p-2.5 rounded-md mb-5 bg-red-100 text-red-700 text-sm">{error}</p>}
+            <div className="relative mb-6">
+                <input type="email" name="email" id="forgot-email" placeholder=" " onChange={handleChange} required className="peer w-full border-b-2 border-zinc-300 p-2 bg-transparent text-base outline-none focus:border-orange-400" />
+                <label htmlFor="forgot-email" className="absolute top-2 left-2 text-zinc-500 pointer-events-none transition-all duration-200 ease-in-out peer-focus:-top-5 peer-focus:left-0 peer-focus:text-xs peer-focus:text-orange-500 peer-[:not(:placeholder-shown)]:-top-5 peer-[:not(:placeholder-shown)]:left-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-orange-500">Email</label>
             </div>
-            <button type="submit" className="auth-button" disabled={loading || !!success}>
+            <button type="submit" disabled={loading || !!success} className="w-full p-3 border-none rounded-lg bg-gradient-to-r from-orange-500 to-amber-400 text-white text-lg font-semibold cursor-pointer transition-all duration-200 hover:enabled:-translate-y-0.5 hover:enabled:shadow-lg hover:enabled:shadow-orange-500/30 disabled:bg-zinc-300 disabled:cursor-not-allowed">
                 {loading ? 'Enviando...' : 'Enviar enlace'}
             </button>
-            <p className="auth-switch">
-                <span className="auth-link" onClick={onSwitchToLogin} role="button" tabIndex="0">
+            <p className="mt-5 text-sm">
+                <span className="text-orange-500 font-semibold cursor-pointer p-1 transition-all hover:underline" onClick={onSwitchToLogin} role="button" tabIndex="0">
                     Volver a Iniciar sesión
                 </span>
             </p>
@@ -175,27 +181,37 @@ const ForgotPasswordForm = ({ onSwitchToLogin }) => {
 };
 
 
-// --- Componente Principal de Autenticación (Simplificado) ---
+// --- Componente Principal de Autenticación ---
 export default function Auth() {
     const [view, setView] = useState('intro');
     
-    // CAMBIO: Se elimina la lógica de 'handleLogin' de aquí, ya que ahora
-    // vive directamente dentro del componente LoginForm.
-    
     return (
         <div className={`auth-scene ${view !== 'intro' ? 'form-active' : ''}`}>
+            {/* INTRO */}
             <div className="auth-intro">
-                <h1 className="intro-title">Sun-Self</h1>
-                <p className="intro-subtitle">Tu micro-hábito de auto-observación.</p>
-                <button className="intro-button" onClick={() => setView('login')}>
+                <h1 className="font-['Patrick_Hand'] text-5xl sm:text-6xl font-semibold text-white [text-shadow:_0_2px_4px_rgb(0_0_0_/_0.2)]">
+                    Sun-Self
+                </h1>
+                <p className="text-lg mt-2 mb-8 text-white font-light [text-shadow:_0_2px_4px_rgb(0_0_0_/_0.2)]">
+                    Tu micro-hábito de auto-observación.
+                </p>
+                <button 
+                    onClick={() => setView('login')}
+                    className="bg-white/20 border border-white text-white py-3 px-8 rounded-full text-base font-semibold cursor-pointer transition-all duration-300 hover:bg-white/30 hover:scale-105"
+                >
                     Iniciar el viaje
                 </button>
             </div>
 
+            {/* FORMULARIOS */}
             <div className="auth-form-container">
-                <div className="auth-card">
+                {/* CAMBIO DE ALTURA DINÁMICA */}
+                <div className={`
+                    relative bg-white/80 backdrop-blur-md p-7 sm:p-10 rounded-xl shadow-lg text-center overflow-hidden 
+                    transition-all duration-500 ease-in-out
+                    ${view === 'register' ? 'sm:min-h-[700px] min-h-[680px]' : 'sm:min-h-[620px] min-h-[590px]'}
+                `}>
                     <div className={`form-wrapper ${view === 'login' ? 'visible' : ''}`}>
-                        {/* El componente LoginForm ya no necesita la prop onLogin */}
                         <LoginForm 
                             onSwitchToRegister={() => setView('register')} 
                             onSwitchToForgot={() => setView('forgot')}
@@ -212,3 +228,4 @@ export default function Auth() {
         </div>
     );
 }
+

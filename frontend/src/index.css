@@ -1,6 +1,12 @@
-/* frontend/src/index.css */
+/* 1. La importación de fuentes va PRIMERO que todo. */
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&family=Patrick+Hand&display=swap');
 
+/* 2. Las directivas de Tailwind van después. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 3. El resto de tus estilos personalizados van al final. */
 :root {
   --color-papel: #FDFCF6;
   --color-lapiz: #4A4A4A;

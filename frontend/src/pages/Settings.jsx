@@ -1,50 +1,47 @@
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
 import { useAuth } from '../contexts/AuthContext';
-// 1. Importamos el cliente de Supabase para usar su método de logout
 import { supabase } from '../services/supabaseClient';
-import './Settings.css';
 
 export default function Settings() {
     const navigate = useNavigate();
     const { setUser } = useAuth();
 
-    // CAMBIO CLAVE: La función de logout ahora es asíncrona y usa supabase.auth.signOut()
     const handleLogout = async () => {
         try {
-            // 2. Le pedimos a Supabase que cierre la sesión.
-            // Esto se encargará de limpiar el token de Supabase del localStorage.
             const { error } = await supabase.auth.signOut();
-            
             if (error) {
                 console.error('Error al cerrar sesión:', error);
-                // Opcional: mostrar un error al usuario
             }
-
-            // 3. Borramos nuestro token manual por si acaso aún existe
             localStorage.removeItem('token');
-            
-            // 4. Actualizamos el estado global para que la app sepa que no hay usuario
             setUser(null);
-            
-            // 5. Redirigimos al login
             navigate('/login');
-
         } catch (err) {
             console.error('Error inesperado al cerrar sesión:', err);
         }
     };
 
     return (
-        <div className="settings-container">
+        // CAMBIO: Contenedor principal de la página con padding para crear separación
+        <div className="p-2 sm:p-4 h-full w-full flex flex-col">
             <PageHeader title="Ajustes" />
-            <div className="settings-card">
-                <h3>Cuenta</h3>
-                <p>Aquí podrás gestionar tu cuenta en el futuro.</p>
-                <button onClick={handleLogout} className="logout-button">
-                    Cerrar Sesión
-                </button>
-            </div>
+            
+            <main className="flex-grow mt-6">
+                <div className="bg-white border border-zinc-200/80 p-5 rounded-xl max-w-md mx-auto shadow-sm">
+                    <h3 className="text-2xl font-['Patrick_Hand'] mt-0 border-b border-zinc-200 pb-2 mb-4 text-zinc-700">
+                        Cuenta
+                    </h3>
+                    <p className="text-zinc-600 mb-6">
+                        Aquí podrás gestionar tu cuenta en el futuro.
+                    </p>
+                    <button 
+                        onClick={handleLogout} 
+                        className="w-full bg-red-500 hover:bg-red-600 text-white font-['Patrick_Hand'] text-lg py-2.5 px-4 rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md disabled:opacity-50"
+                    >
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </main>
         </div>
     );
 }

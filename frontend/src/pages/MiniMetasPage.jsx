@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useOutletContext } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
-import './MinimetasPage.css';
+import PageHeader from '../components/PageHeader';
+import './MinimetasPage.css'; // Este archivo quedará vacío
 
 export default function MinimetasPage() {
-    const { user } = useOutletContext();
     const [registro, setRegistro] = useState(null);
     const [miniMetas, setMiniMetas] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -14,7 +14,9 @@ export default function MinimetasPage() {
     const [newMetaText, setNewMetaText] = useState('');
     const [newMetaTime, setNewMetaTime] = useState('12:00');
 
+    // --- Lógica de Datos (Sin cambios) ---
     const fetchData = useCallback(async () => {
+        // ... (la lógica de fetch se mantiene igual)
         setIsLoading(true);
         setError('');
         try {
@@ -25,7 +27,6 @@ export default function MinimetasPage() {
                 setRegistro(todayReg);
                 const metasRes = await api.getMiniMetas(todayReg.id);
                 
-                // Hacemos la función de ordenación más robusta para manejar valores nulos.
                 const sortedMetas = (metasRes?.data || []).sort((a, b) => {
                     if (!a.hora_objetivo) return 1;
                     if (!b.hora_objetivo) return -1;
@@ -55,11 +56,9 @@ export default function MinimetasPage() {
             const payload = { 
                 descripcion: newMetaText, 
                 registro_id: registro.id,
-                hora_objetivo: newMetaTime // Incluimos la hora
+                hora_objetivo: newMetaTime
             };
             await api.createMiniMeta(payload);
-            
-            // Volvemos a cargar y ordenar todo para mantener la consistencia
             fetchData(); 
             setNewMetaText('');
         } catch (err) {
@@ -70,7 +69,6 @@ export default function MinimetasPage() {
     const handleToggleComplete = async (metaId, currentStatus) => {
         try {
             const response = await api.updateMiniMetaStatus(metaId, !currentStatus);
-            // Actualizamos solo el item modificado para una respuesta visual más rápida
             setMiniMetas(prevMetas => 
                 prevMetas.map(meta => meta.id === metaId ? response.data : meta)
             );
@@ -88,75 +86,80 @@ export default function MinimetasPage() {
         }
     };
 
+    // --- Renderizado de la UI (Reconstruido con Tailwind) ---
+
     if (isLoading) {
-        return <div className="minimetas-page-container loading">Cargando...</div>;
+        return <div className="flex justify-center items-center h-screen text-zinc-500">Cargando tus metas...</div>;
     }
 
     if (error) {
         return (
-            <div className="minimetas-page-container error-page">
-                <p>{error}</p>
-                <Link to="/" className="btn-primary">Volver al Inicio</Link>
+            <div className="p-4 h-full w-full flex flex-col items-center justify-center text-center">
+                <p className="text-red-600 mb-4">{error}</p>
+                <Link to="/" className="bg-amber-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors">
+                    Volver al Inicio
+                </Link>
             </div>
         );
     }
 
     return (
-        <div className="minimetas-page-container">
-            <div className="page-background-header">
-                <span>Hola, {user?.nombre || 'viajero'}</span>
-                <span>{new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' })}</span>
-            </div>
+        <div className="p-2 sm:p-4 h-full w-full flex flex-col">
+            <PageHeader title="Mini Metas Diarias" />
+            
+            <main className="flex-grow overflow-y-auto mt-4">
+                {/* Post-it de la Meta Principal */}
+                <div className="bg-yellow-100 border border-yellow-200 p-4 sm:p-6 rounded-lg shadow-md text-center mb-6">
+                    <h1 className="font-['Patrick_Hand'] text-2xl sm:text-3xl text-yellow-800 break-words">
+                        🎯 {registro?.meta_del_dia || "Define tu meta principal"}
+                    </h1>
+                </div>
 
-            <div className="post-it main-goal-post-it">
-                <h1 className="main-goal-text">
-                    🎯 {registro?.meta_del_dia}
-                </h1>
-            </div>
-
-            <div className="post-it-container">
-                <form onSubmit={handleCreateMeta} className="post-it add-meta-post-it">
-                    <div className="form-content">
+                {/* Contenedor de la lista y formulario */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg shadow-md">
+                    {/* Formulario para añadir metas */}
+                    <form onSubmit={handleCreateMeta} className="p-4 flex items-center gap-2 sm:gap-4 border-b-2 border-dashed border-blue-200">
                         <input 
                             type="time" 
                             value={newMetaTime}
                             onChange={e => setNewMetaTime(e.target.value)}
-                            className="time-input"
+                            className="bg-white border border-blue-200 rounded-md p-2 text-sm sm:text-base cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
                         />
                         <input
                             type="text"
                             value={newMetaText}
                             onChange={(e) => setNewMetaText(e.target.value)}
-                            placeholder="Describe tu mini-meta..."
-                            className="text-input"
+                            placeholder="Añade un pequeño paso..."
+                            className="flex-grow bg-transparent border-b-2 border-dotted border-blue-300 focus:border-solid focus:border-blue-500 focus:outline-none py-2 text-zinc-700 placeholder:text-zinc-400"
                         />
-                    </div>
-                    <button type="submit" className="clip-button" aria-label="Añadir meta" disabled={!newMetaText.trim()}>
-                        📎
-                    </button>
-                </form>
+                        <button type="submit" className="text-3xl text-zinc-500 hover:text-blue-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed" aria-label="Añadir meta" disabled={!newMetaText.trim()}>
+                            ➕
+                        </button>
+                    </form>
 
-                <div className="minimetas-list-container">
-                    {miniMetas.map(meta => (
-                        <div key={meta.id} className={`meta-item-wrapper ${meta.completada ? 'completada' : ''}`}>
-                            <div className="meta-item">
-                                <div className="meta-time">
-                                    {/* Mostramos la hora solo si existe */}
+                    {/* Lista de Mini-Metas */}
+                    <div className="divide-y divide-dashed divide-blue-200">
+                        {miniMetas.map(meta => (
+                            <div key={meta.id} className="p-4 flex items-center gap-4">
+                                <div className="font-bold text-sm text-blue-600 bg-white border border-blue-200 rounded-md px-2 py-1">
                                     {meta.hora_objetivo ? meta.hora_objetivo.substring(0, 5) : '--:--'}
                                 </div>
-                                <div className="meta-clickable-area" onClick={() => handleToggleComplete(meta.id, meta.completada)}>
-                                    <span className="checkbox-visual">{meta.completada ? '✔' : ''}</span>
-                                    <p>{meta.descripcion}</p>
+                                <div className="flex-grow flex items-center gap-3 cursor-pointer" onClick={() => handleToggleComplete(meta.id, meta.completada)}>
+                                    <div className={`w-6 h-6 border-2 ${meta.completada ? 'bg-blue-500 border-blue-500' : 'border-blue-300'} rounded-md flex items-center justify-center text-white transition-all`}>
+                                        {meta.completada && '✔'}
+                                    </div>
+                                    <p className={`flex-1 ${meta.completada ? 'line-through text-zinc-400' : 'text-zinc-800'} transition-colors`}>
+                                        {meta.descripcion}
+                                    </p>
                                 </div>
-                                <button onClick={() => handleDeleteMeta(meta.id)} className="delete-btn" aria-label="Borrar meta">
+                                <button onClick={() => handleDeleteMeta(meta.id)} className="text-xl text-zinc-400 hover:text-red-500 transition-colors" aria-label="Borrar meta">
                                     🗑️
                                 </button>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
-            </div>
-             <Link to="/" className="back-home-link">← Volver al Dashboard</Link>
+            </main>
         </div>
     );
 }
