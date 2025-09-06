@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import PageHeader from '../components/PageHeader';
+import LoadingSpinner from '../components/LoadingSpinner'; // 1. Importamos el spinner
 
 // --- Iconos para los botones y carga (Componentes internos) ---
 const SaveIcon = () => (
@@ -12,11 +13,6 @@ const SaveIcon = () => (
 const CancelIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
 );
-
-const SunIcon = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m4.93 19.07 1.41-1.41" /><path d="m17.66 6.34 1.41-1.41" /></svg>
-);
-
 
 export default function Journal() {
     const { id } = useParams();
@@ -60,14 +56,10 @@ export default function Journal() {
             {/* CAMBIO DE NOMBRE 1: Título de la página */}
             <PageHeader title="Más de tu día" />
             
-            <main className="flex flex-col flex-grow mt-4 w-full max-w-4xl mx-auto border border-zinc-200/50 shadow-lg rounded-2xl overflow-hidden bg-white">
+            <main className="flex flex-col flex-grow mt-4 w-full max-w-4xl mx-auto border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-white">
                 
                 {loading ? (
-                    <div className="flex-grow flex flex-col items-center justify-center text-zinc-400">
-                        <SunIcon className="w-12 h-12 animate-spin text-amber-500" />
-                        {/* CAMBIO DE NOMBRE 2: Texto de carga */}
-                        <p className="mt-4 text-lg">Cargando más de tu día...</p>
-                    </div>
+                    <LoadingSpinner message="Hoy recordé cuando..." />
                 ) : (
                     <>
                         <div className="flex-grow flex">
@@ -75,12 +67,12 @@ export default function Journal() {
                                 placeholder="Escribe libremente aquí... pensamientos, ideas, listas. Este es tu espacio."
                                 value={texto}
                                 onChange={(e) => setTexto(e.target.value)}
-                                className="w-full h-full p-5 sm:p-6 text-base sm:text-lg leading-relaxed text-zinc-800 bg-transparent border-0 resize-none focus:outline-none focus:ring-0 placeholder:text-zinc-400"
+                                className="font-['Patrick_Hand'] break-words w-full h-full p-5 sm:p-6 text-base sm:text-lg leading-relaxed text-zinc-800 bg-transparent border-0 resize-none focus:outline-none focus:ring-0 placeholder:text-zinc-400"
                                 disabled={saving}
                             />
                         </div>
                         
-                        <div className="flex-shrink-0 flex items-center justify-between gap-4 p-3 sm:p-4 border-t border-zinc-200 bg-zinc-50/70 backdrop-blur-sm">
+                        <div className="flex-shrink-0 flex items-center justify-between gap-4 p-3 sm:p-4 border-t border-amber-300 bg-zinc-50/70 backdrop-blur-sm">
                             <div className="flex-grow">
                                 {message && <span className="text-sm text-red-600 italic">{message}</span>}
                                 {saving && <span className="text-sm text-zinc-600 italic animate-pulse">Guardando cambios...</span>}
@@ -88,7 +80,7 @@ export default function Journal() {
                             <div className="flex items-center gap-3">
                                 <button 
                                     onClick={() => navigate('/home')} 
-                                    className="flex items-center gap-2 py-2 px-4 rounded-lg font-semibold bg-white text-zinc-700 border border-zinc-300 hover:bg-zinc-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2"
+                                    className="flex items-center gap-2 py-2 px-4 rounded-lg font-semibold bg-white text-zinc-700 border border-amber-300 hover:bg-zinc-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2"
                                 >
                                     <CancelIcon />
                                     <span className="hidden sm:inline">Cancelar</span>

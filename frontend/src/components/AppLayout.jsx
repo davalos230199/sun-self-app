@@ -19,7 +19,7 @@ function Navbar() {
     }`;
   };
   return (
-    <nav className="flex-shrink-0 w-full h-20 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.06)] border-t border-zinc-200 flex justify-around items-stretch px-2">
+    <nav className="flex-shrink-0 w-full h-20 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.06)] border-t border-amber-300 flex justify-around items-stretch px-2">
       <NavLink to="/home" className={getLinkClassName}><HomeIcon /><span className="text-xs font-semibold">Home</span></NavLink>
       <NavLink to="/metas" className={getLinkClassName}><MetasIcon /><span className="text-xs font-semibold">Metas</span></NavLink>
       <NavLink to="/sunny" className={getLinkClassName}><SunnyIcon /><span className="text-xs font-semibold">Sunny</span></NavLink>

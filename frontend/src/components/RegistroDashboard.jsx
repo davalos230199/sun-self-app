@@ -128,16 +128,16 @@ export default function RegistroDashboard({ registro, miniMetas, fraseDelDia, is
 
     return (
         <div className="space-y-6">
-            <MetasWidget 
-                registro={registro}
-                proximaMeta={proximaMeta}
-                isLoading={isLoadingAdicional}
-            />
             <EstadoWidget 
                 registro={registro}
                 fraseDelDia={fraseDelDia}
                 tiempoRestante={tiempoRestante}
                 onEdit={onEdit}
+            />
+            <MetasWidget 
+                registro={registro}
+                proximaMeta={proximaMeta}
+                isLoading={isLoadingAdicional}
             />
         </div>
     );

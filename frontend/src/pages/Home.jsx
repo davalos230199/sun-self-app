@@ -6,6 +6,7 @@ import RegistroDashboard from '../components/RegistroDashboard';
 import RegistroForm from '../components/RegistroForm';
 import WelcomeModal from '../components/WelcomeModal';
 import PageHeader from '../components/PageHeader';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function Home() {
     const { user } = useOutletContext();
@@ -91,12 +92,12 @@ export default function Home() {
             <main className="mt-4 flex-grow">
                 {/* LA CONDICIÓN AHORA ESTÁ AQUÍ DENTRO */}
                 {isLoading ? (
-                    <p className="text-center text-zinc-500 italic py-10">Preparando tu día...</p>
+                    <LoadingSpinner message="Hoy estoy..." />
                 ) : registroDeHoy ? (
                     <RegistroDashboard 
-                        registro={registroDeHoy} 
+                        registro={registroDeHoy}
+                        fraseDelDia={fraseDelDia} 
                         miniMetas={miniMetas}
-                        fraseDelDia={fraseDelDia}
                         isLoadingAdicional={isLoadingAdicional}
                         onEdit={handleEdit} 
                     />

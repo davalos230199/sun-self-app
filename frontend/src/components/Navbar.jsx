@@ -38,7 +38,7 @@ export default function Navbar() {
         <span className="text-xs font-semibold">Home</span>
       </NavLink>
       <NavLink to="/metas" className={getLinkClassName}>
-        <MetasIcon />
+        <MetasIcon /> 
         <span className="text-xs font-semibold">Metas</span>
       </NavLink>
       <NavLink to="/sunny" className={getLinkClassName}>

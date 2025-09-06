@@ -70,11 +70,11 @@ export default function Sunny() {
 
     return (
         // CAMBIO: Contenedor principal de la página con padding y flex-col
-        <div className="p-2 sm:p-4 h-full w-full flex flex-col">
+        <div className="p-2 sm:p-4 h-full w-full flex flex-col border">
             <PageHeader title="Sunny" />
             
             {/* Contenedor del chat que ocupa el espacio restante */}
-            <div className="flex flex-col flex-grow mt-4 w-full max-w-3xl mx-auto border border-zinc-200/50 shadow-lg rounded-2xl overflow-hidden bg-zinc-50">
+            <div className="flex flex-col flex-grow mt-4 w-full max-w-3xl mx-auto border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-zinc-50">
                 <div className="flex-grow overflow-y-auto p-4 flex flex-col gap-3">
                     {messages.map((msg, index) => (
                         <div key={index} className={`flex max-w-[85%] sm:max-w-[75%] ${msg.sender === 'user' ? 'self-end' : 'self-start'}`}>
@@ -93,7 +93,7 @@ export default function Sunny() {
                     <div ref={messagesEndRef} />
                 </div>
                 
-                <form onSubmit={handleSend} className="flex-shrink-0 flex items-center p-2.5 border-t border-zinc-200 bg-white/80 backdrop-blur-sm">
+                <form onSubmit={handleSend} className="flex-shrink-0 flex items-center p-2.5 border-t border-amber-300 bg-white/80 backdrop-blur-sm">
                     <input
                         type="text"
                         value={input}

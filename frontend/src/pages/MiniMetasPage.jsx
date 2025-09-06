@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import PageHeader from '../components/PageHeader';
+import LoadingSpinner from '../components/LoadingSpinner'; // 1. Importamos el spinner
 
 export default function MinimetasPage() {
     const [registro, setRegistro] = useState(null);
@@ -91,10 +92,10 @@ export default function MinimetasPage() {
         <div className="p-2 sm:p-4 h-full w-full flex flex-col">
             <PageHeader title="Mini Metas Diarias" />
             
-            <main className="flex-grow overflow-y-auto mt-4">
+            <main className="flex-grow overflow-y-auto mt-4 border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-white p-4 sm:p-6">
                 {isLoading ? (
                     // 1. Estado de Carga (dentro del main)
-                    <p className="text-center text-zinc-500 italic py-10">Cargando tus metas...</p>
+                    <LoadingSpinner message="Mi proximo paso es..." />
                 ) : error ? (
                     // 2. Estado de Error (dentro del main)
                     <div className="text-center py-10">
