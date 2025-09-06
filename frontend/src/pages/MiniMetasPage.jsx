@@ -34,7 +34,7 @@ export default function MinimetasPage() {
 
                 setMiniMetas(sortedMetas);
             } else {
-                setError('Necesitas un registro diario para definir tus mini-metas.');
+                setError('Antes de planear tu proximo paso, necesitas un registro diario.');
             }
         } catch (err) {
             console.error("Error al cargar la página de metas:", err);

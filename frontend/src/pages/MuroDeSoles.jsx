@@ -88,18 +88,18 @@ export default function MuroDeSoles() {
                 {loading ? (
                     // CANAL 1: Si está cargando, MOSTRAMOS SOLO EL SPINNER.
                     // Ocupará todo el espacio de <main> sin conflictos.
-                    <LoadingSpinner message="Tejiendo los reflejos de la comunidad..." />
+                    <LoadingSpinner message="Cargando reflejos..." />
                 ) : (
                     // CANAL 2: Si no está cargando, MOSTRAMOS TODO EL CONTENIDO.
                     <div className="p-4">
                         <p className="text-lg text-zinc-600 mb-10 text-center font-['Patrick_Hand'] max-w-lg mx-auto">
-                            Un mosaico anónimo de los reflejos de hoy. Toca un reflejo para ver su pensamiento.
+                            Un mosaico de otras personas buscando su reflejo.
                         </p>
 
                         {error && <p className="text-center text-red-600 italic py-10">{error}</p>}
 
                         {!error && registros.length === 0 && (
-                            <p className="text-center text-zinc-500 italic py-10">El muro está en calma. Nadie ha compartido su reflejo hoy.</p>
+                            <p className="text-center text-zinc-500 italic py-10">Nadie ha compartido su reflejo hoy.</p>
                         )}
                         
                         {!error && registros.length > 0 && (

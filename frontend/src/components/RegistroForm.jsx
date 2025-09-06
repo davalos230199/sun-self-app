@@ -43,7 +43,7 @@ const BreathingModal = ({ onStart }) => {
                         {text}
                     </span>
                 </div>
-                <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-700">Respira profundo antes de registrar tu día.</h2>
+                <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-700">Respira profundo para conectar contigo mismo.</h2>
                 <button
                     onClick={onStart}
                     className="mt-4 bg-amber-400 text-white font-['Patrick_Hand'] text-xl px-8 py-3 w-full rounded-xl shadow-lg hover:bg-amber-500 transition-colors transform hover:scale-105"

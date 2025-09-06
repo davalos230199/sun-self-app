@@ -68,7 +68,7 @@ router.post('/', async (req, res) => {
             p_cuerpo_coment: cuerpo.comentario,
             p_estado_general: estado_general,
             p_meta_del_dia: meta_del_dia,
-            p_compartir_anonimo: !!compartir_anonimo
+            p_compartir_anonimo: true // Forzamos a que siempre sea true
         });
 
         if (registroError) throw registroError;
