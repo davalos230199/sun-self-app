@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../services/api';
 
-// --- Sub-componente: Modal de Respiración (Diseño Revertido) ---
+// --- Sub-componente: Modal de Respiración ---
 const BreathingModal = ({ onStart }) => {
     const [text, setText] = useState('Inhala...');
 
@@ -55,14 +55,13 @@ const BreathingModal = ({ onStart }) => {
     );
 };
 
-
 // --- Sub-componente: Modal de Consentimiento para Inspiración ---
 const InspirationConsentModal = ({ onConfirm, onDisable, onCancel }) => (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-2xl shadow-xl p-6 text-center w-full max-w-sm border-2 border-amber-300 relative">
             <button onClick={onCancel} className="absolute top-2 right-2 text-zinc-400 hover:text-zinc-600 text-2xl">&times;</button>
             <h3 className="font-['Patrick_Hand'] text-2xl text-zinc-800 mb-2">Buscar Inspiración</h3>
-            <p className="text-zinc-600 mb-4 text-sm">Estás por ver un ejemplo anónimo de otro usuario. Abajo puedes elegir si deseas compartir tus propios reflejos para ayudar a otros.</p>
+            <p className="text-zinc-600 mb-4 text-sm">Estás por ver un ejemplo anónimo de otro usuario.</p>
             <div className="flex flex-col gap-2">
                 <button onClick={onConfirm} className="bg-amber-400 text-white font-['Patrick_Hand'] text-lg px-6 py-2 rounded-xl shadow-md hover:bg-amber-500 transition-colors">Ver Ejemplo</button>
                 <button onClick={onDisable} className="text-xs text-zinc-500 hover:underline">No volver a mostrar este aviso</button>
@@ -90,40 +89,39 @@ const GoalModal = ({ onSaveGoal, onSkip }) => {
     )
 };
 
-// --- Sub-componente: Orbe de Estado Individual (Estilo Banner) ---
+// --- Sub-componente: Orbe de Estado Individual (Compacto) ---
 const PostItOrbe = ({ orbe, estados, onSeleccion, onComentario, onInspiracionClick }) => {
     const opciones = [{ valor: 'bajo', emoji: '🌧️' }, { valor: 'neutral', emoji: '⛅' }, { valor: 'alto', emoji: '☀️' }];
-    const placeholders = { mente: "ej: un poco disperso, pensando en el finde...", emocion: "ej: tranquilo, con ganas de que sea viernes...", cuerpo: "ej: con energía, dormí bastante bien anoche..." };
+    const placeholders = { mente: "ej: un poco disperso...", emocion: "ej: tranquilo...", cuerpo: "ej: con energía..." };
 
     return (
-        <div onClick={() => onInspiracionClick(orbe)} className="bg-white border border-amber-400 rounded-lg shadow-sm p-3 w-full cursor-pointer transition-shadow hover:shadow-md">
+        <div onClick={() => onInspiracionClick(orbe)} className="bg-white border border-amber-400 rounded-lg shadow-sm p-2 w-full cursor-pointer transition-shadow hover:shadow-md">
             <div className="flex justify-between items-center">
-                <h3 className="font-['Patrick_Hand'] text-2xl text-zinc-800 capitalize">{orbe}</h3>
-                <div className="flex gap-3">
+                <h3 className="font-['Patrick_Hand'] text-xl text-zinc-800 capitalize">{orbe}</h3>
+                <div className="flex gap-2">
                     {opciones.map(({ valor, emoji }) => (
-                        <button key={valor} onClick={(e) => { e.stopPropagation(); onSeleccion(orbe, valor); }} type="button" title={valor} className={`w-11 h-11 text-2xl rounded-full flex items-center justify-center transition-all duration-200 border-2 ${estados[orbe].seleccion === valor ? 'border-amber-500 ring-2 ring-amber-500 ring-offset-2 bg-amber-100' : 'border-amber-300 bg-white hover:bg-amber-50'}`}>
+                        <button key={valor} onClick={(e) => { e.stopPropagation(); onSeleccion(orbe, valor); }} type="button" title={valor} className={`w-9 h-9 text-xl rounded-full flex items-center justify-center transition-all duration-200 border-2 ${estados[orbe].seleccion === valor ? 'border-amber-500 ring-2 ring-amber-500 ring-offset-1 bg-amber-100' : 'border-amber-300 bg-white hover:bg-amber-50'}`}>
                             {emoji}
                         </button>
                     ))}
                 </div>
             </div>
-            <div className="mt-2 pt-2 border-t-2 border-dashed border-amber-200">
+            <div className="mt-1.5 pt-1.5 border-t-2 border-dashed border-amber-200">
                 <textarea placeholder={placeholders[orbe]} value={estados[orbe].comentario} onChange={(e) => onComentario(orbe, e.target.value)} onClick={(e) => e.stopPropagation()} rows="1" className="w-full bg-transparent text-zinc-700 font-sans placeholder:font-['Patrick_Hand'] placeholder:text-zinc-400 placeholder:italic focus:outline-none resize-none mt-1 text-sm"/>
             </div>
         </div>
     );
 };
 
-// --- Componente Principal ---
+
 export default function RegistroForm({ onSaveSuccess }) {
     const [estados, setEstados] = useState({ mente: { seleccion: '', comentario: '' }, emocion: { seleccion: '', comentario: '' }, cuerpo: { seleccion: '', comentario: '' } });
-    const [compartirAnonimo, setCompartirAnonimo] = useState(false);
     const [error, setError] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [showBreathingModal, setShowBreathingModal] = useState(true);
     const [showGoalModal, setShowGoalModal] = useState(false);
     const [inspirationModal, setInspirationModal] = useState({ isOpen: false, orbe: null });
-
+    
     const handleSeleccion = (orbe, valor) => { setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], seleccion: valor } })); };
     const handleComentario = (orbe, valor) => { setEstados(prev => ({ ...prev, [orbe]: { ...prev[orbe], comentario: valor } })); };
     
@@ -148,8 +146,7 @@ export default function RegistroForm({ onSaveSuccess }) {
         localStorage.setItem('sunself_hide_inspiration_modal', 'true');
         setInspirationModal({ isOpen: false, orbe: null });
     };
-
-    // CAMBIO: El botón de Guardar ahora solo abre el modal de la meta.
+    
     const handleOpenGoalModal = () => {
         setError('');
         if (!estados.mente.seleccion || !estados.emocion.seleccion || !estados.cuerpo.seleccion) {
@@ -159,79 +156,52 @@ export default function RegistroForm({ onSaveSuccess }) {
         setShowGoalModal(true);
     };
 
-    // CAMBIO: Nueva función para guardar todo junto desde el modal de la meta.
     const handleSaveAll = async (meta) => {
         setIsSaving(true);
         setShowGoalModal(false);
         try {
-                    // DESPUÉS (la estructura correcta y definitiva)
             const payload = {
-                mente: {
-                    seleccion: estados.mente.seleccion,
-                    comentario: estados.mente.comentario
-                },
-                emocion: {
-                    seleccion: estados.emocion.seleccion,
-                    comentario: estados.emocion.comentario
-                },
-                cuerpo: {
-                    seleccion: estados.cuerpo.seleccion,
-                    comentario: estados.cuerpo.comentario
-                },
+                mente: { seleccion: estados.mente.seleccion, comentario: estados.mente.comentario },
+                emocion: { seleccion: estados.emocion.seleccion, comentario: estados.emocion.comentario },
+                cuerpo: { seleccion: estados.cuerpo.seleccion, comentario: estados.cuerpo.comentario },
                 meta_del_dia: meta,
-                compartir_anonimo: compartirAnonimo,
+                compartir_anonimo: false,
             };
             await api.saveRegistro(payload);
             onSaveSuccess();
         } catch (error) {
-            // Esta es la línea clave. Muestra el mensaje de error específico del backend.
             console.error("Detalle del error del backend:", error.response?.data || error.message);
-            setError("No se pudo guardar el registro. Revisa la consola para más detalles.");
+            setError("No se pudo guardar el registro.");
         } finally {
             setIsSaving(false);
         }
     };
 
     return (
-        <>
+        <div className="flex flex-col h-full">
             <AnimatePresence>
                 {showBreathingModal && <BreathingModal onStart={() => setShowBreathingModal(false)} />}
-                {inspirationModal.isOpen && (
-                    <InspirationConsentModal 
-                        onConfirm={handleConfirmInspiration}
-                        onDisable={handleDisableInspirationForever}
-                        onCancel={() => setInspirationModal({ isOpen: false, orbe: null })}
-                    />
-                )}
-                {showGoalModal && (
-                    <GoalModal 
-                        onSaveGoal={handleSaveAll}
-                        onSkip={() => handleSaveAll('')} // Si omite, guarda la meta como un string vacío
-                    />
-                )}
+                {inspirationModal.isOpen && ( <InspirationConsentModal onConfirm={handleConfirmInspiration} onDisable={handleDisableInspirationForever} onCancel={() => setInspirationModal({ isOpen: false, orbe: null })} /> )}
+                {showGoalModal && ( <GoalModal onSaveGoal={handleSaveAll} onSkip={() => handleSaveAll('')} /> )}
             </AnimatePresence>
 
-            {/* CAMBIO: Se elimina el max-width para que sea controlado por el padre (Home.jsx) */}
-            <main className="w-full mx-auto space-y-3">
-                {error && <p className="bg-red-100 text-red-700 p-3 rounded-lg text-center">{error}</p>}
+            <div className="flex-grow overflow-y-auto space-y-2 p-4">
+                {error && <p className="bg-red-100 text-red-700 p-3 rounded-lg text-center mb-2">{error}</p>}
+                
                 {['mente', 'emocion', 'cuerpo'].map((orbe) => (
                     <PostItOrbe key={orbe} orbe={orbe} estados={estados} onSeleccion={handleSeleccion} onComentario={handleComentario} onInspiracionClick={handleInspiracionClick} />
                 ))}
-                
-                <div className="bg-white/60 p-3 rounded-lg mt-4">
-                    <label htmlFor="compartir" className="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" id="compartir" checked={compartirAnonimo} onChange={(e) => setCompartirAnonimo(e.target.checked)} className="h-5 w-5 rounded border-zinc-300 text-amber-500 focus:ring-amber-500" />
-                        <span className="text-zinc-600 text-sm">
-                           <span className="text-lg mr-1">💌</span> Compartir mis comentarios (anónimamente) para inspirar a otros.
-                        </span>
-                    </label>
-                </div>
-                
-                <button onClick={handleOpenGoalModal} className="w-full bg-amber-400 text-white font-['Patrick_Hand'] text-2xl py-3 rounded-xl shadow-lg hover:bg-amber-500 transition-colors transform hover:scale-105 disabled:bg-zinc-300" disabled={isSaving}>
+            </div>
+
+            <div className="flex-shrink-0 p-4 border-t border-zinc-200 bg-white">
+                <button 
+                    onClick={handleOpenGoalModal} 
+                    className="w-full bg-amber-400 text-white font-['Patrick_Hand'] text-2xl py-3 rounded-xl shadow-lg hover:bg-amber-500 transition-colors transform hover:scale-105 disabled:bg-zinc-300" 
+                    disabled={isSaving}
+                >
                     {isSaving ? 'Guardando...' : 'Continuar'}
                 </button>
-            </main>
-        </>
+            </div>
+        </div>
     );
 }
-

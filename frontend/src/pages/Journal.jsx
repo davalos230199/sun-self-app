@@ -3,68 +3,110 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import PageHeader from '../components/PageHeader';
-import './Journal.css';
+
+// --- Iconos para los botones y carga (Componentes internos) ---
+const SaveIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
+);
+
+const CancelIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+);
+
+const SunIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m4.93 19.07 1.41-1.41" /><path d="m17.66 6.34 1.41-1.41" /></svg>
+);
+
 
 export default function Journal() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [texto, setTexto] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [texto, setTexto] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [message, setMessage] = useState('');
 
-  // CLAVE: useEffect ahora carga el texto existente al montar el componente.
-  useEffect(() => {
-    const fetchJournalEntry = async () => {
-      try {
-        const response = await api.getRegistroById(id);
-        // Si hay texto guardado, lo ponemos en el textarea. Si no, queda vacío.
-        setTexto(response.data.hoja_atras || '');
-      } catch (error) {
-        console.error("Error al cargar la entrada del diario:", error);
-        // Si no se encuentra el registro, podríamos redirigir.
-        navigate('/home');
-      } finally {
-        setLoading(false);
-      }
+    useEffect(() => {
+        const fetchJournalEntry = async () => {
+            try {
+                const response = await api.getRegistroById(id);
+                setTexto(response.data.hoja_atras || '');
+            } catch (error) {
+                console.error("Error al cargar la entrada del diario:", error);
+                navigate('/home');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchJournalEntry();
+    }, [id, navigate]);
+
+    const handleSave = async () => {
+        setSaving(true);
+        setMessage('');
+        try {
+            // El campo en la DB sigue siendo 'hoja_atras', solo cambia la UI
+            await api.saveHojaAtras(id, texto);
+            navigate('/home');
+        } catch (error) {
+            setMessage('Error al guardar.');
+            console.error("Error al guardar:", error);
+            setSaving(false);
+        }
     };
-    fetchJournalEntry();
-  }, [id, navigate]);
 
-  const handleSave = async () => {
-    setSaving(true);
-    setMessage('');
-    try {
-      await api.saveHojaAtras(id, texto);
-      // CLAVE: Después de guardar, navegamos de vuelta al Home.
-      navigate('/home');
-    } catch (error) {
-      setMessage('Error al guardar.');
-      console.error("Error al guardar la hoja de atrás:", error);
-      setSaving(false);
-    }
-  };
-
-  if (loading) return <div className="journal-container"><p>Cargando diario...</p></div>;
-
-  return (
-    <div className="journal-container">
-      <PageHeader title="La Hoja de Atrás" />
-      <div className="journal-editor">
-        <textarea
-          placeholder="Escribe libremente aquí..."
-          value={texto}
-          onChange={(e) => setTexto(e.target.value)}
-        />
-      </div>
-      <div className="journal-actions">
-        {message && <span className="save-message">{message}</span>}
-        {/* CLAVE: Añadimos el botón de Cancelar, que simplemente vuelve atrás. */}
-        <button onClick={() => navigate('/home')} className="secondary">Cancelar</button>
-        <button onClick={handleSave} disabled={saving} className="primary">
-          {saving ? 'Guardando...' : 'Guardar'}
-        </button>
-      </div>
-    </div>
-  );
+    return (
+        <div className="p-2 sm:p-4 h-full w-full flex flex-col">
+            {/* CAMBIO DE NOMBRE 1: Título de la página */}
+            <PageHeader title="Más de tu día" />
+            
+            <main className="flex flex-col flex-grow mt-4 w-full max-w-4xl mx-auto border border-zinc-200/50 shadow-lg rounded-2xl overflow-hidden bg-white">
+                
+                {loading ? (
+                    <div className="flex-grow flex flex-col items-center justify-center text-zinc-400">
+                        <SunIcon className="w-12 h-12 animate-spin text-amber-500" />
+                        {/* CAMBIO DE NOMBRE 2: Texto de carga */}
+                        <p className="mt-4 text-lg">Cargando más de tu día...</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="flex-grow flex">
+                            <textarea
+                                placeholder="Escribe libremente aquí... pensamientos, ideas, listas. Este es tu espacio."
+                                value={texto}
+                                onChange={(e) => setTexto(e.target.value)}
+                                className="w-full h-full p-5 sm:p-6 text-base sm:text-lg leading-relaxed text-zinc-800 bg-transparent border-0 resize-none focus:outline-none focus:ring-0 placeholder:text-zinc-400"
+                                disabled={saving}
+                            />
+                        </div>
+                        
+                        <div className="flex-shrink-0 flex items-center justify-between gap-4 p-3 sm:p-4 border-t border-zinc-200 bg-zinc-50/70 backdrop-blur-sm">
+                            <div className="flex-grow">
+                                {message && <span className="text-sm text-red-600 italic">{message}</span>}
+                                {saving && <span className="text-sm text-zinc-600 italic animate-pulse">Guardando cambios...</span>}
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <button 
+                                    onClick={() => navigate('/home')} 
+                                    className="flex items-center gap-2 py-2 px-4 rounded-lg font-semibold bg-white text-zinc-700 border border-zinc-300 hover:bg-zinc-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2"
+                                >
+                                    <CancelIcon />
+                                    <span className="hidden sm:inline">Cancelar</span>
+                                </button>
+                                
+                                <button 
+                                    onClick={handleSave} 
+                                    disabled={saving} 
+                                    className="flex items-center gap-2 py-2 px-4 rounded-lg font-semibold bg-amber-500 text-white hover:bg-amber-600 transition-colors duration-200 disabled:bg-zinc-300 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
+                                >
+                                    <SaveIcon />
+                                    <span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar'}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </>
+                )}
+            </main>
+        </div>
+    );
 }
