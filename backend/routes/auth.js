@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { createClient } = require('@supabase/supabase-js');
 const authMiddleware = require('../middleware/auth');
+const jwt = require('jsonwebtoken'); // NUEVO: Importamos la librería para JWT
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
@@ -67,16 +68,33 @@ router.post('/login', async (req, res) => {
             userEmail = emailFromApodo;
         }
 
-        const { data, error } = await supabase.auth.signInWithPassword({
+       const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
             email: userEmail,
             password: password,
         });
 
-        if (error) {
-            return res.status(error.status || 401).json({ message: 'Credenciales incorrectas.' });
+        if (loginError) {
+            return res.status(loginError.status || 401).json({ message: 'Credenciales incorrectas.' });
         }
 
-        res.json({ token: data.session.access_token });
+        // NUEVO: Una vez autenticado, buscamos el perfil completo en nuestra tabla 'users'
+        const { data: userProfile, error: profileError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', loginData.user.id)
+            .single();
+
+        if (profileError) {
+             return res.status(404).json({ message: 'Perfil de usuario no encontrado.' });
+        }
+
+        // NUEVO: Creamos el "Pase VIP" (JWT) con el perfil del usuario
+        const token = jwt.sign(userProfile, process.env.JWT_SECRET, {
+            expiresIn: '7d', // El token expirará en 7 días
+        });
+
+        // NUEVO: Devolvemos nuestro JWT y el objeto de usuario completo
+        res.json({ token, user: userProfile });
 
     } catch (err) {
         console.error("Error en /login:", err);

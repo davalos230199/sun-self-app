@@ -29,7 +29,7 @@ const HistorialChart = ({ filter }) => {
         fetchData();
     }, [filter]);
 
-    if (loading) return <div className="text-center py-10 text-zinc-500 italic">Dibujando...</div>;
+    if (loading) return <LoadingSpinner message="Dibujando tus días..." />;
     if (error) return <div className="text-center py-10 text-red-600 italic">{error}</div>;
     if (data.length === 0) return <div className="text-center py-10 text-zinc-500 italic">No hay datos para este período.</div>;
     
@@ -123,7 +123,7 @@ export default function Tracking() {
              <div className="p-2 sm:p-4 h-full w-full flex flex-col">
                 <PageHeader title="Tu Historial" />
                 <main className="flex-grow flex justify-center items-center">
-                    <LoadingSpinner message="Desplegando tus recuerdos..." />
+                    <LoadingSpinner message="Visitando el pasado.." />
                 </main>
             </div>
         )

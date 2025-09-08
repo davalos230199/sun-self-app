@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+//import api from '../services/api';
 // Mantenemos el import del CSS por ahora, pero su contenido será mínimo.
 import './Auth.css';
 import { useAuth } from '../contexts/AuthContext';
@@ -11,24 +11,29 @@ const LoginForm = ({ onSwitchToRegister, onSwitchToForgot }) => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const { setUser } = useAuth();
+    const { login } = useAuth();
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+    // CAMBIO: La lógica de submit ahora es mucho más simple y eficiente
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setLoading(true);
         try {
-            const res = await api.login(form);
-            localStorage.setItem('token', res.data.token);
-            const { data: userData } = await api.getMe();
-            setUser(userData.user);
+            // ÚNICA LLAMADA: Usamos la función del contexto.
+            // Esta función se encargará de llamar a la API, guardar el token
+            // y actualizar el estado del usuario. ¡Todo en un solo paso!
+            await login(form);
+            
+            // Si el login es exitoso, navegamos a home.
             navigate('/home');
+
         } catch (err) {
             setError(err.response?.data?.message || 'Credenciales incorrectas.');
-            setLoading(false);
+            setLoading(false); // Asegúrate de detener la carga en caso de error
         }
+        // No necesitamos setLoading(false) en el caso de éxito porque la página va a cambiar.
     };
 
     return (

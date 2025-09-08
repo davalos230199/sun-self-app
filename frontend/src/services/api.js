@@ -2,9 +2,12 @@ import axios from 'axios';
 // Asegúrate de que esta importación sea correcta y use llaves si es una exportación nombrada
 import { supabase } from './supabaseClient'; 
 
-// DESPUÉS
+// CAMBIO: Añadimos una URL de respaldo directamente en el código.
+// Esto hace que la configuración sea más robusta.
+const baseURL = import.meta.env.VITE_API_URL || 'https://sun-self-backend.onrender.com';
+
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: baseURL, // Usamos la nueva variable inteligente
   headers: {
     'Content-Type': 'application/json'
   }
