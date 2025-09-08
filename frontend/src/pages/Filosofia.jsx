@@ -3,10 +3,8 @@ import PageHeader from '../components/PageHeader';
 
 export default function Filosofia() {
     return (
-        <div className="p-2 sm:p-4 h-full w-full flex flex-col">
-            <PageHeader title="Filosofía Sun Self" />
-            <main className="flex-grow overflow-y-auto mt-4 prose max-w-none p-6 bg-white border border-amber-300 shadow-lg rounded-2xl">
-            <h4>🟡 Bienvenido a Sun-Self</h4>
+        <main className="flex-grow overflow-y-auto mt-4 prose max-w-none p-6 bg-white border border-amber-300 shadow-lg rounded-2xl">
+        <h4>🟡 Bienvenido a Sun-Self</h4>
           <p>Este espacio no es una red social.</p>
           <p>Tampoco es una aplicación para distraerte.</p>
           <p><strong>Sun-Self es un refugio y un espejo.</strong></p>
@@ -33,7 +31,6 @@ export default function Filosofia() {
           <p>Sun-Self no nació desde la teoría. Nació desde la ansiedad insoportable, la angustia constante, la desesperación por no existir, y la depresión que no avisa.</p>
           <p>Nació desde el vacío. Desde mirar el techo sin sentido. Y un día, comencé a mirarme de verdad. A notar lo que pensaba, lo que sentía, cómo respiraba, a entender cómo me trataba.</p>
           <p>Y eso, poco a poco, me transformó.</p>
-            </main>
-        </div>
+        </main>
     );
 }

@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import PageHeader from '../components/PageHeader';
 import LoadingSpinner from '../components/LoadingSpinner'; // 1. Importamos el spinner
 
 // --- Iconos para los botones y carga (Componentes internos) ---
@@ -52,10 +51,6 @@ export default function Journal() {
     };
 
     return (
-        <div className="p-2 sm:p-4 h-full w-full flex flex-col bg-zinc-50">
-            {/* CAMBIO DE NOMBRE 1: Título de la página */}
-            <PageHeader title="Más de tu día" />
-            
             <main className="flex flex-col flex-grow mt-4 w-full max-w-4xl mx-auto border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-white">
                 
                 {loading ? (
@@ -99,6 +94,5 @@ export default function Journal() {
                     </>
                 )}
             </main>
-        </div>
     );
 }

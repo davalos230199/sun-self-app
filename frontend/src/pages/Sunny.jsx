@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
-import PageHeader from '../components/PageHeader';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const SendIcon = () => (
@@ -65,12 +64,8 @@ export default function Sunny() {
 
     // --- RENDERIZADO UNIFICADO ---
     return (
-        <div className="p-2 sm:p-4 h-full w-full flex flex-col bg-zinc-50">
-            <PageHeader title="Sunny" />
-            
-            {/* El 'main' ahora es el esqueleto permanente. SIEMPRE tiene los mismos estilos. */}
+
             <main className="flex flex-col flex-grow mt-4 w-full max-w-3xl mx-auto border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-white">
-                
                 {isPageLoading ? (
                     // 1. CANAL DE CARGA: El spinner se renderiza DENTRO del esqueleto ya estilizado.
                     <div className="flex-grow flex justify-center items-center">
@@ -108,6 +103,5 @@ export default function Sunny() {
                     </>
                 )}
             </main>
-        </div>
     );
 }

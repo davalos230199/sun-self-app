@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion'; // Importamos para la animación del modal
 import api from '../services/api';
-import PageHeader from '../components/PageHeader';
 import LoadingSpinner from '../components/LoadingSpinner'; // 1. IMPORTAR
 
 // --- Componente del Modal para la Frase (NUEVO) ---
@@ -78,18 +77,14 @@ export default function MuroDeSoles() {
     const handleCardClick = (frase) => {
         setSelectedFrase(frase);
     };
-
-    return (
-        <div className="p-2 sm:p-4 h-full w-full flex flex-col bg-zinc-50"> 
-            <PageHeader title="Muro de Soles" />
-            
-            {/* CAMBIO: La lógica ahora vive directamente dentro de <main> */}
-            <main className="flex-grow overflow-y-auto mt-4 border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-white">
-                {loading ? (
     
+    // CAMBIO: Se eliminó el div contenedor extra y el PageHeader
+    return (
+        <>
+            <main className="flex-grow overflow-y-auto mt-4 border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-white h-full">
+                {loading ? (
                     <LoadingSpinner message="Cargando reflejos..." />
                 ) : (
-                    // CANAL 2: Si no está cargando, MOSTRAMOS TODO EL CONTENIDO.
                     <div className="p-4">
                         <p className="text-lg text-zinc-600 mb-10 text-center font-['Patrick_Hand'] max-w-lg mx-auto">
                             Reflejo de otros soles.
@@ -125,6 +120,6 @@ export default function MuroDeSoles() {
                     <FraseModal frase={selectedFrase} onClose={() => setSelectedFrase(null)} />
                 )}
             </AnimatePresence>
-        </div>
+        </>
     );
 }
