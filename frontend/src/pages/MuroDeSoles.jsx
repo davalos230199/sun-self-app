@@ -93,7 +93,7 @@ export default function MuroDeSoles() {
                     // CANAL 2: Si no está cargando, MOSTRAMOS TODO EL CONTENIDO.
                     <div className="p-4">
                         <p className="text-lg text-zinc-600 mb-10 text-center font-['Patrick_Hand'] max-w-lg mx-auto">
-                            Un mosaico de otras personas buscando su reflejo.
+                            Reflejo de otros soles.
                         </p>
 
                         {error && <p className="text-center text-red-600 italic py-10">{error}</p>}

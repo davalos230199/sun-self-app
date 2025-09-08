@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion'; // <-- AÑADE ESTA LÍNEA
 import api from '../services/api';
 
 import RegistroDashboard from '../components/RegistroDashboard';
@@ -15,7 +16,7 @@ export default function Home() {
     const [miniMetas, setMiniMetas] = useState([]);
     const [fraseDelDia, setFraseDelDia] = useState('');
     const [isLoadingAdicional, setIsLoadingAdicional] = useState(false);
-    const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
     // ... toda tu lógica (cargarDatosDelDia, useEffect, handleEdit) se mantiene exactamente igual ...
     const cargarDatosDelDia = useCallback(async () => {
@@ -64,6 +65,7 @@ export default function Home() {
 
     useEffect(() => {
         const haVistoManifiesto = localStorage.getItem('sunself_manifiesto_visto');
+        // Si el usuario NO lo ha visto, entonces y solo entonces, ponemos el estado en 'true'.
         if (!haVistoManifiesto) {
             setShowWelcomeModal(true);
         }
@@ -74,37 +76,64 @@ export default function Home() {
         setRegistroDeHoy(null);
     };
 
-    // ELIMINAMOS EL if (isLoading) DE AQUÍ
-
-    return (
-        // LA ESTRUCTURA PRINCIPAL SIEMPRE SE RENDERIZA
-        <div className="p-2 sm:p-4 w-full max-w-lg mx-auto flex flex-col h-full">
-            {showWelcomeModal && <WelcomeModal onAccept={() => {
+        // CAMBIO 3: La lógica de renderizado ahora es SECUENCIAL
+    // Primero, si el modal debe mostrarse, se muestra SOLO el modal.
+    if (showWelcomeModal) {
+        return (
+            <WelcomeModal onAccept={(shouldHide) => {
+                if (shouldHide) {
+                    localStorage.setItem('sunself_manifiesto_visto', 'true');
+                }
                 setShowWelcomeModal(false);
-                localStorage.setItem('sunself_manifiesto_visto', 'true');
-            }} />}
-            
-            <PageHeader 
-                title={registroDeHoy ? "Tu Día" : "¿Cómo estás hoy?"} 
-                showBackButton={false} 
-            />
+            }} />
+        );
+    }
 
-            <main className="mt-4 flex-grow">
-                {/* LA CONDICIÓN AHORA ESTÁ AQUÍ DENTRO */}
+return (
+    <>
+        {/*
+            AnimatePresence es el componente mágico de Framer Motion.
+            Detecta cuando WelcomeModal (su hijo directo) es eliminado del árbol de componentes
+            y ejecuta la animación 'exit' que definimos dentro de WelcomeModal antes de quitarlo del DOM.
+        */}
+        <AnimatePresence>
+            {showWelcomeModal && (
+                <WelcomeModal
+                    onAccept={(shouldHide) => {
+                        if (shouldHide) {
+                            localStorage.setItem('sunself_manifiesto_visto', 'true');
+                        }
+                        setShowWelcomeModal(false);
+                    }}
+                />
+            )}
+        </AnimatePresence>
+
+        {/* Este es el div principal de tu página.
+            Vive en paralelo al modal. No se renderizará nada dentro de él
+            hasta que la lógica principal de la página (isLoading, etc.) se complete.
+        */}
+        <div className="p-2 sm:p-4 w-full max-w-lg mx-auto flex flex-col h-full">
+            <PageHeader
+                title={registroDeHoy ? "Tu Día" : "¿Cómo estás hoy?"}
+                showBackButton={false}
+            />
+            <main className="mt-4 flex-grow overflow-y-auto">
                 {isLoading ? (
                     <LoadingSpinner message="Hoy estoy..." />
                 ) : registroDeHoy ? (
-                    <RegistroDashboard 
+                    <RegistroDashboard
                         registro={registroDeHoy}
-                        fraseDelDia={fraseDelDia} 
+                        fraseDelDia={fraseDelDia}
                         miniMetas={miniMetas}
                         isLoadingAdicional={isLoadingAdicional}
-                        onEdit={handleEdit} 
+                        onEdit={handleEdit}
                     />
                 ) : (
                     <RegistroForm onSaveSuccess={cargarDatosDelDia} />
                 )}
             </main>
         </div>
-    );
+    </>
+);
 }

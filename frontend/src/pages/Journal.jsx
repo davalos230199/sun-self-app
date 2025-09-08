@@ -52,7 +52,7 @@ export default function Journal() {
     };
 
     return (
-        <div className="p-2 sm:p-4 h-full w-full flex flex-col">
+        <div className="p-2 sm:p-4 h-full w-full flex flex-col bg-zinc-50">
             {/* CAMBIO DE NOMBRE 1: Título de la página */}
             <PageHeader title="Más de tu día" />
             
@@ -72,7 +72,7 @@ export default function Journal() {
                             />
                         </div>
                         
-                        <div className="flex-shrink-0 flex items-center justify-between gap-4 p-3 sm:p-4 border-t border-amber-300 bg-zinc-50/70 backdrop-blur-sm">
+                        <div className="flex-shrink-0 flex items-center justify-between gap-4 p-3 sm:p-4 border-t border-amber-300 bg-zinc-50/70">
                             <div className="flex-grow">
                                 {message && <span className="text-sm text-red-600 italic">{message}</span>}
                                 {saving && <span className="text-sm text-zinc-600 italic animate-pulse">Guardando cambios...</span>}

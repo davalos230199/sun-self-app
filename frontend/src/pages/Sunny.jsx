@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
 import PageHeader from '../components/PageHeader';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 // --- Icono de Enviar (Componente interno) ---
 const SendIcon = () => (
@@ -13,8 +14,9 @@ const SendIcon = () => (
 export default function Sunny() {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const messagesEndRef = useRef(null);
+    const [isPageLoading, setIsPageLoading] = useState(true);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -34,7 +36,7 @@ export default function Sunny() {
                 console.error("Error al obtener el contexto inicial:", error);
                 setMessages([{ sender: 'sunny', text: 'Hola. Parece que hay un pequeño eco en la línea. ¿En qué piensas?' }]);
             } finally {
-                setLoading(false);
+                setIsPageLoading(false);
             }
         };
         fetchInitialContext();
@@ -68,9 +70,20 @@ export default function Sunny() {
         }
     };
 
+    if (isPageLoading) {
+        return (
+            <div className="p-2 sm:p-4 h-full w-full flex flex-col">
+                <PageHeader title="Sunny" />
+                <main className="flex-grow mt-6 flex justify-center items-center">
+                    <LoadingSpinner message="Sintonizando reflejos..." />
+                </main>
+            </div>
+        );
+    }   
+
     return (
         // CAMBIO: Contenedor principal de la página con padding y flex-col
-        <div className="p-2 sm:p-4 h-full w-full flex flex-col border">
+        <div className="p-2 sm:p-4 h-full w-full flex flex-col bg-zinc-50">
             <PageHeader title="Sunny" />
             
             {/* Contenedor del chat que ocupa el espacio restante */}
@@ -93,7 +106,7 @@ export default function Sunny() {
                     <div ref={messagesEndRef} />
                 </div>
                 
-                <form onSubmit={handleSend} className="flex-shrink-0 flex items-center p-2.5 border-t border-amber-300 bg-white/80 backdrop-blur-sm">
+                <form onSubmit={handleSend} className="flex-shrink-0 flex items-center p-2.5 bg-white/80">
                     <input
                         type="text"
                         value={input}

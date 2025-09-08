@@ -12,6 +12,8 @@ import Journal from './pages/Journal';
 import MuroDeSoles from './pages/MuroDeSoles';
 import UpdatePassword from './pages/UpdatePassword';
 import MiniMetasPage from './pages/MiniMetasPage'; 
+import Filosofia from './pages/Filosofia'; // <-- 1. Importa el nuevo componente
+
 
 // El componente "inteligente" para la ruta raíz, ahora corregido para evitar condiciones de carrera
 const RootHandler = () => {
@@ -70,6 +72,7 @@ const router = createBrowserRouter([
             { path: 'journal/:id', element: <Journal /> },
             { path: 'muro', element: <MuroDeSoles /> },
             { path: 'metas', element: <MiniMetasPage /> },
+             { path: 'filosofia', element: <Filosofia /> }, // <-- 2. Añade la nueva ruta aquí
         ],
     },
     // La ruta raíz ahora usa nuestro nuevo componente "inteligente"

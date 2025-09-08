@@ -89,10 +89,10 @@ export default function MinimetasPage() {
     // SE ELIMINAN LOS RETURNS ANTICIPADOS DE AQUÍ
 
     return (
-        <div className="p-2 sm:p-4 h-full w-full flex flex-col">
+        <div className="p-2 sm:p-4 h-full w-full flex flex-col bg-zinc-50">
             <PageHeader title="Mini Metas Diarias" />
             
-            <main className="flex-grow overflow-y-auto mt-4 border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-white p-4 sm:p-6">
+            <main className="flex-grow overflow-y-auto border border-amber-300 mt-4 shadow-lg rounded-2xl overflow-hidden bg-white p-4 sm:p-6">
                 {isLoading ? (
                     // 1. Estado de Carga (dentro del main)
                     <LoadingSpinner message="Mi proximo paso es..." />
