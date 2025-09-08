@@ -9,12 +9,13 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 router.use(authMiddleware);
 
-// RUTA PARA OBTENER LOS DATOS DEL GRÁFICO
+// ▼▼▼ ESTA ES LA RUTA CORREGIDA ▼▼▼
 router.get('/chart-data', async (req, res) => {
     try {
-        const { id: userId } = req.user; // Este ID ahora es UUID
+        const { id: userId } = req.user;
         const { filter } = req.query;
 
+        // 1. Llamamos a nuestra función de Supabase
         const { data, error } = await supabase.rpc('get_chart_data_for_user', {
             p_user_id: userId,
             p_filter_period: filter
@@ -22,26 +23,16 @@ router.get('/chart-data', async (req, res) => {
 
         if (error) throw error;
 
-        const chartData = data.map(registro => {
-            let valor;
-            switch (registro.estado_general_text) {
-                case 'soleado': valor = 4; break;
-                case 'nublado': valor = 3; break;
-                case 'lluvioso': valor = 2; break;
-                default: valor = 3;
-            }
-            return {
-                fecha: new Date(registro.created_at_ts).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }),
-                valor: valor
-            };
-        });
-        res.json(chartData);
+        // 2. Enviamos los datos DIRECTAMENTE como vienen. Sin re-procesar.
+        res.json(data);
+
     } catch (err) {
         console.error("Error en GET /chart-data:", err);
         res.status(500).json({ error: 'Error al obtener los datos para el gráfico.' });
     }
 });
 
+// --- EL RESTO DEL ARCHIVO SE MANTIENE EXACTAMENTE IGUAL ---
 // RUTA PARA CREAR UN REGISTRO
 router.post('/', async (req, res) => {
     try {
@@ -68,7 +59,7 @@ router.post('/', async (req, res) => {
             p_cuerpo_coment: cuerpo.comentario,
             p_estado_general: estado_general,
             p_meta_del_dia: meta_del_dia,
-            p_compartir_anonimo: true // Forzamos a que siempre sea true
+            p_compartir_anonimo: true
         });
 
         if (registroError) throw registroError;
@@ -79,7 +70,6 @@ router.post('/', async (req, res) => {
                 user_id: userId,
                 registro_id: registroData.id
             }));
-            // Este insert funciona por la política de RLS en la tabla mini_metas
             await supabase.from('mini_metas').insert(minimetasParaInsertar);
         }
 
@@ -129,7 +119,7 @@ router.get('/today', async (req, res) => {
     }
 });
 
-// RUTA GET PARA UN SOLO REGISTRO (para la "Hoja de atrás")
+// RUTA GET PARA UN SOLO REGISTRO
 router.get('/:id', async (req, res) => {
     try {
         const { id: recordId } = req.params;
@@ -151,7 +141,6 @@ router.get('/:id', async (req, res) => {
         res.status(500).json({ error: 'Error interno al obtener el registro.' });
     }
 });
-
 
 // RUTA PUT PARA "LA HOJA DE ATRÁS"
 router.put('/:id/hoja_atras', async (req, res) => {
