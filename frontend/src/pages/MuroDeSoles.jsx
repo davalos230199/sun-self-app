@@ -86,8 +86,7 @@ export default function MuroDeSoles() {
             {/* CAMBIO: La lógica ahora vive directamente dentro de <main> */}
             <main className="flex-grow overflow-y-auto mt-4 border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-white">
                 {loading ? (
-                    // CANAL 1: Si está cargando, MOSTRAMOS SOLO EL SPINNER.
-                    // Ocupará todo el espacio de <main> sin conflictos.
+    
                     <LoadingSpinner message="Cargando reflejos..." />
                 ) : (
                     // CANAL 2: Si no está cargando, MOSTRAMOS TODO EL CONTENIDO.

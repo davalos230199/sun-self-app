@@ -113,7 +113,7 @@ return (
             Vive en paralelo al modal. No se renderizará nada dentro de él
             hasta que la lógica principal de la página (isLoading, etc.) se complete.
         */}
-        <div className="p-2 sm:p-4 w-full max-w-lg mx-auto flex flex-col h-full">
+        <div className="p-2 sm:p-4 h-full w-full flex flex-col bg-zinc-50">
             <PageHeader
                 title={registroDeHoy ? "Tu Día" : "¿Cómo estás hoy?"}
                 showBackButton={false}
