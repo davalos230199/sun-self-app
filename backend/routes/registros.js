@@ -94,25 +94,26 @@ router.get('/', async (req, res) => {
 });
 
 // RUTA GET PARA EL REGISTRO DE HOY
+// RUTA GET PARA EL REGISTRO DE HOY (OPTIMIZADA)
 router.get('/today', async (req, res) => {
     try {
         const { id: userId } = req.user;
         const clientTimezone = req.headers['x-client-timezone'] || 'UTC';
         
-        const { data: todosLosRegistros, error } = await supabase.rpc('get_registros_for_user', { p_user_id: userId });
+        // CAMBIO: Llamamos a nuestra nueva función "francotirador"
+        const { data, error } = await supabase.rpc('get_registro_de_hoy', {
+            p_user_id: userId,
+            p_client_timezone: clientTimezone
+        });
 
         if (error) throw error;
 
-        const registros = todosLosRegistros || [];
-
-        const registroDeHoy = registros.find(registro => {
-            const registroDate = new Date(registro.created_at);
-            const hoyLocale = new Date().toLocaleDateString('en-CA', { timeZone: clientTimezone });
-            const registroDateLocale = registroDate.toLocaleDateString('en-CA', { timeZone: clientTimezone });
-            return hoyLocale === registroDateLocale;
-        }) || null;
+        // La función devuelve el registro encontrado o un array vacío.
+        // Tomamos el primer elemento (el único) o devolvemos null si no hay nada.
+        const registroDeHoy = data && data.length > 0 ? data[0] : null;
 
         res.json({ registro: registroDeHoy });
+
     } catch (err) {
         console.error("Error en GET /today:", err);
         res.status(500).json({ error: 'Error al verificar el registro de hoy.' });
