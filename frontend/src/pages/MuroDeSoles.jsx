@@ -81,7 +81,7 @@ export default function MuroDeSoles() {
     // CAMBIO: Se eliminó el div contenedor extra y el PageHeader
     return (
         <>
-            <main className="flex-grow overflow-y-auto mt-4 border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-white h-full">
+            <main className="flex flex-col flex-grow w-full max-w-4xl mx-auto border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-white h-full">
                 {loading ? (
                     <LoadingSpinner message="Cargando reflejos..." />
                 ) : (

@@ -51,7 +51,7 @@ export default function Journal() {
     };
 
     return (
-            <main className="flex flex-col flex-grow mt-4 w-full max-w-4xl mx-auto border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-white">
+            <main className="flex flex-col flex-grow w-full max-w-4xl mx-auto border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-white h-full">
                 
                 {loading ? (
                     <LoadingSpinner message="Hoy recordé cuando..." />

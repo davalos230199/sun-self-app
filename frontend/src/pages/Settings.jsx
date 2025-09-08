@@ -56,7 +56,7 @@ export default function Settings() {
     }
     
     return (
-        <main className="flex-grow flex flex-col pt-2">
+        <main className="flex flex-col flex-grow w-full max-w-4xl mx-auto overflow-hidden bg-white h-full">
             <div className="flex-grow">
                 <div className="bg-white border border-amber-300 p-5 rounded-xl max-w-md mx-auto shadow-sm">
                     <h3 className="text-2xl font-['Patrick_Hand'] mt-0 border-b border-amber-200 pb-2 mb-4 text-zinc-700">

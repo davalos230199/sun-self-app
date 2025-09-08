@@ -1,5 +1,6 @@
 // frontend/src/pages/Tracking.jsx
 
+
 import React, { useState, useEffect } from 'react'; // <-- CAMBIO: Importamos React
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -18,6 +19,7 @@ const HistorialChart = ({ filter }) => {
         const fetchData = async () => {
             setLoading(true);
             try {
+                await new Promise(res => setTimeout(res, 500));
                 const response = await api.getChartData(filter);
                 setData(response.data);
                 setError(null);
@@ -41,17 +43,26 @@ const HistorialChart = ({ filter }) => {
         return '';
     };
     
+    // CAMBIO CLAVE: El contenedor con altura fija ahora envuelve toda la lógica.
     return (
-        <div className="w-full h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                    <XAxis dataKey="fecha" tick={{ fontSize: 12, fill: '#666' }} />
-                    <YAxis domain={[1.5, 4.5]} ticks={[2, 3, 4]} tickFormatter={yAxisTickFormatter} tick={{ fontSize: 16 }} />
-                    <Tooltip contentStyle={{ borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }} />
-                    <Line type="monotone" dataKey="valor" name="Fluctuación" stroke="#f59e0b" strokeWidth={3} dot={{ r: 5 }} activeDot={{ r: 8 }} />
-                </LineChart>
-            </ResponsiveContainer>
+        <div className="w-full h-[400px] flex justify-center items-center">
+            {loading ? (
+                <LoadingSpinner message="Dibujando tus días..." />
+            ) : error ? (
+                <div className="text-center text-red-600 italic">{error}</div>
+            ) : data.length === 0 ? (
+                <div className="text-center text-zinc-500 italic">No hay datos para este período.</div>
+            ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={data} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                        <XAxis dataKey="fecha" tick={{ fontSize: 12, fill: '#666' }} />
+                        <YAxis domain={[1.5, 4.5]} ticks={[2, 3, 4]} tickFormatter={yAxisTickFormatter} tick={{ fontSize: 16 }} />
+                        <Tooltip contentStyle={{ borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }} />
+                        <Line type="monotone" dataKey="valor" name="Fluctuación" stroke="#f59e0b" strokeWidth={3} dot={{ r: 5 }} activeDot={{ r: 8 }} />
+                    </LineChart>
+                </ResponsiveContainer>
+            )}
         </div>
     );
 };
@@ -115,13 +126,14 @@ export default function Tracking() {
     return (
         <>
             <style>{calendarStyles}</style>
-            <main className="flex-grow overflow-y-auto mt-4 space-y-6 h-full">
+            <main className="h-full overflow-y-auto">
                 {isLoadingPage ? (
                     <div className="h-full flex justify-center items-center">
                         <LoadingSpinner message="Visitando el pasado..." />
                     </div>
                 ) : (
-                    <>
+                        // CAMBIO: Div interior que contiene el estilo visual y el espaciado
+                    <div className="flex flex-col space-y-6">
                         <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6">
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800">Tu Fluctuación</h2>
@@ -151,7 +163,7 @@ export default function Tracking() {
                                 (Próximamente: La 'Lista de Recuerdos' recuperada vivirá aquí)
                             </div>
                         </section>
-                    </>
+                    </div>
                 )}
             </main>
         </>

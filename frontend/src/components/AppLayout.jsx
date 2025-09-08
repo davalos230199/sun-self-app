@@ -122,7 +122,7 @@ export default function AppLayout() {
                     />
                 </div>
                 
-                <main className="flex-1 overflow-y-auto p-2 sm:p-4 pt-4"> 
+                <main className="flex-1 overflow-hidden p-2 sm:p-4 pt-4"> 
                     <Outlet context={outletContext} />
                 </main>
                 <Navbar />

@@ -7,13 +7,20 @@ import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function MiniMetasPage() {
     const { registroDeHoy, cargarDatosDelDia, miniMetas: metasDelContexto } = useOutletContext();
-    
-    const [isLoading] = useState(false); // Eliminamos setIsLoading porque no se usa
+     const [isPageLoading, setIsPageLoading] = useState(true);
     const [error, setError] = useState('');
     const [miniMetas, setMiniMetas] = useState(metasDelContexto || []);
-    
     const [newMetaText, setNewMetaText] = useState('');
     const [newMetaTime, setNewMetaTime] = useState('12:00');
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsPageLoading(false); // Después de 300ms, ocultamos el spinner
+        }, 600); // 300ms es un buen valor: rápido pero perceptible
+
+        return () => clearTimeout(timer); // Limpiamos el temporizador si el componente se desmonta
+    }, []); // El array vacío asegura que se ejecute solo una vez cuando la página carga
+
 
     useEffect(() => {
         const sortedMetas = (metasDelContexto || []).sort((a, b) => {
@@ -72,9 +79,11 @@ export default function MiniMetasPage() {
     };
 
     return (
-        <main className="flex-grow overflow-y-auto mt-4 border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-white p-4 sm:p-6 h-full">
-            {isLoading ? (
-                <LoadingSpinner message="Mi proximo paso es..." />
+        <main className="flex flex-col border border-amber-300 shadow-lg rounded-2xl overflow-y-auto bg-white p-4 sm:p-6 h-full">
+            {isPageLoading ? (
+                <div className="flex-grow flex justify-center items-center">
+                    <LoadingSpinner message="Mi proximo paso es..." />
+                </div>
             ) : error ? (
                 <div className="text-center py-10 h-full flex flex-col justify-center">
                     <p className="text-red-600 mb-4">{error}</p>

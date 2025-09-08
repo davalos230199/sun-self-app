@@ -65,7 +65,7 @@ export default function Sunny() {
     // --- RENDERIZADO UNIFICADO ---
     return (
 
-            <main className="flex flex-col flex-grow mt-4 w-full max-w-3xl mx-auto border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-white">
+            <main className="flex flex-col flex-grow w-full max-w-4xl mx-auto border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-white h-full">
                 {isPageLoading ? (
                     // 1. CANAL DE CARGA: El spinner se renderiza DENTRO del esqueleto ya estilizado.
                     <div className="flex-grow flex justify-center items-center">
