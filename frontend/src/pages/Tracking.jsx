@@ -1,31 +1,27 @@
-// /frontend/src/pages/Tracking.jsx (Código Nuevo y Refactorizado)
-
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // <-- AÑADE ESTA LÍNEA
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import PageHeader from '../components/PageHeader';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import Calendar from 'react-calendar'; // 1. Importamos el calendario
-import 'react-calendar/dist/Calendar.css'; // 2. Importamos los estilos base del calendario
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 
-// --- Sub-componente: El Gráfico de Líneas (Rescatado y Mejorado) ---
+// --- Sub-componente: Gráfico (sin cambios) ---
 const HistorialChart = ({ filter }) => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    
 
     useEffect(() => {
         const fetchData = async () => {
+            setLoading(true);
             try {
-                setLoading(true);
                 const response = await api.getChartData(filter);
                 setData(response.data);
                 setError(null);
             } catch (err) {
-                console.error("Error al cargar datos del gráfico:", err);
-                setError("No se pudieron cargar los datos de tu fluctuación.");
+                setError("No se pudieron cargar los datos.");
             } finally {
                 setLoading(false);
             }
@@ -33,11 +29,10 @@ const HistorialChart = ({ filter }) => {
         fetchData();
     }, [filter]);
 
-    if (loading) return <div className="text-center py-10 text-zinc-500 italic">Dibujando tus fluctuaciones...</div>;
+    if (loading) return <div className="text-center py-10 text-zinc-500 italic">Dibujando...</div>;
     if (error) return <div className="text-center py-10 text-red-600 italic">{error}</div>;
     if (data.length === 0) return <div className="text-center py-10 text-zinc-500 italic">No hay datos para este período.</div>;
     
-    // Formateador para el eje Y (vertical) del gráfico
     const yAxisTickFormatter = (value) => {
         if (value === 4) return '☀️';
         if (value === 3) return '⛅';
@@ -53,8 +48,7 @@ const HistorialChart = ({ filter }) => {
                     <XAxis dataKey="fecha" tick={{ fontSize: 12, fill: '#666' }} />
                     <YAxis domain={[1.5, 4.5]} ticks={[2, 3, 4]} tickFormatter={yAxisTickFormatter} tick={{ fontSize: 16 }} />
                     <Tooltip contentStyle={{ borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }} />
-                    <Legend wrapperStyle={{ fontSize: 14, paddingTop: '20px' }} />
-                    <Line type="monotone" dataKey="valor" name="Tu Fluctuación" stroke="#f59e0b" strokeWidth={3} dot={{ r: 5 }} activeDot={{ r: 8 }} />
+                    <Line type="monotone" dataKey="valor" name="Fluctuación" stroke="#f59e0b" strokeWidth={3} dot={{ r: 5 }} activeDot={{ r: 8 }} />
                 </LineChart>
             </ResponsiveContainer>
         </div>
@@ -63,9 +57,9 @@ const HistorialChart = ({ filter }) => {
 
 // --- Componente Principal de la Página ---
 export default function Tracking() {
-    const [activeFilter, setActiveFilter] = useState('mes'); // Filtro por defecto
-    const [registrosCompletos, setRegistrosCompletos] = useState([]); // 3. Nuevo estado para TODOS los registros
-    const [isLoadingPage, setIsLoadingPage] = useState(true); // <-- AÑADE ESTA LÍNEA
+    const [activeFilter, setActiveFilter] = useState('mes');
+    const [registrosCompletos, setRegistrosCompletos] = useState([]);
+    const [isLoadingPage, setIsLoadingPage] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -82,60 +76,46 @@ export default function Tracking() {
         fetchAllRegistros();
     }, []);
 
-    // 5. Función para dar estilo a cada día del calendario
-    const tileClassName = ({ date, view }) => {
+    // CAMBIO 1: Nueva función para inyectar el emoji en cada día
+    const tileContent = ({ date, view }) => {
         if (view === 'month') {
-            const yyyy = date.getFullYear();
-            const mm = String(date.getMonth() + 1).padStart(2, '0');
-            const dd = String(date.getDate()).padStart(2, '0');
-            const dateString = `${yyyy}-${mm}-${dd}`;
-            
+            const dateString = date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
             const registroDelDia = registrosCompletos.find(r => r.created_at.startsWith(dateString));
             
             if (registroDelDia) {
-                return `day-with-registro ${registroDelDia.estado_general}`; // ej: 'day-with-registro soleado'
+                let emoji = '❔';
+                if (registroDelDia.estado_general === 'soleado') emoji = '☀️';
+                if (registroDelDia.estado_general === 'nublado') emoji = '⛅';
+                if (registroDelDia.estado_general === 'lluvioso') emoji = '🌧️';
+                // Retornamos un span con el emoji para ponerlo debajo del número
+                return <span className="block text-xl mt-1">{emoji}</span>;
             }
         }
+        return null;
     };
     
-    // 6. Función para manejar el clic en un día
+    // Función para manejar el clic en un día (sin cambios)
     const handleDayClick = (date) => {
-        const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const dd = String(date.getDate()).padStart(2, '0');
-        const dateString = `${yyyy}-${mm}-${dd}`;
-
+        const dateString = date.toISOString().split('T')[0];
         const registroDelDia = registrosCompletos.find(r => r.created_at.startsWith(dateString));
         if (registroDelDia) {
             navigate(`/journal/${registroDelDia.id}`);
         }
     };
     
-    const filters = [
-        { key: 'semana', label: '7d' },
-        { key: 'quince', label: '15d' },
-        { key: 'mes', label: '1m' },
-        { key: 'todo', label: 'Todo' },
-    ];
+    const filters = [{ key: 'semana', label: '7d' }, { key: 'quince', label: '15d' }, { key: 'mes', label: '1m' }, { key: 'todo', label: 'Todo' }];
 
-   // --- Estilos para los días del calendario ---
+    // CAMBIO 2: Eliminamos los estilos CSS para los puntos de color
     const calendarStyles = `
         .react-calendar { border: none; font-family: 'Patrick Hand', sans-serif; }
-        .react-calendar__tile { text-align: center; padding: 10px 5px; }
-        .day-with-registro { position: relative; }
-        .day-with-registro::after {
-            content: '';
-            position: absolute;
-            left: 50%;
-            bottom: 5px;
-            transform: translateX(-50%);
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
+        /* Hacemos que cada día sea un flexbox en columna para alinear número y emoji */
+        .react-calendar__tile { 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 60px; /* Le damos una altura fija para que no salten */
         }
-        .soleado::after { background-color: #FFD700; }
-        .nublado::after { background-color: #87CEEB; }
-        .lluvioso::after { background-color: #00008B; }
     `;
 
     if (isLoadingPage) {
@@ -149,7 +129,7 @@ export default function Tracking() {
         )
     }
 
-return (
+    return (
         <div className="p-2 sm:p-4 h-full w-full flex flex-col">
             <style>{calendarStyles}</style>
             <PageHeader title="Tu Historial" />
@@ -173,12 +153,12 @@ return (
                     <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800 mb-4">Calendario de Reflejos</h2>
                     <Calendar
                         className="w-full"
-                        tileClassName={tileClassName}
+                        // CAMBIO 3: Usamos la nueva prop 'tileContent'
+                        tileContent={tileContent}
                         onClickDay={handleDayClick}
                     />
                 </section>
                 
-                {/* Dejamos este espacio para el futuro ListaRecuerdos */}
                 <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6">
                     <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800 mb-4">Tus Recuerdos</h2>
                     <div className="text-center py-10 text-zinc-400 italic">
