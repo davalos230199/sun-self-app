@@ -6,21 +6,33 @@ import { AnimatePresence } from 'framer-motion';
 import RegistroDashboard from '../components/RegistroDashboard';
 import RegistroForm from '../components/RegistroForm';
 import WelcomeModal from '../components/WelcomeModal';
-// Ya no necesitamos PageHeader aquí
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useEffect, useState } from 'react';
 
 export default function Home() {
-    // CAMBIO: Recibimos todo del "cerebro" AppLayout a través del contexto
     const {
         isLoading,
         registroDeHoy,
-        setRegistroDeHoy, // <-- Necesario para la función de editar
+        setRegistroDeHoy,
         miniMetas,
         fraseDelDia,
         isLoadingAdicional,
-        cargarDatosDelDia // <-- Necesario para el onSaveSuccess del formulario
+        cargarDatosDelDia
     } = useOutletContext();
+
+    // NUEVO ESTADO: Un estado de carga local para la página Home
+    const [isHomeLoading, setIsHomeLoading] = useState(true);
+
+    // NUEVO useEffect: Para controlar la animación de carga al entrar a Home
+    useEffect(() => {
+        // Simula un retardo de 500ms (medio segundo) para mostrar el spinner
+        const timer = setTimeout(() => {
+            setIsHomeLoading(false);
+        }, 500); // Puedes ajustar este valor si lo deseas
+
+        // Limpia el temporizador si el componente se desmonta
+        return () => clearTimeout(timer);
+    }, []);
 
     // La lógica del WelcomeModal se puede quedar aquí, es específica de Home
     const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -31,7 +43,6 @@ export default function Home() {
         }
     }, []);
 
-    // CAMBIO: La función de editar ahora usa el setRegistroDeHoy del padre
     const handleEdit = () => {
         setRegistroDeHoy(null);
     };
@@ -49,10 +60,10 @@ export default function Home() {
         );
     }
     
-    // El renderizado es más simple, ya no incluye PageHeader
     return (
         <div className="h-full w-full">
-            {isLoading ? (
+            {/* CAMBIO: Ahora usamos el estado isHomeLoading para mostrar el spinner */}
+            {isLoading || isHomeLoading ? (
                 <LoadingSpinner message="Hoy estoy..." />
             ) : registroDeHoy ? (
                 <RegistroDashboard

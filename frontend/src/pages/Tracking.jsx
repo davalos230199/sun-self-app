@@ -126,7 +126,7 @@ export default function Tracking() {
     return (
         <>
             <style>{calendarStyles}</style>
-            <main className="h-full overflow-y-auto">
+            <main className="h-full overflow-y-auto bg-zing-50">
                 {isLoadingPage ? (
                     <div className="h-full flex justify-center items-center">
                         <LoadingSpinner message="Visitando el pasado..." />
