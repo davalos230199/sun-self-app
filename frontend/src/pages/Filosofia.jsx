@@ -1,6 +1,4 @@
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-
 // Componente para el sol estático que gira
 const SunSVG = () => (
     <svg
@@ -80,17 +78,7 @@ export default function FilosofiaSunSelf() {
           <p>Sun-Self no nació desde la teoría. Nació desde la ansiedad insoportable, la angustia constante, la desesperación por no existir, y la depresión que no avisa.</p>
           <p>Nació desde el vacío. Desde mirar el techo sin sentido. Y un día, comencé a mirarme de verdad. A notar lo que pensaba, lo que sentía, cómo respiraba, a entender cómo me trataba.</p>
           <p>Y eso, poco a poco, me transformó.</p>
-            </div>
-
-            {/* Botón para volver a la página de Configuración */}
-            <div className="flex-shrink-0 p-4 border-t border-amber-300 bg-zinc-50/70">
-                <Link
-                    to="/settings"
-                    className="w-full flex items-center justify-center bg-zinc-700 hover:bg-zinc-800 text-white font-['Patrick_Hand'] text-lg py-2.5 px-4 rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
-                >
-                    Volver a Configuración
-                </Link>
-            </div>
+        </div>
         </main>
     );
 }

@@ -8,6 +8,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
+import BotonAtras from '../components/common/BotonAtras';
 
 // --- Sub-componente: Gráfico (sin cambios) ---
 const HistorialChart = ({ filter }) => {

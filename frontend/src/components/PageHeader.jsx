@@ -1,6 +1,8 @@
 // frontend/src/components/PageHeader.jsx
 
 import { useAuth } from '../contexts/AuthContext';
+import BotonAtras from './common/BotonAtras'; // 
+import { motion, AnimatePresence } from 'framer-motion';
 
 // La función para determinar el clima no cambia
 const determinarClima = (reg) => {
@@ -26,14 +28,9 @@ const getFormattedDate = () => {
     return `${day}/${capitalizedMonth}/${year}`;
 };
 
-// CAMBIO: El componente ahora recibe 'registroDeHoy' como una prop
-export default function PageHeader({ title, registroDeHoy }) {
+
+export default function PageHeader({ title, registroDeHoy, showBackButton }) {
     const { user } = useAuth();
-    
-    // CAMBIO RADICAL: Eliminamos completamente el useState, useEffect y la lógica de sessionStorage.
-    // El componente ya no busca sus propios datos.
-    
-    // Usamos directamente la prop que nos pasa el componente padre (Home.jsx)
     const climaEmoji = determinarClima(registroDeHoy);
 
     return (
@@ -53,11 +50,32 @@ export default function PageHeader({ title, registroDeHoy }) {
                     {getFormattedDate()}
                 </div>
             </div>
-            <div className="mt-3 pt-3 border-t border-dashed border-amber-400">
-                <p className="text-center font-['Patrick_Hand'] text-xl text-zinc-700">
-                    {title}
-                </p>
-            </div>
+
+
+            <div className="mt-3 pt-3 border-t border-dashed border-amber-400 relative flex justify-center items-center h-8">
+                
+                {/* 2. Wrap the button in AnimatePresence to handle enter/exit animations */}
+                <AnimatePresence>
+                    {showBackButton && (
+                        <motion.div
+                            className="absolute left-0"
+                            // 3. Define the animation properties
+                            initial={{ opacity: 0, x: -10 }} // Starts invisible and slightly to the left
+                            animate={{ opacity: 1, x: 0 }}   // Fades in and slides to its final position
+                            exit={{ opacity: 0, x: -10 }}    // Fades out and slides back to the left
+                            transition={{ duration: 0.2 }}
+                        >
+                            <BotonAtras />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* 2. El título se mantiene centrado, ignorando al botón */}
+                <p className="font-['Patrick_Hand'] text-xl text-zinc-700">
+                    {title}
+                </p>
+
+            </div>
         </header>
     );
 }
