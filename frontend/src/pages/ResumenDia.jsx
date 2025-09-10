@@ -1,0 +1,71 @@
+// src/pages/ResumenDia.jsx
+
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import api from '../services/api'; // Necesitaremos nuestro servicio de API
+import BotonAtras from '../components/common/BotonAtras'; // Reutilizamos nuestro botón
+import LoadingSpinner from '../components/LoadingSpinner'; // Asumo que tenés un spinner
+
+// Pequeño componente para mostrar cada aspecto
+const AspectoWidget = ({ orbe, estado, comentario }) => (
+    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+        <div className="flex justify-between items-center">
+            <span className="font-bold text-lg text-zinc-700">{orbe}</span>
+            <span className={`px-3 py-1 text-sm rounded-full font-semibold ${estado === 'alto' ? 'bg-green-100 text-green-800' : estado === 'medio' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>{estado}</span>
+        </div>
+        {comentario && <p className="mt-2 text-zinc-600 italic">"{comentario}"</p>}
+    </div>
+);
+
+
+export default function ResumenDia() {
+    const { fecha } = useParams(); // Obtenemos la fecha de la URL, ej: "2025-09-10"
+    const navigate = useNavigate();
+
+    const [registro, setRegistro] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchRegistro = async () => {
+            try {
+                setIsLoading(true);
+                const response = await api.getRegistroPorFecha(fecha);
+                setRegistro(response.data.registro);
+            } catch (err) {
+                setError('No se encontró un registro para este día.');
+                console.error(err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchRegistro();
+    }, [fecha]); // Se ejecuta cada vez que la fecha en la URL cambie
+
+    if (isLoading) return <LoadingSpinner />;
+    if (error) return <p className="text-center text-red-500">{error}</p>;
+
+    return (
+        <div className="p-2 space-y-4 animate-fade-in">
+            <h3 className="text-center font-['Patrick_Hand'] text-2xl text-amber-600">
+                {registro.frase_sunny || "Un día para recordar."}
+            </h3>
+
+            <div className="space-y-3">
+                <AspectoWidget orbe="Mente" estado={registro.mente_estat} comentario={registro.mente_coment} />
+                <AspectoWidget orbe="Emoción" estado={registro.emocion_estat} comentario={registro.emocion_coment} />
+                <AspectoWidget orbe="Cuerpo" estado={registro.cuerpo_estat} comentario={registro.cuerpo_coment} />
+            </div>
+
+            {registro.hoja_atras && (
+                 <button 
+                    onClick={() => navigate(`/journal/${registro.id}`)}
+                    className="w-full mt-4 bg-zinc-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-zinc-700 transition-colors"
+                >
+                    Ver Anotación en el Diario
+                </button>
+            )}
+        </div>
+    );
+}

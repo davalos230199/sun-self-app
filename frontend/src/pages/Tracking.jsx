@@ -1,16 +1,13 @@
 // frontend/src/pages/Tracking.jsx
-
-
-import React, { useState, useEffect } from 'react'; // <-- CAMBIO: Importamos React
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import BotonAtras from '../components/common/BotonAtras';
 
-// --- Sub-componente: Gráfico (sin cambios) ---
+// --- Sub-componente: Gráfico
 const HistorialChart = ({ filter }) => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -44,7 +41,6 @@ const HistorialChart = ({ filter }) => {
         return '';
     };
     
-    // CAMBIO CLAVE: El contenedor con altura fija ahora envuelve toda la lógica.
     return (
         <div className="w-full h-[400px] flex justify-center items-center">
             {loading ? (
@@ -68,7 +64,6 @@ const HistorialChart = ({ filter }) => {
     );
 };
 const MemoizedHistorialChart = React.memo(HistorialChart);
-
 
 // --- Componente Principal de la Página ---
 export default function Tracking() {
@@ -107,11 +102,14 @@ export default function Tracking() {
     };
     
     const handleDayClick = (date) => {
-        const dateString = date.toISOString().split('T')[0];
-        const registroDelDia = registrosCompletos.find(r => r.created_at.startsWith(dateString));
-        if (registroDelDia) {
-            navigate(`/journal/${registroDelDia.id}`);
-        }
+        // 1. Formateamos la fecha a YYYY-MM-DD
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const fechaFormateada = `${year}-${month}-${day}`;
+
+        // 2. Navegamos a la nueva ruta de resumen
+        navigate(`/resumen/${fechaFormateada}`);
     };
     
     const filters = [{ key: 'semana', label: '7d' }, { key: 'quince', label: '15d' }, { key: 'mes', label: '1m' }, { key: 'todo', label: 'Todo' }];

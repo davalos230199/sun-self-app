@@ -9,21 +9,18 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 router.use(authMiddleware);
 
-// ▼▼▼ ESTA ES LA RUTA CORREGIDA ▼▼▼
+// --- RUTAS GET (ORDEN CORREGIDO) ---
+
 router.get('/chart-data', async (req, res) => {
     try {
         const { id: userId } = req.user;
         const { filter } = req.query;
-
-        // 1. Llamamos a nuestra función de Supabase
         const { data, error } = await supabase.rpc('get_chart_data_for_user', {
             p_user_id: userId,
             p_filter_period: filter
         });
 
         if (error) throw error;
-
-        // 2. Enviamos los datos DIRECTAMENTE como vienen. Sin re-procesar.
         res.json(data);
 
     } catch (err) {
@@ -32,8 +29,95 @@ router.get('/chart-data', async (req, res) => {
     }
 });
 
-// --- EL RESTO DEL ARCHIVO SE MANTIENE EXACTAMENTE IGUAL ---
-// RUTA PARA CREAR UN REGISTRO
+router.get('/today', async (req, res) => {
+    try {
+        const { id: userId } = req.user;
+        const clientTimezone = req.headers['x-client-timezone'] || 'UTC';
+        const { data, error } = await supabase.rpc('get_registro_de_hoy', {
+            p_user_id: userId,
+            p_client_timezone: clientTimezone
+        });
+
+        if (error) throw error;
+        const registroDeHoy = data && data.length > 0 ? data[0] : null;
+
+        res.json({ registro: registroDeHoy });
+
+    } catch (err) {
+        console.error("Error en GET /today:", err);
+        res.status(500).json({ error: 'Error al verificar el registro de hoy.' });
+    }
+});
+
+router.get('/fecha/:fecha', async (req, res) => {
+    try {
+        const { fecha } = req.params; // ej: "2025-09-10"
+        const { id: userId } = req.user;
+
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+            return res.status(400).json({ error: 'Formato de fecha inválido. Usar YYYY-MM-DD.' });
+        }
+
+        const { data, error } = await supabase.rpc('get_registro_by_fecha', {
+            p_user_id: userId,
+            p_fecha: fecha
+        });
+
+        if (error) {
+            throw error;
+        }
+
+        const registro = data && data.length > 0 ? data[0] : null;
+
+        if (!registro) {
+            return res.status(404).json({ message: 'No se encontró un registro para la fecha especificada.' });
+        }
+
+        res.status(200).json({ registro });
+
+    } catch (err) {
+        console.error("Error en GET /registros/fecha/:fecha :", err);
+        res.status(500).json({ error: 'Error interno al obtener el registro.' });
+    }
+});
+
+router.get('/', async (req, res) => {
+    try {
+        const { id: userId } = req.user;
+        const { data, error } = await supabase.rpc('get_registros_for_user', { p_user_id: userId });
+        if (error) throw error;
+        res.json(data || []);
+    } catch (err) {
+        console.error("Error en GET /api/registros:", err);
+        res.status(500).json({ error: 'Error al obtener los registros' });
+    }
+});
+
+router.get('/:id', async (req, res) => {
+    try {
+        const { id: recordId } = req.params;
+        const { id: userId } = req.user;
+        
+        const { data, error } = await supabase.rpc('get_registro_by_id', {
+            p_user_id: userId,
+            p_registro_id: Number(recordId)
+        });
+
+        if (error) throw error;
+        if (!data) {
+            return res.status(404).json({ error: 'Registro no encontrado.' });
+        }
+        
+        res.status(200).json(data);
+    } catch (err) {
+        console.error("Error en GET /registros/:id :", err);
+        res.status(500).json({ error: 'Error interno al obtener el registro.' });
+    }
+});
+
+
+// --- RUTAS POST Y PUT ---
+
 router.post('/', async (req, res) => {
     try {
         const { id: userId } = req.user;
@@ -80,76 +164,11 @@ router.post('/', async (req, res) => {
     }
 });
 
-// RUTA GET PARA TODO EL HISTORIAL
-router.get('/', async (req, res) => {
-    try {
-        const { id: userId } = req.user;
-        const { data, error } = await supabase.rpc('get_registros_for_user', { p_user_id: userId });
-        if (error) throw error;
-        res.json(data || []);
-    } catch (err) {
-        console.error("Error en GET /api/registros:", err);
-        res.status(500).json({ error: 'Error al obtener los registros' });
-    }
-});
-
-// RUTA GET PARA EL REGISTRO DE HOY
-// RUTA GET PARA EL REGISTRO DE HOY (OPTIMIZADA)
-router.get('/today', async (req, res) => {
-    try {
-        const { id: userId } = req.user;
-        const clientTimezone = req.headers['x-client-timezone'] || 'UTC';
-        
-        // CAMBIO: Llamamos a nuestra nueva función "francotirador"
-        const { data, error } = await supabase.rpc('get_registro_de_hoy', {
-            p_user_id: userId,
-            p_client_timezone: clientTimezone
-        });
-
-        if (error) throw error;
-
-        // La función devuelve el registro encontrado o un array vacío.
-        // Tomamos el primer elemento (el único) o devolvemos null si no hay nada.
-        const registroDeHoy = data && data.length > 0 ? data[0] : null;
-
-        res.json({ registro: registroDeHoy });
-
-    } catch (err) {
-        console.error("Error en GET /today:", err);
-        res.status(500).json({ error: 'Error al verificar el registro de hoy.' });
-    }
-});
-
-// RUTA GET PARA UN SOLO REGISTRO
-router.get('/:id', async (req, res) => {
-    try {
-        const { id: recordId } = req.params;
-        const { id: userId } = req.user;
-        
-        const { data, error } = await supabase.rpc('get_registro_by_id', {
-            p_user_id: userId,
-            p_registro_id: Number(recordId)
-        });
-
-        if (error) throw error;
-        if (!data) {
-            return res.status(404).json({ error: 'Registro no encontrado.' });
-        }
-        
-        res.status(200).json(data);
-    } catch (err) {
-        console.error("Error en GET /registros/:id :", err);
-        res.status(500).json({ error: 'Error interno al obtener el registro.' });
-    }
-});
-
-// RUTA PUT PARA "LA HOJA DE ATRÁS"
 router.put('/:id/hoja_atras', async (req, res) => {
     try {
         const { id: recordId } = req.params;
         const { id: userId } = req.user;
-        const { texto } = req.body;
-        
+        const { texto } = req.body;        
         const { data, error } = await supabase.rpc('update_hoja_atras', {
             p_user_id: userId,
             p_registro_id: Number(recordId),

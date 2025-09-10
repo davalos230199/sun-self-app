@@ -1,6 +1,6 @@
 import { createBrowserRouter, RouterProvider, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
-import { useState, useEffect } from 'react'; // Se añaden useState y useEffect
+import { useState, useEffect } from 'react';
 import Auth from './pages/Auth';
 import Home from './pages/Home';
 import Tracking from './pages/Tracking';
@@ -12,17 +12,15 @@ import Journal from './pages/Journal';
 import MuroDeSoles from './pages/MuroDeSoles';
 import UpdatePassword from './pages/UpdatePassword';
 import MiniMetasPage from './pages/MiniMetasPage'; 
-import Filosofia from './pages/Filosofia'; // <-- 1. Importa el nuevo componente
+import Filosofia from './pages/Filosofia';
+import ResumenDia from './pages/ResumenDia';
 
-
-// El componente "inteligente" para la ruta raíz, ahora corregido para evitar condiciones de carrera
 const RootHandler = () => {
     const { user, loading } = useAuth();
     const location = useLocation();
     const [isRecovery, setIsRecovery] = useState(false);
     const [hasChecked, setHasChecked] = useState(false);
 
-    // Este efecto se ejecuta una sola vez para verificar la URL de forma segura
     useEffect(() => {
         if (location.hash.includes('type=recovery')) {
             setIsRecovery(true);
@@ -56,8 +54,6 @@ const router = createBrowserRouter([
         children: [
             { path: 'login', element: <Auth /> },
             { path: 'register', element: <Auth /> },
-            // La ruta update-password se queda aquí por si se navega manualmente,
-            // pero el flujo principal lo maneja el RootHandler.
             { path: 'update-password', element: <UpdatePassword /> },
         ],
     },
@@ -72,7 +68,8 @@ const router = createBrowserRouter([
             { path: 'journal/:id', element: <Journal /> },
             { path: 'muro', element: <MuroDeSoles /> },
             { path: 'metas', element: <MiniMetasPage /> },
-             { path: 'filosofia', element: <Filosofia /> }, // <-- 2. Añade la nueva ruta aquí
+            { path: 'filosofia', element: <Filosofia /> },
+            { path: 'resumen/:fecha', element: <ResumenDia /> },
         ],
     },
     // La ruta raíz ahora usa nuestro nuevo componente "inteligente"

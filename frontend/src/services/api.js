@@ -45,7 +45,7 @@ const getInspiracion = (orbe) => { return apiClient.get(`/api/inspiracion?orbe=$
 const forgotPassword = (payload) => apiClient.post('/api/auth/forgot-password', payload);
 const updatePassword = (payload) => apiClient.post('/api/auth/update-password', payload);
 const getChartData = (filter) => {return apiClient.get(`/api/registros/chart-data?filter=${filter}`);};
-
+const getRegistroPorFecha = (fecha) => apiClient.get(`/api/registros/fecha/${fecha}`);
 
 // --- NUEVAS FUNCIONES PARA MINI-METAS (AHORA USANDO apiClient) ---
 
@@ -92,7 +92,8 @@ const api = {
   getMiniMetas,
   createMiniMeta,
   updateMiniMetaStatus,
-  deleteMiniMeta 
+  deleteMiniMeta,
+  getRegistroPorFecha,
 };
 
 export default api;
