@@ -1,5 +1,5 @@
 // frontend/src/pages/Tracking.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -71,6 +71,7 @@ export default function Tracking() {
     const [registrosCompletos, setRegistrosCompletos] = useState([]);
     const [isLoadingPage, setIsLoadingPage] = useState(true);
     const navigate = useNavigate();
+    const mainContainerRef = useRef(null);
 
     useEffect(() => {
         const fetchAllRegistros = async () => {
@@ -84,6 +85,13 @@ export default function Tracking() {
             }
         };
         fetchAllRegistros();
+    }, []);
+
+        useEffect(() => {
+        // Forzamos el scroll a la posición 0 (arriba) cuando el componente se carga
+        if (mainContainerRef.current) {
+            mainContainerRef.current.scrollTop = 0;
+        }
     }, []);
 
     const tileContent = ({ date, view }) => {
@@ -125,15 +133,15 @@ export default function Tracking() {
     return (
         <>
             <style>{calendarStyles}</style>
-            <main className="h-full overflow-y-auto bg-zing-50">
+            <main ref={mainContainerRef} className="h-full overflow-y-auto bg-zing-50 snap-y snap-mandatory">
                 {isLoadingPage ? (
                     <div className="h-full flex justify-center items-center">
-                        <LoadingSpinner message="Visitando el pasado..." />
+                        <LoadingSpinner message="Visianto el pasado..." />
                     </div>
                 ) : (
                         // CAMBIO: Div interior que contiene el estilo visual y el espaciado
                     <div className="flex flex-col space-y-6">
-                        <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6">
+                        <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6 snap-start">
                             <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800 mb-4">Calendario de Reflejos</h2>
                             <Calendar
                                 className="w-full"
@@ -142,7 +150,7 @@ export default function Tracking() {
                             />
                         </section>
                         
-                        <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6">
+                        <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6 snap-start">
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800">Tu Fluctuación</h2>
                                 <div className="flex items-center gap-2 bg-zinc-100 border border-zinc-200 rounded-full p-1">
@@ -156,7 +164,7 @@ export default function Tracking() {
                             <MemoizedHistorialChart filter={activeFilter} />
                         </section>
                         
-                        <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6">
+                        <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6 snap-start">
                             <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800 mb-4">Tus Recuerdos</h2>
                             <div className="text-center py-10 text-zinc-400 italic">
                                 (Próximamente: La 'Lista de Recuerdos' recuperada vivirá aquí)
