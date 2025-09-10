@@ -125,7 +125,7 @@ export default function Tracking() {
     return (
         <>
             <style>{calendarStyles}</style>
-            <main className="h-full overflow-y-auto bg-zing-50 snap-y snap-mandatory">
+            <main className="h-full overflow-y-auto bg-zing-50">
                 {isLoadingPage ? (
                     <div className="h-full flex justify-center items-center">
                         <LoadingSpinner message="Visitando el pasado..." />
@@ -142,7 +142,7 @@ export default function Tracking() {
                             />
                         </section>
                         
-                        <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6 snap-start">
+                        <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6">
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800">Tu Fluctuación</h2>
                                 <div className="flex items-center gap-2 bg-zinc-100 border border-zinc-200 rounded-full p-1">
