@@ -136,7 +136,7 @@ export default function Tracking() {
             <main ref={mainContainerRef} className="h-full overflow-y-auto bg-zing-50 snap-y snap-mandatory">
                 {isLoadingPage ? (
                     <div className="h-full flex justify-center items-center">
-                        <LoadingSpinner message="Visianto el pasado..." />
+                        <LoadingSpinner message="Observa el pasado..." />
                     </div>
                 ) : (
                         // CAMBIO: Div interior que contiene el estilo visual y el espaciado
