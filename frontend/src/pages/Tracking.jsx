@@ -134,6 +134,15 @@ export default function Tracking() {
                         // CAMBIO: Div interior que contiene el estilo visual y el espaciado
                     <div className="flex flex-col space-y-6">
                         <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6">
+                            <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800 mb-4">Calendario de Reflejos</h2>
+                            <Calendar
+                                className="w-full"
+                                tileContent={tileContent}
+                                onClickDay={handleDayClick}
+                            />
+                        </section>
+                        
+                        <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6">
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800">Tu Fluctuación</h2>
                                 <div className="flex items-center gap-2 bg-zinc-100 border border-zinc-200 rounded-full p-1">
@@ -145,15 +154,6 @@ export default function Tracking() {
                                 </div>
                             </div>
                             <MemoizedHistorialChart filter={activeFilter} />
-                        </section>
-                        
-                        <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6">
-                            <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800 mb-4">Calendario de Reflejos</h2>
-                            <Calendar
-                                className="w-full"
-                                tileContent={tileContent}
-                                onClickDay={handleDayClick}
-                            />
                         </section>
                         
                         <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6">

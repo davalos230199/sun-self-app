@@ -7,7 +7,9 @@ export default function Navbar() {
   const location = useLocation();
 
   const homeRelatedPaths = ['/home', '/tracking'];
-  const isHomeActive = homeRelatedPaths.includes(location.pathname) || location.pathname.startsWith('/journal');
+  const isHomeActive = homeRelatedPaths.includes(location.pathname) || 
+                       location.pathname.startsWith('/journal') || 
+                       location.pathname.startsWith('/resumen');
 
   const baseStyle = "flex flex-col items-center justify-center gap-1 w-full h-full transition-colors duration-200";
 

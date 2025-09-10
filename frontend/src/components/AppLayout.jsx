@@ -10,7 +10,7 @@ import Navbar from './Navbar';
 export default function AppLayout() {
     const { user } = useAuth(); // Usamos el hook de autenticación
     const location = useLocation();
-    const pathsWithBackButton = ['/tracking', '/journal', '/filosofia'];
+    const pathsWithBackButton = ['/tracking', '/journal', '/filosofia', '/resumen'];
     const showBackButton = pathsWithBackButton.some(path => location.pathname.startsWith(path));
 
     // --- LÓGICA MOVIDA DESDE Home.jsx ---
