@@ -1,5 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import LottieIcon from './LottieIcon'; // <-- 1. Importar LottieIcon
+
+// --- Importar las animaciones ---
+import sunLoopAnimation from '../assets/animations/sun-loop.json';
+import cloudLoopAnimation from '../assets/animations/cloud-loop.json';
+import rainLoopAnimation from '../assets/animations/rain-loop.json';
 
 // --- Helper Functions ---
 const formatTiempo = (ms) => {
@@ -11,18 +17,37 @@ const formatTiempo = (ms) => {
     return `${horas}:${minutos}:${segundos}`;
 };
 
+// --- 2. Modificar la función para que devuelva el estado como string ---
 const determinarClima = (reg) => {
-    if (!reg) return '❔';
+    if (!reg) return 'desconocido';
     const valores = [reg.mente_estat, reg.emocion_estat, reg.cuerpo_estat];
     const puntaje = valores.reduce((acc, val) => {
         if (val === 'alto') return acc + 1;
         if (val === 'bajo') return acc - 1;
         return acc;
     }, 0);
-    if (puntaje >= 2) return '☀️';
-    if (puntaje <= -2) return '🌧️';
-    return '⛅';
+    if (puntaje >= 2) return 'soleado';
+    if (puntaje <= -2) return 'lluvioso';
+    return 'nublado';
 };
+
+// --- 3. Nuevo sub-componente para la animación del clima ---
+const ClimaAnimado = ({ clima }) => {
+    const animationMap = {
+        soleado: sunLoopAnimation,
+        nublado: cloudLoopAnimation,
+        lluvioso: rainLoopAnimation,
+    };
+
+    const animationData = animationMap[clima] || cloudLoopAnimation; // Default a nublado
+
+    return (
+        <div className="w-24 h-24 mx-auto my-2">
+            <LottieIcon animationData={animationData} />
+        </div>
+    );
+};
+
 
 // --- Sub-componentes Estilizados ---
 
@@ -50,7 +75,8 @@ const MetasWidget = ({ registro, proximaMeta, isLoading }) => {
 
 const EstadoWidget = ({ registro, fraseDelDia, tiempoRestante, onEdit }) => {
     const navigate = useNavigate();
-    
+    const clima = determinarClima(registro); // Obtener el estado del clima
+
     return (
         <Link to="/tracking" className="no-underline text-inherit block">
             <div className="relative flex flex-col border border-yellow-300 bg-yellow-100 shadow-lg rounded-2xl p-5 text-center min-h-[180px]">
@@ -76,8 +102,11 @@ const EstadoWidget = ({ registro, fraseDelDia, tiempoRestante, onEdit }) => {
 
                 {/* Contenido principal */}
                 <h3 className="font-['Patrick_Hand'] text-xl text-yellow-800 mt-8">Tu estado de hoy</h3>
-                <div className="text-5xl my-2">{determinarClima(registro)}</div>
-                <p className="flex-grow text-zinc-700 italic text-sm">"{fraseDelDia}"</p>
+                
+                {/* --- 4. Reemplazar el emoji por la animación --- */}
+                <ClimaAnimado clima={clima} />
+
+                <p className="flex-grow text-zinc-700 italic text-sm -mt-2">"{fraseDelDia}"</p>
                 <footer className="mt-auto pt-3 border-t border-dashed border-yellow-300 text-xs text-zinc-500 font-semibold">
                     Toca para ver tu historial completo...
                 </footer>
@@ -92,7 +121,6 @@ export default function RegistroDashboard({ registro, miniMetas, fraseDelDia, is
     const [tiempoRestante, setTiempoRestante] = useState(0);
     const [proximaMeta, setProximaMeta] = useState(null);
 
-    // ... (Lógica de useEffects se mantiene igual)
     useEffect(() => {
         const actualizarProximaMeta = () => {
             const ahora = new Date();
@@ -142,4 +170,3 @@ export default function RegistroDashboard({ registro, miniMetas, fraseDelDia, is
         </div>
     );
 }
-
