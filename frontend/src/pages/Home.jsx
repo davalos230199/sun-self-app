@@ -1,40 +1,30 @@
-// frontend/src/pages/Home.jsx
-
-import { useOutletContext } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { useDia } from '../contexts/DiaContext';
 
 import RegistroDashboard from '../components/RegistroDashboard';
-import RegistroForm from '../components/RegistroForm';
+import RitualFlow from '../components/RitualFlow';
 import WelcomeModal from '../components/WelcomeModal';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { useEffect, useState } from 'react';
 
 export default function Home() {
     const {
-        isLoading,
+        isLoading: isContextLoading,
         registroDeHoy,
         setRegistroDeHoy,
         miniMetas,
         fraseDelDia,
-        isLoadingAdicional,
         cargarDatosDelDia
-    } = useOutletContext();
+    } = useDia();
 
-    // NUEVO ESTADO: Un estado de carga local para la página Home
-    const [isHomeLoading, setIsHomeLoading] = useState(true);
+    const [isVisualLoading, setIsVisualLoading] = useState(true);
 
-    // NUEVO useEffect: Para controlar la animación de carga al entrar a Home
     useEffect(() => {
-        // Simula un retardo de 500ms (medio segundo) para mostrar el spinner
         const timer = setTimeout(() => {
-            setIsHomeLoading(false);
-        }, 500); // Puedes ajustar este valor si lo deseas
-
-        // Limpia el temporizador si el componente se desmonta
+            setIsVisualLoading(false);
+        }, 500);
         return () => clearTimeout(timer);
     }, []);
 
-    // La lógica del WelcomeModal se puede quedar aquí, es específica de Home
     const [showWelcomeModal, setShowWelcomeModal] = useState(false);
     useEffect(() => {
         const haVistoManifiesto = localStorage.getItem('sunself_manifiesto_visto');
@@ -47,34 +37,40 @@ export default function Home() {
         setRegistroDeHoy(null);
     };
 
+    const handleRitualFinish = (nuevoRegistro) => {
+        setRegistroDeHoy(nuevoRegistro);
+        if (cargarDatosDelDia) {
+            cargarDatosDelDia();
+        }
+    };
+
     if (showWelcomeModal) {
+        // Tu lógica completa para el WelcomeModal, ahora presente.
         return (
-            <AnimatePresence>
-                <WelcomeModal onAccept={(shouldHide) => {
-                    if (shouldHide) {
-                        localStorage.setItem('sunself_manifiesto_visto', 'true');
-                    }
-                    setShowWelcomeModal(false);
-                }} />
-            </AnimatePresence>
+            <WelcomeModal onAccept={(shouldHide) => {
+                if (shouldHide) {
+                    localStorage.setItem('sunself_manifiesto_visto', 'true');
+                }
+                setShowWelcomeModal(false);
+            }} />
         );
     }
     
+    if (isContextLoading || isVisualLoading) {
+        return <LoadingSpinner message="Hoy estoy..." estadoGeneral={registroDeHoy?.estado_general} />;
+    }
+
     return (
         <div className="h-full w-full">
-            {/* CAMBIO: Ahora usamos el estado isHomeLoading para mostrar el spinner */}
-            {isLoading || isHomeLoading ? (
-                <LoadingSpinner message="Hoy estoy..." />
-            ) : registroDeHoy ? (
+            {registroDeHoy ? (
                 <RegistroDashboard
                     registro={registroDeHoy}
                     fraseDelDia={fraseDelDia}
                     miniMetas={miniMetas}
-                    isLoadingAdicional={isLoadingAdicional}
                     onEdit={handleEdit}
                 />
             ) : (
-                <RegistroForm onSaveSuccess={cargarDatosDelDia} />
+                <RitualFlow onFinish={handleRitualFinish} />
             )}
         </div>
     );

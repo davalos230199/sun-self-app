@@ -1,127 +1,92 @@
-// frontend/src/components/AppLayout.jsx
-
-import { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import api from '../services/api';
-import { useAuth } from '../contexts/AuthContext';
-import PageHeader from './PageHeader'; // CAMBIO: Importamos PageHeader aquí
+import { DiaProvider, useDia } from '../contexts/DiaContext';
+import PageHeader from './PageHeader';
 import Navbar from './Navbar';
+import LoadingSpinner from './LoadingSpinner';
 
-export default function AppLayout() {
-    const { user } = useAuth(); // Usamos el hook de autenticación
-    const location = useLocation();
-    const pathsWithBackButton = ['/tracking', '/journal', '/filosofia', '/resumen'];
-    const showBackButton = pathsWithBackButton.some(path => location.pathname.startsWith(path));
-
-    // --- LÓGICA MOVIDA DESDE Home.jsx ---
-    const [isLoading, setIsLoading] = useState(true);
-    const [registroDeHoy, setRegistroDeHoy] = useState(null);
-    const [miniMetas, setMiniMetas] = useState([]);
-    const [fraseDelDia, setFraseDelDia] = useState('');
-    const [isLoadingAdicional, setIsLoadingAdicional] = useState(false);
-
-    const cargarDatosDelDia = useCallback(async () => {
-        if (!user) {
-            setIsLoading(false);
-            return;
-        }
-        setIsLoading(true);
-        try {
-            const registroResponse = await api.getRegistroDeHoy();
-            const registro = registroResponse?.data?.registro || null;
-            setRegistroDeHoy(registro);
-
-            if (registro) {
-                setIsLoadingAdicional(true);
-                const [metasResponse, fraseResult] = await Promise.all([
-                    api.getMiniMetas(registro.id),
-                    registro.frase_sunny 
-                        ? Promise.resolve(registro.frase_sunny) 
-                        : api.generarFraseInteligente({
-                            registroId: registro.id,
-                            mente_estat: registro.mente_estat,
-                            emocion_estat: registro.emocion_estat,
-                            cuerpo_estat: registro.cuerpo_estat,
-                            meta_del_dia: registro.meta_del_dia,
-                        }).then(res => res.data.frase).catch(() => "Hoy, las palabras descansan.")
-                ]);
-                
-                setMiniMetas(metasResponse?.data || []);
-                setFraseDelDia(fraseResult);
-                setIsLoadingAdicional(false);
-            } else {
-                setMiniMetas([]);
-                setFraseDelDia('');
-            }
-        } catch (error) {
-            console.error("Error al cargar datos del día en AppLayout:", error);
-            setRegistroDeHoy(null);
-            setMiniMetas([]);
-            setFraseDelDia('');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [user]);
-
-    useEffect(() => {
-        cargarDatosDelDia();
-    }, [cargarDatosDelDia]);
-    // --- FIN DE LA LÓGICA MOVIDA ---
-
-    const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
-
-    if (isAuthPage) {
-        return <Outlet />;
-    }
-
-    // NUEVO: Creamos un objeto de contexto para pasar a las páginas hijas
-    const outletContext = {
-        user,
-        isLoading,
-        registroDeHoy,
-        setRegistroDeHoy, // Pasamos la función para que Home pueda modificar el estado
-        miniMetas,
-        fraseDelDia,
-        isLoadingAdicional,
-        cargarDatosDelDia // Pasamos la función para que Home pueda recargar los datos
-    };
-
-    return (
-        <div className="h-[100dvh] w-screen bg-amber-100 p-2 sm:p-4">
-            <div className="h-full w-full max-w-lg mx-auto bg-white shadow-2xl rounded-2xl flex flex-col overflow-hidden">
-                
-                <div className="p-2 sm:p-4 pb-0">
-                    <PageHeader
-                        title={getPageTitle(location.pathname, !!registroDeHoy)}
-                        registroDeHoy={registroDeHoy}
-                        showBackButton={showBackButton}
-                    />
-                </div>
-                
-                <main className="flex-1 overflow-y-auto p-2 sm:p-4 pt-4"> 
-                    <Outlet context={outletContext} />
-                </main>
-                
-                <Navbar />
-            </div>
-        </div>
-    );
-}
-
-// NUEVO: Función helper para determinar el título del PageHeader
+// Función helper para determinar el título de la página.
+// La mantenemos aquí ya que está directamente relacionada con el Layout.
 const getPageTitle = (pathname, tieneRegistro) => {
-    switch (pathname) {
-        case '/home':
+    switch (true) { // Usamos 'true' para poder evaluar condiciones con startsWith
+        case pathname === '/home':
             return tieneRegistro ? "Tu Día" : "¿Cómo estás hoy?";
-        case '/metas':
+        case pathname === '/metas':
             return "Tus Metas del Día";
-        case '/sunny':
+        case pathname === '/sunny':
             return "Habla con Sunny";
-        case '/muro':
+        case pathname === '/muro':
             return "Muro de Soles";
-        case '/settings':
+        case pathname === '/settings':
             return "Ajustes y Filosofía";
+        case pathname.startsWith('/journal'):
+            return "La Hoja de Atrás";
+        case pathname.startsWith('/tracking'):
+            return "Tu Diario";
+        case pathname.startsWith('/resumen'):
+            return "Resumen del Día";
         default:
             return "Sun Self";
     }
 };
+
+// Este es un sub-componente que vive dentro de AppLayout.
+// Su propósito es poder "consumir" el contexto que el componente principal "provee".
+const LayoutContent = () => {
+    const location = useLocation();
+    
+    // Obtenemos todos los datos del día desde nuestro nuevo hook centralizado.
+    // Ya no necesitamos 'useState' ni 'useEffect' aquí.
+    const { registroDeHoy, isLoading } = useDia(); 
+
+    // La lógica para decidir si mostrar el botón de atrás se queda aquí.
+    const pathsWithBackButton = ['/tracking', '/journal', '/filosofia', '/resumen'];
+    const showBackButton = pathsWithBackButton.some(path => location.pathname.startsWith(path));
+
+    return (
+        <div className="h-full w-full max-w-lg mx-auto bg-white shadow-2xl rounded-2xl flex flex-col overflow-hidden">
+            
+            <div className="p-2 sm:p-4 pb-0">
+                <PageHeader
+                    title={getPageTitle(location.pathname, !!registroDeHoy)}
+                    registroDeHoy={registroDeHoy}
+                    showBackButton={showBackButton}
+                />
+            </div>
+            
+            <main className="flex-1 overflow-y-auto p-2 sm:p-4 pt-4 flex flex-col">
+                {/* Si el contexto está cargando los datos, mostramos un spinner general */}
+                {isLoading ? (
+                    <LoadingSpinner 
+                        message="Preparando tu día..." 
+                        estadoGeneral={registroDeHoy?.estado_general} 
+                    />
+                ) : (
+                    // Cuando termina, renderizamos la página correspondiente (Home, Sunny, etc.)
+                    // Ya no necesita el prop "context", porque las páginas usarán useDia() directamente.
+                    <Outlet />
+                )}
+            </main>
+            
+            <Navbar />
+        </div>
+    );
+};
+
+
+// Este es el componente principal que exportamos.
+// Su único trabajo ahora es proveer el contexto a sus hijos.
+export default function AppLayout() {
+    return (
+        <div className="h-[100dvh] w-screen bg-amber-100 p-2 sm:p-4">
+            {/* Envolvemos nuestro layout en el DiaProvider.
+              Ahora, todos los componentes dentro de LayoutContent (incluyendo el Outlet y 
+              todas las páginas que renderiza) pueden usar el hook `useDia()` para 
+              acceder a los datos del día.
+            */}
+            <DiaProvider>
+                <LayoutContent />
+            </DiaProvider>
+        </div>
+    );
+}

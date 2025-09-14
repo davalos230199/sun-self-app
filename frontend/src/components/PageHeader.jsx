@@ -1,24 +1,36 @@
 // frontend/src/components/PageHeader.jsx
 
 import { useAuth } from '../contexts/AuthContext';
-import BotonAtras from './common/BotonAtras'; // 
+import BotonAtras from './common/BotonAtras';
 import { motion, AnimatePresence } from 'framer-motion';
+import Lottie from 'lottie-react'; // 1. Importamos Lottie
 
-// La función para determinar el clima no cambia
-const determinarClima = (reg) => {
-    if (!reg) return null;
-    const valores = [reg.mente_estat, reg.emocion_estat, reg.cuerpo_estat];
-    const puntaje = valores.reduce((acc, val) => {
-        if (val === 'alto') return acc + 1;
-        if (val === 'bajo') return acc - 1;
-        return acc;
-    }, 0);
-    if (puntaje >= 2) return '☀️';
-    if (puntaje <= -2) return '🌧️';
-    return '⛅';
+// --- Importamos las animaciones que usaremos ---
+import sunLoopAnimation from '../assets/animations/sun-loop.json';
+import cloudLoopAnimation from '../assets/animations/cloud-loop.json';
+import rainLoopAnimation from '../assets/animations/rain-loop.json';
+
+
+// --- Sub-componente para la animación ---
+// Creamos un pequeño componente para mantener la lógica de la animación encapsulada
+const ClimaIconoAnimado = ({ estadoGeneral }) => {
+    const animationMap = {
+        soleado: sunLoopAnimation,
+        nublado: cloudLoopAnimation,
+        lluvioso: rainLoopAnimation,
+    };
+    // Leemos el estado. Si no existe, por defecto será nublado.
+    const animationData = animationMap[estadoGeneral] || cloudLoopAnimation;
+
+    return (
+        // Ajustamos el tamaño para que encaje bien en el header
+        <div className="w-12 h-12"> 
+            <Lottie animationData={animationData} loop={true} />
+        </div>
+    );
 };
 
-// La función de la fecha no cambia
+// --- La función de la fecha no cambia ---
 const getFormattedDate = () => {
     const date = new Date();
     const day = String(date.getDate()).padStart(2, '0');
@@ -31,7 +43,7 @@ const getFormattedDate = () => {
 
 export default function PageHeader({ title, registroDeHoy, showBackButton }) {
     const { user } = useAuth();
-    const climaEmoji = determinarClima(registroDeHoy);
+    // 2. Ya no necesitamos la función determinarClima ni la variable climaEmoji
 
     return (
         <header className="bg-white border border-amber-400 rounded-lg shadow-md p-4 w-full flex-shrink-0">
@@ -41,41 +53,36 @@ export default function PageHeader({ title, registroDeHoy, showBackButton }) {
                         Hola, {user?.nombre || 'viajero'}
                     </h2>
                 </div>
-                {climaEmoji && (
-                    <div className="text-3xl animate-pulse">
-                        {climaEmoji}
-                    </div>
+
+                {/* 3. Reemplazamos el div del emoji por nuestro nuevo componente animado */}
+                {registroDeHoy && registroDeHoy.estado_general && (
+                    <ClimaIconoAnimado estadoGeneral={registroDeHoy.estado_general} />
                 )}
+                
                 <div className="font-['Patrick_Hand'] text-xl text-zinc-600 flex-1 text-right">
                     {getFormattedDate()}
                 </div>
             </div>
 
-
+            {/* El resto del componente (título y botón de atrás) no necesita cambios */}
             <div className="mt-3 pt-3 border-t border-dashed border-amber-400 relative flex justify-center items-center h-8">
-                
-                {/* 2. Wrap the button in AnimatePresence to handle enter/exit animations */}
                 <AnimatePresence>
                     {showBackButton && (
                         <motion.div
                             className="absolute left-0"
-                            // 3. Define the animation properties
-                            initial={{ opacity: 0, x: -10 }} // Starts invisible and slightly to the left
-                            animate={{ opacity: 1, x: 0 }}   // Fades in and slides to its final position
-                            exit={{ opacity: 0, x: -10 }}    // Fades out and slides back to the left
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -10 }}
                             transition={{ duration: 0.2 }}
                         >
                             <BotonAtras />
                         </motion.div>
                     )}
                 </AnimatePresence>
-
-                {/* 2. El título se mantiene centrado, ignorando al botón */}
-                <p className="font-['Patrick_Hand'] text-xl text-zinc-700">
-                    {title}
-                </p>
-
-            </div>
+                <p className="font-['Patrick_Hand'] text-xl text-zinc-700">
+                    {title}
+                </p>
+            </div>
         </header>
     );
 }

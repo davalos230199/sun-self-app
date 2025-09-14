@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
+import { useDia } from '../contexts/DiaContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const SendIcon = () => (
@@ -8,6 +9,7 @@ const SendIcon = () => (
 
 export default function Sunny() {
     // --- ESTADOS Y LÓGICA (Sin cambios) ---
+    const { registroDeHoy, isLoading } = useDia();
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false); // Carga de las respuestas del chat
@@ -69,7 +71,7 @@ export default function Sunny() {
                 {isPageLoading ? (
                     // 1. CANAL DE CARGA: El spinner se renderiza DENTRO del esqueleto ya estilizado.
                     <div className="flex-grow flex justify-center items-center">
-                        <LoadingSpinner message="Sintonizando reflejos..." />
+                    <LoadingSpinner message="Contactando a Sunny..." estadoGeneral={registroDeHoy?.estado_general} />;
                     </div>
                 ) : (
                     // 2. CANAL DE CONTENIDO: El chat se renderiza DENTRO del mismo esqueleto.

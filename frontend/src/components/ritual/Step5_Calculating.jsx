@@ -1,17 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react'; // useEffect ya no es necesario
 import { motion } from 'framer-motion';
-import LottieIcon from '../LottieIcon';
-// Asegúrate de tener una animación para este estado
+import Lottie from 'lottie-react';
 import calculatingAnimation from '../../assets/animations/calculating-loop.json'; 
 
-const Step5_Calculating = ({ onNextStep }) => {
-    // Pasa al siguiente paso automáticamente después de 3 segundos
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            onNextStep();
-        }, 3000);
-        return () => clearTimeout(timer);
-    }, [onNextStep]);
+const Step5_Calculating = () => { // Ya no recibe onNextStep
+
+    // ELIMINAMOS POR COMPLETO EL BLOQUE useEffect
 
     return (
         <motion.div
@@ -22,7 +16,7 @@ const Step5_Calculating = ({ onNextStep }) => {
             className="bg-white rounded-2xl shadow-xl p-6 text-center flex flex-col items-center gap-4 w-full max-w-sm border-2 border-amber-300"
         >
             <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800">Analizando tu estado...</h2>
-            <LottieIcon 
+            <Lottie 
                 animationData={calculatingAnimation} 
                 className="w-40 h-40"
                 loop={true}

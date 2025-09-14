@@ -2,10 +2,15 @@ const express = require('express');
 const router = express.Router();
 const { createClient } = require('@supabase/supabase-js');
 const authMiddleware = require('../middleware/auth');
+const { OpenAI } = require('openai');
+const { PERSONALIDAD_SUNNY, construirPromptDeRegistro } = require('../config/prompts.js');
+
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
+const openai = new OpenAI({apiKey: process.env.OPENAI_API_KEY,});
+
 
 router.use(authMiddleware);
 
@@ -121,46 +126,70 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
     try {
         const { id: userId } = req.user;
-        const { mente, emocion, cuerpo, meta_del_dia, compartir_anonimo, minimetas } = req.body;
-        
-        if (!mente?.seleccion || !emocion?.seleccion || !cuerpo?.seleccion) {
-            return res.status(400).json({ error: 'Se requiere la selección de todos los orbes.' });
-        }
-        
-        const valores = [mente.seleccion, emocion.seleccion, cuerpo.seleccion];
-        const puntaje = valores.reduce((acc, val) => val === 'alto' ? acc + 1 : val === 'bajo' ? acc - 1 : acc, 0);
-        let estado_general = 'nublado';
-        if (puntaje >= 2) estado_general = 'soleado';
-        if (puntaje <= -2) estado_general = 'lluvioso';
+        const { mente_estado, mente_descripcion, emocion_estado, emocion_descripcion, cuerpo_estado, cuerpo_descripcion, meta_descripcion } = req.body;
 
-        const { data: registroData, error: registroError } = await supabase.rpc('create_registro', {
-            p_user_id: userId,
-            p_mente_estat: mente.seleccion,
-            p_mente_coment: mente.comentario,
-            p_emocion_estat: emocion.seleccion,
-            p_emocion_coment: emocion.comentario,
-            p_cuerpo_estat: cuerpo.seleccion,
-            p_cuerpo_coment: cuerpo.comentario,
-            p_estado_general: estado_general,
-            p_meta_del_dia: meta_del_dia,
-            p_compartir_anonimo: true
-        });
+        const menteNum = parseInt(mente_estado, 10);
+        const emocionNum = parseInt(emocion_estado, 10);
+        const cuerpoNum = parseInt(cuerpo_estado, 10);
+
+        if (isNaN(menteNum) || isNaN(emocionNum) || isNaN(cuerpoNum)) {
+            return res.status(400).json({ error: 'Los valores de estado deben ser números válidos.' });
+        }
+
+        const avg = (menteNum + emocionNum + cuerpoNum) / 3;
+        let estado_general = 'nublado';
+        if (avg > 66) estado_general = 'soleado';
+        if (avg < 33) estado_general = 'lluvioso';
+
+        const { data: nuevoRegistro, error: registroError } = await supabase
+            .from('registros')
+            .insert({
+                user_id: userId,
+                mente_estat: menteNum,
+                mente_coment: mente_descripcion,
+                emocion_estat: emocionNum,
+                emocion_coment: emocion_descripcion,
+                cuerpo_estat: cuerpoNum,
+                cuerpo_coment: cuerpo_descripcion,
+                meta_del_dia: meta_descripcion,
+                compartir_anonimo: true,
+                estado_general: estado_general
+            })
+            .select()
+            .single();
 
         if (registroError) throw registroError;
 
-        if (minimetas && minimetas.length > 0 && registroData.id) {
-            const minimetasParaInsertar = minimetas.map(desc => ({
-                descripcion: desc,
-                user_id: userId,
-                registro_id: registroData.id
-            }));
-            await supabase.from('mini_metas').insert(minimetasParaInsertar);
-        }
+        const promptDeTarea = construirPromptDeRegistro(nuevoRegistro);
 
-        res.status(201).json({ message: 'Registro guardado con éxito', registro: registroData });
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Aquí restauramos los parámetros que OpenAI necesita
+        const completion = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: [
+                { role: "system", content: PERSONALIDAD_SUNNY },
+                { role: "user", content: promptDeTarea }
+            ],
+            max_tokens: 60,
+        });
+        // --- FIN DE LA CORRECCIÓN ---
+
+        const fraseGenerada = completion.choices[0].message.content.trim();
+
+        const { data: registroActualizado, error: updateError } = await supabase
+            .from('registros')
+            .update({ frase_sunny: fraseGenerada })
+            .eq('id', nuevoRegistro.id)
+            .select()
+            .single();
+        
+        if (updateError) throw updateError;
+        
+        res.status(201).json(registroActualizado);
+
     } catch (err) {
-        console.error("Error al crear registro:", err);
-        res.status(500).json({ error: 'Error al guardar el registro.' });
+        console.error("Error al crear el registro y la frase de Sunny:", err);
+        res.status(500).json({ error: 'Error en el servidor al procesar el registro.' });
     }
 });
 

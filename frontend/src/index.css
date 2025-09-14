@@ -5,6 +5,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@layer components {
+  .card-base {
+    @apply bg-white border border-amber-300 shadow-lg rounded-2xl;
+  }
+  
+  .card-animada {
+    @apply card-base shadow-amber-500/30 transition-shadow duration-300;
+  }
+
+  .card-animada:hover {
+     @apply shadow-xl shadow-amber-500/50;
+  }
+}
 
 /* 3. El resto de tus estilos personalizados van al final. */
 :root {
@@ -104,5 +117,11 @@ input:focus, textarea:focus {
     to {
         transform: rotate(360deg);
     }
+}
+
+@keyframes shadow-pulse {
+  50% {
+    box-shadow: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
+  }
 }
 

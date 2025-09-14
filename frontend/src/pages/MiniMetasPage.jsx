@@ -4,10 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import api from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useDia } from '../contexts/DiaContext';
 
 export default function MiniMetasPage() {
-    const { registroDeHoy, cargarDatosDelDia, miniMetas: metasDelContexto } = useOutletContext();
-     const [isPageLoading, setIsPageLoading] = useState(true);
+
+     // 2. CAMBIAMOS LA FUENTE DE DATOS: de useOutletContext a useDia
+    const { registroDeHoy, cargarDatosDelDia, miniMetas: metasDelContexto } = useDia();
+    // Estados locales
+    const [isPageLoading, setIsPageLoading] = useState(true);
     const [error, setError] = useState('');
     const [miniMetas, setMiniMetas] = useState(metasDelContexto || []);
     const [newMetaText, setNewMetaText] = useState('');
@@ -82,7 +86,10 @@ export default function MiniMetasPage() {
         <main className="flex flex-col border border-amber-300 shadow-lg rounded-2xl overflow-y-auto bg-white p-4 sm:p-6 h-full">
             {isPageLoading ? (
                 <div className="flex-grow flex justify-center items-center">
-                    <LoadingSpinner message="Mi proximo paso es..." />
+                    <LoadingSpinner 
+                        message="Mi próximo paso es..." 
+                        estadoGeneral={registroDeHoy?.estado_general} 
+                    />
                 </div>
             ) : error ? (
                 <div className="text-center py-10 h-full flex flex-col justify-center">

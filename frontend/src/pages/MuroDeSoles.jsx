@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion'; // Importamos para la animación del modal
+import { AnimatePresence, motion } from 'framer-motion';
 import api from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner'; // 1. IMPORTAR
+import { useDia } from '../contexts/DiaContext'; // 1. IMPORTAMOS useDia
+import Lottie from 'lottie-react'; // 2. IMPORTAMOS Lottie
+
+
+// --- Importamos las animaciones ---
+import sunLoopAnimation from '../assets/animations/sun-loop.json';
+import cloudLoopAnimation from '../assets/animations/cloud-loop.json';
+import rainLoopAnimation from '../assets/animations/rain-loop.json';
 
 // --- Componente del Modal para la Frase (NUEVO) ---
 const FraseModal = ({ frase, onClose }) => {
@@ -40,16 +48,24 @@ const FraseModal = ({ frase, onClose }) => {
 };
 
 
-const ClimaEmoji = ({ estado }) => {
-    switch (estado) {
-        case 'soleado': return '☀️';
-        case 'nublado': return '⛅';
-        case 'lluvioso': return '🌧️';
-        default: return '❔';
-    }
+const ClimaAnimadoIcon = ({ estado }) => {
+    const animationMap = {
+        soleado: sunLoopAnimation,
+        nublado: cloudLoopAnimation,
+        lluvioso: rainLoopAnimation,
+    };
+    const animationData = animationMap[estado] || cloudLoopAnimation; // Default a nublado
+
+    return (
+        // Usamos Lottie en lugar de un span con emoji
+        <Lottie animationData={animationData} loop={true} />
+    );
 };
 
 export default function MuroDeSoles() {
+
+     // 4. CONECTAMOS AL CONTEXTO para obtener el estado del día del usuario actual
+    const { registroDeHoy } = useDia();
     const [registros, setRegistros] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -83,7 +99,11 @@ export default function MuroDeSoles() {
         <>
             <main className="flex flex-col flex-grow w-full max-w-4xl mx-auto border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-white h-full">
                 {loading ? (
-                    <LoadingSpinner message="Cargando reflejos..." />
+                    // 5. SPINNER INTELIGENTE: Le pasamos el estado del usuario
+                    <LoadingSpinner 
+                        message="Cargando reflejos..." 
+                        estadoGeneral={registroDeHoy?.estado_general} 
+                    />
                 ) : (
                     <div className="p-4">
                         <p className="text-lg text-zinc-600 mb-10 text-center font-['Patrick_Hand'] max-w-lg mx-auto">
@@ -105,7 +125,7 @@ export default function MuroDeSoles() {
                                         onClick={() => handleCardClick(registro.frase_sunny)}
                                     >
                                         <div className="text-3xl sm:text-4xl bg-white/30 rounded-full w-16 h-16 sm:w-20 sm:h-20 flex justify-center items-center shadow-sm backdrop-blur-sm">
-                                            <ClimaEmoji estado={registro.estado_general} />
+                                            <ClimaAnimadoIcon estado={registro.estado_general} />
                                         </div>
                                     </div>
                                 ))}

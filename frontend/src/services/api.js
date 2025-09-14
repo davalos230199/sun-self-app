@@ -6,12 +6,7 @@ import { supabase } from './supabaseClient';
 // Esto hace que la configuración sea más robusta.
 const baseURL = import.meta.env.VITE_API_URL || 'https://sun-self-backend.onrender.com';
 
-const apiClient = axios.create({
-  baseURL: baseURL, // Usamos la nueva variable inteligente
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
+const apiClient = axios.create({baseURL: baseURL, headers: {'Content-Type': 'application/json'}});
 
 // Función para sincronizar la sesión de Supabase
 apiClient.interceptors.request.use(

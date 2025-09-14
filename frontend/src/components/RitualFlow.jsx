@@ -41,58 +41,56 @@ export default function RitualFlow({ onFinish }) {
         setStep(prev => (nextStepOverride !== null ? nextStepOverride : prev + 1));
     };
     
-    // --- LÓGICA DE PROCESAMIENTO MODIFICADA (SIN LLAMADAS A LA API) ---
-    const handleProcessAndSave = async (meta) => {
-        setIsProcessing(true);
-        setStep(5); // Muestra la pantalla de "Calculando"
+const handleProcessAndSave = async (metaData) => {
+    // --- INICIO DE LA VERIFICACIÓN DE SEGURIDAD ---
+    if (!ritualData.mente || !ritualData.emocion || !ritualData.cuerpo) {
+        console.error("Intento de procesar el ritual con datos incompletos.", ritualData);
+        setError("Faltan datos de los pasos anteriores. Por favor, reinicia el ritual.");
+        // Opcional: podrías forzar el reinicio con setStep(1)
+        return; // Detiene la ejecución de la función aquí mismo.
+    }
+    // --- FIN DE LA VERIFICACIÓN DE SEGURIDAD ---
 
-        const finalRitualData = { ...ritualData, meta };
+    setIsProcessing(true);
+    setError('');
+    setStep(5);
 
-        // Simulación del tiempo de procesamiento del backend
-        await new Promise(resolve => setTimeout(resolve, 2500)); 
-
-        try {
-            // --- BLOQUE DE API DESACTIVADO ---
-            /*
-            // 1. Guardar el registro inicial (COMENTADO)
-            const payload = { ... };
-            const savedRecordResponse = await api.saveRegistro(payload);
-            const savedRecord = savedRecordResponse.data;
-
-            // 2. Llamar a Sunny (COMENTADO)
-            const sunnyPayload = { ... };
-            const sunnyResponse = await api.generarFraseInteligente(sunnyPayload);
-            const fraseDelDia = sunnyResponse.data.frase;
-            */
-            // --- FIN DEL BLOQUE DESACTIVADO ---
-
-            // Usamos datos simulados para continuar el flujo visual
-            const fraseDelDia = "Este es un modo de prueba. Tu registro no ha sido guardado.";
-
-            // Calculamos el estado general como siempre
-            const avg = (parseInt(finalRitualData.mente.estado) + parseInt(finalRitualData.emocion.estado) + parseInt(finalRitualData.cuerpo.estado)) / 3;
-            let estadoGeneral = 'nublado';
-            if (avg > 66) estadoGeneral = 'soleado';
-            if (avg < 33) estadoGeneral = 'lluvioso';
-
-            // Actualizamos el estado para el resumen
-            setRitualData(prev => ({ ...prev, estadoGeneral, fraseDelDia, meta }));
-            
-            setStep(6); // Avanzamos al resumen
-
-        } catch (err) {
-            // Este bloque ahora es menos probable que se ejecute, pero lo mantenemos por seguridad
-            console.error("Error durante la simulación del ritual:", err);
-            setError("Ocurrió un error en la simulación.");
-            setStep(1); 
-        } finally {
-            setIsProcessing(false);
-        }
+    const registroParaEnviar = {
+        mente_estado: ritualData.mente.estado,
+        mente_descripcion: ritualData.mente.comentario, // <-- CORRECCIÓN
+        emocion_estado: ritualData.emocion.estado,
+        emocion_descripcion: ritualData.emocion.comentario, // <-- CORRECCIÓN
+        cuerpo_estado: ritualData.cuerpo.estado,
+        cuerpo_descripcion: ritualData.cuerpo.comentario, // <-- CORRECCIÓN
+        meta_descripcion: metaData.meta,
     };
+
+    try {
+        const response = await api.saveRegistro(registroParaEnviar);
+        const registroCompleto = response.data;
+
+        setRitualData(prev => ({
+            ...prev,
+            ...registroParaEnviar,
+            fraseDelDia: registroCompleto.frase_sunny,
+            estadoGeneral: registroCompleto.estado_general,
+        }));
+
+        setStep(6);
+
+    } catch (err) {
+        console.error("Error al guardar el ritual:", err);
+        setError(err.response?.data?.error || "No se pudo guardar tu registro. Por favor, intenta de nuevo.");
+        setStep(7);
+    } finally {
+        setIsProcessing(false);
+    }
+};
+
 
     // La función que se llama al final del todo, ahora conectada a onFinish
     const handleFinishRitual = () => {
-        onFinish();
+        onFinish(ritualData);
     };
 
     const renderStep = () => {

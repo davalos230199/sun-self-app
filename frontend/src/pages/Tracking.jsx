@@ -1,78 +1,25 @@
-// frontend/src/pages/Tracking.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { useDia } from '../contexts/DiaContext'; // 1. Importamos el hook de nuestro contexto
 import LoadingSpinner from '../components/LoadingSpinner';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import HistorialChart from '../components/HistorialChart'; // 2. Importamos el gráfico desde su nuevo archivo
 import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
-
-// --- Sub-componente: Gráfico
-const HistorialChart = ({ filter }) => {
-    const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                await new Promise(res => setTimeout(res, 500));
-                const response = await api.getChartData(filter);
-                setData(response.data);
-                setError(null);
-            } catch (err) {
-                setError("No se pudieron cargar los datos.");
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, [filter]);
-
-    if (loading) return <LoadingSpinner message="Dibujando tus días..." />;
-    if (error) return <div className="text-center py-10 text-red-600 italic">{error}</div>;
-    if (data.length === 0) return <div className="text-center py-10 text-zinc-500 italic">No hay datos para este período.</div>;
-    
-    const yAxisTickFormatter = (value) => {
-        if (value === 4) return '☀️';
-        if (value === 3) return '⛅';
-        if (value === 2) return '🌧️';
-        return '';
-    };
-    
-    return (
-        <div className="w-full h-[400px] flex justify-center items-center">
-            {loading ? (
-                <LoadingSpinner message="Dibujando tus días..." />
-            ) : error ? (
-                <div className="text-center text-red-600 italic">{error}</div>
-            ) : data.length === 0 ? (
-                <div className="text-center text-zinc-500 italic">No hay datos para este período.</div>
-            ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={data} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                        <XAxis dataKey="fecha" tick={{ fontSize: 12, fill: '#666' }} />
-                        <YAxis domain={[1.5, 4.5]} ticks={[2, 3, 4]} tickFormatter={yAxisTickFormatter} tick={{ fontSize: 16 }} />
-                        <Tooltip contentStyle={{ borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }} />
-                        <Line type="monotone" dataKey="valor" name="Fluctuación" stroke="#f59e0b" strokeWidth={3} dot={{ r: 5 }} activeDot={{ r: 8 }} />
-                    </LineChart>
-                </ResponsiveContainer>
-            )}
-        </div>
-    );
-};
-const MemoizedHistorialChart = React.memo(HistorialChart);
+import 'react-calendar/dist/Calendar.css'; // Estilos para el calendario
 
 // --- Componente Principal de la Página ---
 export default function Tracking() {
+    // 3. Obtenemos el registro de hoy desde el contexto para usar su estado general
+    const { registroDeHoy } = useDia(); 
+    
+    // Estados locales específicos de esta página
     const [activeFilter, setActiveFilter] = useState('mes');
     const [registrosCompletos, setRegistrosCompletos] = useState([]);
     const [isLoadingPage, setIsLoadingPage] = useState(true);
     const navigate = useNavigate();
     const mainContainerRef = useRef(null);
 
+    // Este efecto carga todos los registros para poder colorear el calendario
     useEffect(() => {
         const fetchAllRegistros = async () => {
             try {
@@ -87,13 +34,14 @@ export default function Tracking() {
         fetchAllRegistros();
     }, []);
 
-        useEffect(() => {
-        // Forzamos el scroll a la posición 0 (arriba) cuando el componente se carga
+    // Este efecto asegura que la página siempre inicie desde arriba
+    useEffect(() => {
         if (mainContainerRef.current) {
             mainContainerRef.current.scrollTop = 0;
         }
     }, []);
 
+    // Función para añadir emojis a los días con registro en el calendario
     const tileContent = ({ date, view }) => {
         if (view === 'month') {
             const dateString = date.toISOString().split('T')[0];
@@ -109,19 +57,18 @@ export default function Tracking() {
         return null;
     };
     
+    // Función para manejar el clic en un día del calendario
     const handleDayClick = (date) => {
-        // 1. Formateamos la fecha a YYYY-MM-DD
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         const fechaFormateada = `${year}-${month}-${day}`;
-
-        // 2. Navegamos a la nueva ruta de resumen
         navigate(`/resumen/${fechaFormateada}`);
     };
     
     const filters = [{ key: 'semana', label: '7d' }, { key: 'quince', label: '15d' }, { key: 'mes', label: '1m' }, { key: 'todo', label: 'Todo' }];
 
+    // Estilos personalizados para el calendario
     const calendarStyles = `
         .react-calendar { border: none; font-family: 'Patrick Hand', sans-serif; }
         .react-calendar__tile { 
@@ -129,18 +76,21 @@ export default function Tracking() {
         }
     `;
 
-    // CAMBIO: Estructura de return simplificada y sin PageHeader
     return (
         <>
             <style>{calendarStyles}</style>
-            <main ref={mainContainerRef} className="h-full overflow-y-auto bg-zing-50 snap-y snap-mandatory">
+            <main ref={mainContainerRef} className="h-full overflow-y-auto bg-zinc-50 snap-y snap-mandatory">
                 {isLoadingPage ? (
                     <div className="h-full flex justify-center items-center">
-                        <LoadingSpinner message="Observa el pasado..." />
+                        {/* 4. El spinner ahora usa el estado del día desde el contexto */}
+                        <LoadingSpinner 
+                            message="Observando el pasado..." 
+                            estadoGeneral={registroDeHoy?.estado_general}
+                        />
                     </div>
                 ) : (
-                        // CAMBIO: Div interior que contiene el estilo visual y el espaciado
                     <div className="flex flex-col space-y-6">
+                        {/* Sección del Calendario */}
                         <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6 snap-start">
                             <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800 mb-4">Calendario de Reflejos</h2>
                             <Calendar
@@ -150,6 +100,7 @@ export default function Tracking() {
                             />
                         </section>
                         
+                        {/* Sección del Gráfico */}
                         <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6 snap-start">
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800">Tu Fluctuación</h2>
@@ -161,9 +112,14 @@ export default function Tracking() {
                                     ))}
                                 </div>
                             </div>
-                            <MemoizedHistorialChart filter={activeFilter} />
+                            {/* 5. Llamamos al componente del gráfico y le pasamos el estado del día */}
+                            <HistorialChart 
+                                filter={activeFilter} 
+                                estadoGeneral={registroDeHoy?.estado_general} 
+                            />
                         </section>
                         
+                        {/* Sección de Recuerdos (Platzhalter) */}
                         <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6 snap-start">
                             <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800 mb-4">Tus Recuerdos</h2>
                             <div className="text-center py-10 text-zinc-400 italic">

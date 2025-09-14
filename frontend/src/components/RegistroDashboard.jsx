@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import LottieIcon from './LottieIcon'; // <-- 1. Importar LottieIcon
+import Lottie from 'lottie-react'; // Usamos Lottie directamente para más control
 
 // --- Importar las animaciones ---
 import sunLoopAnimation from '../assets/animations/sun-loop.json';
@@ -32,18 +32,18 @@ const determinarClima = (reg) => {
 };
 
 // --- 3. Nuevo sub-componente para la animación del clima ---
-const ClimaAnimado = ({ clima }) => {
+const ClimaAnimado = ({ estadoGeneral }) => {
     const animationMap = {
         soleado: sunLoopAnimation,
         nublado: cloudLoopAnimation,
         lluvioso: rainLoopAnimation,
     };
-
-    const animationData = animationMap[clima] || cloudLoopAnimation; // Default a nublado
+    // Leemos directamente de estadoGeneral. Si no existe, default a nublado.
+    const animationData = animationMap[estadoGeneral] || cloudLoopAnimation;
 
     return (
         <div className="w-24 h-24 mx-auto my-2">
-            <LottieIcon animationData={animationData} />
+            <Lottie animationData={animationData} loop={true} />
         </div>
     );
 };
@@ -54,7 +54,7 @@ const ClimaAnimado = ({ clima }) => {
 const MetasWidget = ({ registro, proximaMeta, isLoading }) => {
     return (
         <Link to="/metas" className="no-underline text-inherit block">
-            <div className="relative flex flex-col bg-green-100 border border-green-300 shadow-lg rounded-2xl p-5 text-center min-h-[180px]">
+            <div className="card-animada relative flex flex-col bg-green-100 border border-green-300 rounded-2xl p-5 text-center min-h-[180px]">
                 <div className="absolute top-4 left-4 text-2xl">🎯</div>
                 <h3 className="font-['Patrick_Hand'] text-2xl text-green-800 mt-8 mb-4 break-words">
                     {registro.meta_del_dia || 'Define tu meta principal del día.'}
@@ -75,11 +75,9 @@ const MetasWidget = ({ registro, proximaMeta, isLoading }) => {
 
 const EstadoWidget = ({ registro, fraseDelDia, tiempoRestante, onEdit }) => {
     const navigate = useNavigate();
-    const clima = determinarClima(registro); // Obtener el estado del clima
-
     return (
         <Link to="/tracking" className="no-underline text-inherit block">
-            <div className="relative flex flex-col border border-yellow-300 bg-yellow-100 shadow-lg rounded-2xl p-5 text-center min-h-[180px]">
+            <div className="card-animada relative flex flex-col border border-yellow-300 bg-yellow-100 rounded-2xl p-5 text-center min-h-[180px]">
                 {/* Header del post-it con timer y botones */}
                 <div className="absolute top-2 left-2 right-2 flex justify-between items-center">
                     <div className="text-xs font-semibold text-zinc-500 bg-black/5 px-2 py-1 rounded-full min-w-[70px] text-center">
@@ -104,7 +102,7 @@ const EstadoWidget = ({ registro, fraseDelDia, tiempoRestante, onEdit }) => {
                 <h3 className="font-['Patrick_Hand'] text-xl text-yellow-800 mt-8">Tu estado de hoy</h3>
                 
                 {/* --- 4. Reemplazar el emoji por la animación --- */}
-                <ClimaAnimado clima={clima} />
+                <ClimaAnimado estadoGeneral={registro.estado_general} />
 
                 <p className="flex-grow text-zinc-700 italic text-sm -mt-2">"{fraseDelDia}"</p>
                 <footer className="mt-auto pt-3 border-t border-dashed border-yellow-300 text-xs text-zinc-500 font-semibold">

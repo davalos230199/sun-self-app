@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner'; // 1. Importamos el spinner
+import { useDia } from '../contexts/DiaContext'; 
 
 // --- Iconos para los botones y carga (Componentes internos) ---
 const SaveIcon = () => (
@@ -16,6 +17,7 @@ const CancelIcon = () => (
 export default function Journal() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { registroDeHoy } = useDia(); 
     const [texto, setTexto] = useState('');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -54,7 +56,12 @@ export default function Journal() {
             <main className="flex flex-col flex-grow w-full max-w-4xl mx-auto border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-white h-full">
                 
                 {loading ? (
-                    <LoadingSpinner message="Hoy recordé cuando..." />
+                    <LoadingSpinner 
+                    message="Hoy recordé cuando..." 
+                    // Si estamos viendo el diario de hoy, usará el estado de hoy.
+                    // Si es un día antiguo, el registroDeHoy no coincidirá y usará el default (sol).
+                    estadoGeneral={registroDeHoy?.id == id ? registroDeHoy.estado_general : null}
+                />
                 ) : (
                     <>
                         <div className="flex-grow flex">
