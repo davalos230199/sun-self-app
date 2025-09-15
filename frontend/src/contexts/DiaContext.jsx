@@ -21,6 +21,8 @@ export const DiaProvider = ({ children }) => {
         }
         setIsLoading(true);
         try {
+
+
             const registroResponse = await api.getRegistroDeHoy();
             const registro = registroResponse?.data?.registro || null;
             setRegistroDeHoy(registro);
