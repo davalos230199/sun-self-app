@@ -1,22 +1,20 @@
-// frontend/src/contexts/DiaContext.jsx
+// Archivo: frontend/src/contexts/DiaContext.jsx
 
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
-import { useAuth } from './AuthContext'; // Necesitamos saber quién es el usuario
+import { useAuth } from './AuthContext';
 import api from '../services/api';
 
 const DiaContext = createContext();
 
 export const DiaProvider = ({ children }) => {
-    const { user } = useAuth(); // Obtenemos el usuario del contexto de autenticación
+    const { user } = useAuth();
 
-    // Todos los estados que antes vivían en AppLayout ahora viven aquí
     const [registroDeHoy, setRegistroDeHoy] = useState(null);
     const [miniMetas, setMiniMetas] = useState([]);
     const [fraseDelDia, setFraseDelDia] = useState('');
     const [isLoading, setIsLoading] = useState(true);
 
-    // La función de carga completa, ahora dentro del contexto
-    const cargarDatosDelDia = useCallback(async () => {
+    const refrescarDia = useCallback(async () => {
         if (!user) {
             setIsLoading(false);
             return;
@@ -28,12 +26,10 @@ export const DiaProvider = ({ children }) => {
             setRegistroDeHoy(registro);
 
             if (registro) {
-                // Si hay registro, buscamos los datos adicionales
                 const metasResponse = await api.getMiniMetas(registro.id);
                 setMiniMetas(metasResponse?.data || []);
                 setFraseDelDia(registro.frase_sunny || "Una frase inspiradora te espera.");
             } else {
-                // Si no hay registro, reseteamos los datos
                 setMiniMetas([]);
                 setFraseDelDia('');
             }
@@ -45,20 +41,18 @@ export const DiaProvider = ({ children }) => {
         } finally {
             setIsLoading(false);
         }
-    }, [user]); // Depende del usuario, si cambia el usuario, se vuelve a cargar
+    }, [user]);
 
     useEffect(() => {
-        cargarDatosDelDia();
-    }, [cargarDatosDelDia]);
+        refrescarDia();
+    }, [refrescarDia]);
 
-    // El valor que proveemos a toda la aplicación
     const value = {
         registroDeHoy,
-        setRegistroDeHoy,
         miniMetas,
         fraseDelDia,
         isLoading,
-        cargarDatosDelDia
+        refrescarDia,
     };
 
     return (

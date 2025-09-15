@@ -1,15 +1,15 @@
+// Archivo: frontend/src/components/ritual/Step7_Goal.jsx
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import LottieIcon from '../LottieIcon';
-import goalAnimation from '../../assets/animations/sun-reveal.json'; // Reutilizamos una animación inspiradora
+import goalRevealAnimation from '../../assets/animations/goal-reveal.json';
+import goalLoopAnimation from '../../assets/animations/goal-loop.json';
 
 const Step7_Goal = ({ onFinish }) => {
     const [meta, setMeta] = useState('');
-
-    const handleSave = () => {
-        // onFinish ahora pasa la meta al componente padre
-        onFinish(meta);
-    };
+    const [animationPhase, setAnimationPhase] = useState('reveal');
+    const isButtonDisabled = meta.trim() === '';
 
     return (
         <motion.div
@@ -17,29 +17,34 @@ const Step7_Goal = ({ onFinish }) => {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
-            className="bg-white rounded-2xl shadow-xl p-6 text-center flex flex-col items-center gap-4 w-full max-w-sm border-2 border-amber-300"
+            className="bg-white rounded-2xl shadow-xl p-8 text-center flex flex-col items-center gap-4 w-full max-w-sm border-2 border-fuchsia-400 min-h-[580px] justify-between"
         >
-            <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800 -mb-2">Tu Meta del Día</h2>
-            <LottieIcon 
-                animationData={goalAnimation} 
-                className="w-32 h-32"
-                autoplay={true}
-                loop={false}
-            />
-            <p className="text-sm text-zinc-600 px-2 -mt-4">Define un pequeño gran objetivo que le dé dirección a tu día.</p>
-            <textarea
-                placeholder="ej: Sonreír a un extraño, terminar ese informe..."
-                value={meta}
-                onChange={(e) => setMeta(e.target.value)}
-                rows="2"
-                className="w-full bg-amber-50 border border-amber-200 rounded-lg p-2 text-zinc-700 placeholder:font-['Patrick_Hand'] placeholder:text-zinc-400 placeholder:italic focus:outline-none focus:ring-2 focus:ring-amber-400"
-            />
-            <button
-                onClick={handleSave}
-                className="mt-2 bg-amber-400 text-white font-['Patrick_Hand'] text-xl px-8 py-3 w-full rounded-xl shadow-lg hover:bg-amber-500 transition-colors"
-            >
-                Guardar y Empezar
-            </button>
+            <div className="w-full flex flex-col items-center gap-4">
+                <h2 className="font-['Patrick_Hand'] text-3xl text-zinc-800">Tu Meta del Día</h2>
+                <LottieIcon 
+                    animationData={animationPhase === 'reveal' ? goalRevealAnimation : goalLoopAnimation}
+                    className="w-56 h-56 -mt-8"
+                    loop={animationPhase === 'loop'}
+                    onComplete={() => setAnimationPhase('loop')}
+                />
+            </div>
+            <div className="w-full flex flex-col items-center gap-4">
+                <p className="text-md text-zinc-600 px-2 italic">"¿Cuál podría ser tu próximo pequeño gran logro?"</p>
+                <textarea
+                    placeholder="ej: Sonreír a un extraño, terminar ese informe..."
+                    value={meta}
+                    onChange={(e) => setMeta(e.target.value)}
+                    rows="3"
+                    className="w-full bg-fuchsia-50 border border-fuchsia-200 rounded-lg p-2 text-zinc-700 placeholder:font-['Patrick_Hand'] placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-400"
+                />
+                <button
+                    onClick={() => onFinish(meta)}
+                    disabled={isButtonDisabled}
+                    className={`mt-2 font-['Patrick_Hand'] text-xl px-8 py-3 w-full rounded-xl shadow-lg transition-all transform ${isButtonDisabled ? 'bg-zinc-300 text-zinc-500 cursor-not-allowed' : 'bg-fuchsia-500 text-white hover:bg-fuchsia-600 hover:scale-105'}`}
+                >
+                    Guardar y Empezar el Día
+                </button>
+            </div>
         </motion.div>
     );
 };

@@ -30,6 +30,7 @@ const login = (credentials) => { return apiClient.post('/api/auth/login', creden
 const getMe = () => { return apiClient.get('/api/auth/me'); };
 const getRegistros = () => { return apiClient.get('/api/registros'); };
 const getRegistroDeHoy = () => { return apiClient.get('/api/registros/today'); };
+const getMetasHoy = () => apiClient.get('/api/metas/today');
 const saveRegistro = (payload) => { return apiClient.post('/api/registros', payload); };
 const getRegistroById = (id) => { return apiClient.get(`/api/registros/${id}`); };
 const saveHojaAtras = (id, texto) => { return apiClient.put(`/api/registros/${id}/hoja_atras`, { texto }); };
@@ -89,6 +90,7 @@ const api = {
   updateMiniMetaStatus,
   deleteMiniMeta,
   getRegistroPorFecha,
+  getMetasHoy,
 };
 
 export default api;

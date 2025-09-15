@@ -5,27 +5,30 @@ import RegistroDashboard from '../components/RegistroDashboard';
 import RitualFlow from '../components/RitualFlow';
 import WelcomeModal from '../components/WelcomeModal';
 import LoadingSpinner from '../components/LoadingSpinner';
+// Limpieza: Se elimina la importación de V2
+// import RegistroDashboardV2 from '../components/RegistroDashboardV2';
 
 export default function Home() {
     const {
         isLoading: isContextLoading,
         registroDeHoy,
-        setRegistroDeHoy,
         miniMetas,
         fraseDelDia,
-        cargarDatosDelDia
+        refrescarDia,
     } = useDia();
 
     const [isVisualLoading, setIsVisualLoading] = useState(true);
+    const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+    // Limpieza: Se elimina el estado de control de V2
+    // const [verDashboardV2, setVerDashboardV2] = useState(false);
+    
+    const [isFinishingRitual, setIsFinishingRitual] = useState(false);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsVisualLoading(false);
-        }, 500);
+        const timer = setTimeout(() => setIsVisualLoading(false), 500);
         return () => clearTimeout(timer);
     }, []);
 
-    const [showWelcomeModal, setShowWelcomeModal] = useState(false);
     useEffect(() => {
         const haVistoManifiesto = localStorage.getItem('sunself_manifiesto_visto');
         if (!haVistoManifiesto) {
@@ -33,43 +36,39 @@ export default function Home() {
         }
     }, []);
 
-    const handleEdit = () => {
-        setRegistroDeHoy(null);
-    };
-
-    const handleRitualFinish = (nuevoRegistro) => {
-        setRegistroDeHoy(nuevoRegistro);
-        if (cargarDatosDelDia) {
-            cargarDatosDelDia();
+    const handleRitualFinish = async () => {
+        setIsFinishingRitual(true);
+        if (refrescarDia) {
+            await refrescarDia();
         }
+        setIsFinishingRitual(false);
     };
 
     if (showWelcomeModal) {
-        // Tu lógica completa para el WelcomeModal, ahora presente.
         return (
-            <WelcomeModal onAccept={(shouldHide) => {
-                if (shouldHide) {
-                    localStorage.setItem('sunself_manifiesto_visto', 'true');
-                }
+            <WelcomeModal onAccept={() => {
+                localStorage.setItem('sunself_manifiesto_visto', 'true');
                 setShowWelcomeModal(false);
             }} />
         );
     }
     
-    if (isContextLoading || isVisualLoading) {
-        return <LoadingSpinner message="Hoy estoy..." estadoGeneral={registroDeHoy?.estado_general} />;
+    if (isContextLoading || isVisualLoading || isFinishingRitual) {
+        return <LoadingSpinner message="Preparando tu día..." estadoGeneral={registroDeHoy?.estado_general} />;
     }
 
     return (
         <div className="h-full w-full">
+            {/* --- Lógica de Renderizado Simplificada --- */}
             {registroDeHoy ? (
+                // Si hay registro, SÓLO muestra el Dashboard original
                 <RegistroDashboard
                     registro={registroDeHoy}
                     fraseDelDia={fraseDelDia}
                     miniMetas={miniMetas}
-                    onEdit={handleEdit}
                 />
             ) : (
+                // Si NO hay registro, muestra el Ritual
                 <RitualFlow onFinish={handleRitualFinish} />
             )}
         </div>

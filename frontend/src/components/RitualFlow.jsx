@@ -1,9 +1,8 @@
+// Archivo: frontend/src/components/RitualFlow.jsx
+
 import React, { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
-// api.js ya no es estrictamente necesario para el modo visual, pero lo dejamos por si se reactiva
 import api from '../services/api'; 
-
-// Importamos todos los steps que ahora viven en la carpeta /ritual
 import Step1_Breathing from './ritual/Step1_Breathing';
 import Step2_Mind from './ritual/Step2_Mind';
 import Step3_Emotion from './ritual/Step3_Emotion';
@@ -12,19 +11,10 @@ import Step5_Calculating from './ritual/Step5_Calculating';
 import Step6_Summary from './ritual/Step6_Summary';
 import Step7_Goal from './ritual/Step7_Goal';
 
-// --- Helper Function ---
-const getEstadoCategoria = (valor) => {
-    if (valor < 33) return 'bajo';
-    if (valor > 66) return 'alto';
-    return 'neutral';
-};
-
-// Renombramos el componente para claridad y ajustamos el prop a onFinish
 export default function RitualFlow({ onFinish }) { 
     const [step, setStep] = useState(1);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
-
     const [ritualData, setRitualData] = useState({
         mente: null,
         emocion: null,
@@ -41,56 +31,47 @@ export default function RitualFlow({ onFinish }) {
         setStep(prev => (nextStepOverride !== null ? nextStepOverride : prev + 1));
     };
     
-const handleProcessAndSave = async (metaData) => {
-    // --- INICIO DE LA VERIFICACIÓN DE SEGURIDAD ---
-    if (!ritualData.mente || !ritualData.emocion || !ritualData.cuerpo) {
-        console.error("Intento de procesar el ritual con datos incompletos.", ritualData);
-        setError("Faltan datos de los pasos anteriores. Por favor, reinicia el ritual.");
-        // Opcional: podrías forzar el reinicio con setStep(1)
-        return; // Detiene la ejecución de la función aquí mismo.
-    }
-    // --- FIN DE LA VERIFICACIÓN DE SEGURIDAD ---
+    const handleProcessAndSave = async (metaData) => {
+        if (!ritualData.mente || !ritualData.emocion || !ritualData.cuerpo) {
+            console.error("Intento de procesar el ritual con datos incompletos.", ritualData);
+            setError("Faltan datos de los pasos anteriores. Por favor, reinicia el ritual.");
+            return;
+        }
 
-    setIsProcessing(true);
-    setError('');
-    setStep(5);
+        setIsProcessing(true);
+        setError('');
+        setStep(5);
 
-    const registroParaEnviar = {
-        mente_estado: ritualData.mente.estado,
-        mente_descripcion: ritualData.mente.comentario, // <-- CORRECCIÓN
-        emocion_estado: ritualData.emocion.estado,
-        emocion_descripcion: ritualData.emocion.comentario, // <-- CORRECCIÓN
-        cuerpo_estado: ritualData.cuerpo.estado,
-        cuerpo_descripcion: ritualData.cuerpo.comentario, // <-- CORRECCIÓN
-        meta_descripcion: metaData.meta,
-    };
+        const registroParaEnviar = {
+            mente_estado: ritualData.mente.estado,
+            mente_descripcion: ritualData.mente.comentario,
+            emocion_estado: ritualData.emocion.estado,
+            emocion_descripcion: ritualData.emocion.comentario,
+            cuerpo_estado: ritualData.cuerpo.estado,
+            cuerpo_descripcion: ritualData.cuerpo.comentario,
+            meta_descripcion: metaData,
+        };
 
-    try {
-        const response = await api.saveRegistro(registroParaEnviar);
-        const registroCompleto = response.data;
+        try {
+            const response = await api.saveRegistro(registroParaEnviar);
+            const registroCompleto = response.data;
 
-        setRitualData(prev => ({
-            ...prev,
-            ...registroParaEnviar,
-            fraseDelDia: registroCompleto.frase_sunny,
-            estadoGeneral: registroCompleto.estado_general,
-        }));
+            setRitualData(prev => ({
+                ...prev,
+                ...registroParaEnviar,
+                fraseDelDia: registroCompleto.frase_sunny,
+                estadoGeneral: registroCompleto.estado_general,
+            }));
+            
+            setStep(6);
 
-        setStep(6);
-
-    } catch (err) {
-        console.error("Error al guardar el ritual:", err);
-        setError(err.response?.data?.error || "No se pudo guardar tu registro. Por favor, intenta de nuevo.");
-        setStep(7);
-    } finally {
-        setIsProcessing(false);
-    }
-};
-
-
-    // La función que se llama al final del todo, ahora conectada a onFinish
-    const handleFinishRitual = () => {
-        onFinish(ritualData);
+        } catch (err) {
+            console.error("Error al guardar el ritual:", err);
+            setError(err.response?.data?.error || "No se pudo guardar tu registro. Por favor, intenta de nuevo.");
+            setStep(7); 
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     const renderStep = () => {
@@ -101,18 +82,17 @@ const handleProcessAndSave = async (metaData) => {
             case 4: return <Step4_Body onNextStep={(data) => advanceRitual(data, 7)} />;
             case 7: return <Step7_Goal onFinish={handleProcessAndSave} />;
             case 5: return <Step5_Calculating />;
-            case 6: return <Step6_Summary ritualData={ritualData} onNextStep={handleFinishRitual} />;
+            case 6: return <Step6_Summary ritualData={ritualData} onNextStep={onFinish} />;
             default: return null;
         }
     };
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-             {error && <p className="absolute top-5 text-red-500 bg-white p-2 rounded-md">{error}</p>}
+            {error && <p className="absolute top-5 text-red-500 bg-white p-2 rounded-md">{error}</p>}
             <AnimatePresence mode="wait">
                 {renderStep()}
             </AnimatePresence>
         </div>
     );
 };
-

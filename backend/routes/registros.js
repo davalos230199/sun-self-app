@@ -1,217 +1,87 @@
+// Archivo: backend/routes/registros.js
+
 const express = require('express');
 const router = express.Router();
-const { createClient } = require('@supabase/supabase-js');
+const supabase = require('../config/supabase');
 const authMiddleware = require('../middleware/auth');
-const { OpenAI } = require('openai');
-const { PERSONALIDAD_SUNNY, construirPromptDeRegistro } = require('../config/prompts.js');
 
-
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
-const openai = new OpenAI({apiKey: process.env.OPENAI_API_KEY,});
-
-
+// Middleware para todas las rutas de este archivo
 router.use(authMiddleware);
 
-// --- RUTAS GET (ORDEN CORREGIDO) ---
-
-router.get('/chart-data', async (req, res) => {
-    try {
-        const { id: userId } = req.user;
-        const { filter } = req.query;
-        const { data, error } = await supabase.rpc('get_chart_data_for_user', {
-            p_user_id: userId,
-            p_filter_period: filter
-        });
-
-        if (error) throw error;
-        res.json(data);
-
-    } catch (err) {
-        console.error("Error en GET /chart-data:", err);
-        res.status(500).json({ error: 'Error al obtener los datos para el gráfico.' });
-    }
-});
-
+// --- RUTA GET PARA OBTENER EL REGISTRO DE HOY USANDO RPC ---
 router.get('/today', async (req, res) => {
     try {
-        const { id: userId } = req.user;
+        const userId = req.user.id;
+        // Obtenemos la zona horaria que el frontend nos envía en cada petición
         const clientTimezone = req.headers['x-client-timezone'] || 'UTC';
-        const { data, error } = await supabase.rpc('get_registro_de_hoy', {
+
+        console.log(`[BACKEND RPC] Llamando a la función 'get_registro_de_hoy' para el usuario: ${userId}`);
+
+        // Llamamos a la función de Supabase en lugar de a la tabla directamente
+        const { data: registro, error } = await supabase.rpc('get_registro_de_hoy', {
             p_user_id: userId,
             p_client_timezone: clientTimezone
         });
 
-        if (error) throw error;
-        const registroDeHoy = data && data.length > 0 ? data[0] : null;
-
-        res.json({ registro: registroDeHoy });
-
-    } catch (err) {
-        console.error("Error en GET /today:", err);
-        res.status(500).json({ error: 'Error al verificar el registro de hoy.' });
-    }
-});
-
-router.get('/fecha/:fecha', async (req, res) => {
-    try {
-        const { fecha } = req.params; // ej: "2025-09-10"
-        const { id: userId } = req.user;
-
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
-            return res.status(400).json({ error: 'Formato de fecha inválido. Usar YYYY-MM-DD.' });
-        }
-
-        const { data, error } = await supabase.rpc('get_registro_by_fecha', {
-            p_user_id: userId,
-            p_fecha: fecha
-        });
-
         if (error) {
+            console.error('[BACKEND RPC ERROR] Error al llamar a la función get_registro_de_hoy:', error);
             throw error;
         }
 
-        const registro = data && data.length > 0 ? data[0] : null;
-
-        if (!registro) {
-            return res.status(404).json({ message: 'No se encontró un registro para la fecha especificada.' });
-        }
-
-        res.status(200).json({ registro });
-
-    } catch (err) {
-        console.error("Error en GET /registros/fecha/:fecha :", err);
-        res.status(500).json({ error: 'Error interno al obtener el registro.' });
-    }
-});
-
-router.get('/', async (req, res) => {
-    try {
-        const { id: userId } = req.user;
-        const { data, error } = await supabase.rpc('get_registros_for_user', { p_user_id: userId });
-        if (error) throw error;
-        res.json(data || []);
-    } catch (err) {
-        console.error("Error en GET /api/registros:", err);
-        res.status(500).json({ error: 'Error al obtener los registros' });
-    }
-});
-
-router.get('/:id', async (req, res) => {
-    try {
-        const { id: recordId } = req.params;
-        const { id: userId } = req.user;
+        console.log(`[BACKEND RPC ÉXITO] La función devolvió:`, registro);
         
-        const { data, error } = await supabase.rpc('get_registro_by_id', {
-            p_user_id: userId,
-            p_registro_id: Number(recordId)
-        });
+        // Las funciones que devuelven SETOF registros, devuelven un array. Si no hay registro, el array está vacío.
+        // Tomamos el primer elemento si existe, o null si no.
+        const registroDeHoy = registro && registro.length > 0 ? registro[0] : null;
 
-        if (error) throw error;
-        if (!data) {
-            return res.status(404).json({ error: 'Registro no encontrado.' });
-        }
-        
-        res.status(200).json(data);
-    } catch (err) {
-        console.error("Error en GET /registros/:id :", err);
-        res.status(500).json({ error: 'Error interno al obtener el registro.' });
+        res.json({ registro: registroDeHoy });
+
+    } catch (error) {
+        res.status(500).json({ error: 'Error interno del servidor al obtener el registro.' });
     }
 });
 
-
-// --- RUTAS POST Y PUT ---
-
+// --- RUTA POST PARA CREAR UN NUEVO REGISTRO USANDO RPC ---
 router.post('/', async (req, res) => {
     try {
-        const { id: userId } = req.user;
-        const { mente_estado, mente_descripcion, emocion_estado, emocion_descripcion, cuerpo_estado, cuerpo_descripcion, meta_descripcion } = req.body;
+        const userId = req.user.id;
+        const {
+            mente_estado, mente_descripcion,
+            emocion_estado, emocion_descripcion,
+            cuerpo_estado, cuerpo_descripcion,
+            meta_descripcion
+        } = req.body;
+        
+        console.log(`[BACKEND RPC] Llamando a la función 'create_registro' para el usuario: ${userId}`);
 
-        const menteNum = parseInt(mente_estado, 10);
-        const emocionNum = parseInt(emocion_estado, 10);
-        const cuerpoNum = parseInt(cuerpo_estado, 10);
+        // Llamamos a la función de Supabase para crear el registro.
+        // Toda la lógica de calcular estado_general, frase_sunny, etc.,
+        // ahora DEBERÍA estar dentro de la función en Supabase, que es la arquitectura correcta.
+        const { data: nuevoRegistro, error } = await supabase.rpc('create_registro', {
+            p_user_id: userId,
+            p_mente_estat: mente_estado,
+            p_mente_coment: mente_descripcion,
+            p_emocion_estat: emocion_estado,
+            p_emocion_coment: emocion_descripcion,
+            p_cuerpo_estat: cuerpo_estado,
+            p_cuerpo_coment: cuerpo_descripcion,
+            p_estado_general: null, // Dejamos que la función de la BD lo calcule
+            p_meta_del_dia: meta_descripcion,
+            p_compartir_anonimo: false // Valor por defecto
+        });
 
-        if (isNaN(menteNum) || isNaN(emocionNum) || isNaN(cuerpoNum)) {
-            return res.status(400).json({ error: 'Los valores de estado deben ser números válidos.' });
+        if (error) {
+            console.error('[BACKEND RPC ERROR] Error al llamar a la función create_registro:', error);
+            throw error;
         }
 
-        const avg = (menteNum + emocionNum + cuerpoNum) / 3;
-        let estado_general = 'nublado';
-        if (avg > 66) estado_general = 'soleado';
-        if (avg < 33) estado_general = 'lluvioso';
+        console.log('[BACKEND RPC ÉXITO] Registro creado:', nuevoRegistro);
+        res.status(201).json(nuevoRegistro);
 
-        const { data: nuevoRegistro, error: registroError } = await supabase
-            .from('registros')
-            .insert({
-                user_id: userId,
-                mente_estat: menteNum,
-                mente_coment: mente_descripcion,
-                emocion_estat: emocionNum,
-                emocion_coment: emocion_descripcion,
-                cuerpo_estat: cuerpoNum,
-                cuerpo_coment: cuerpo_descripcion,
-                meta_del_dia: meta_descripcion,
-                compartir_anonimo: true,
-                estado_general: estado_general
-            })
-            .select()
-            .single();
-
-        if (registroError) throw registroError;
-
-        const promptDeTarea = construirPromptDeRegistro(nuevoRegistro);
-
-        // --- INICIO DE LA CORRECCIÓN ---
-        // Aquí restauramos los parámetros que OpenAI necesita
-        const completion = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
-            messages: [
-                { role: "system", content: PERSONALIDAD_SUNNY },
-                { role: "user", content: promptDeTarea }
-            ],
-            max_tokens: 60,
-        });
-        // --- FIN DE LA CORRECCIÓN ---
-
-        const fraseGenerada = completion.choices[0].message.content.trim();
-
-        const { data: registroActualizado, error: updateError } = await supabase
-            .from('registros')
-            .update({ frase_sunny: fraseGenerada })
-            .eq('id', nuevoRegistro.id)
-            .select()
-            .single();
-        
-        if (updateError) throw updateError;
-        
-        res.status(201).json(registroActualizado);
-
-    } catch (err) {
-        console.error("Error al crear el registro y la frase de Sunny:", err);
-        res.status(500).json({ error: 'Error en el servidor al procesar el registro.' });
+    } catch (error) {
+        res.status(500).json({ error: 'Error al guardar el registro.' });
     }
 });
 
-router.put('/:id/hoja_atras', async (req, res) => {
-    try {
-        const { id: recordId } = req.params;
-        const { id: userId } = req.user;
-        const { texto } = req.body;        
-        const { data, error } = await supabase.rpc('update_hoja_atras', {
-            p_user_id: userId,
-            p_registro_id: Number(recordId),
-            p_texto: texto
-        });
-
-        if (error) throw error;
-        if (!data) return res.status(404).json({ error: 'Registro no encontrado o sin permiso.' });
-        
-        res.status(200).json({ message: 'Hoja de atrás guardada con éxito.', registro: data });
-    } catch (err) {
-        console.error("Error en PUT /:id/hoja_atras:", err);
-        res.status(500).json({ error: 'Error interno al guardar la entrada.' });
-    }
-});
-
+// Exportamos el router
 module.exports = router;
