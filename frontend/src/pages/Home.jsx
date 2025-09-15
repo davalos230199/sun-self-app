@@ -5,8 +5,6 @@ import RegistroDashboard from '../components/RegistroDashboard';
 import RitualFlow from '../components/RitualFlow';
 import WelcomeModal from '../components/WelcomeModal';
 import LoadingSpinner from '../components/LoadingSpinner';
-// Limpieza: Se elimina la importación de V2
-// import RegistroDashboardV2 from '../components/RegistroDashboardV2';
 
 export default function Home() {
     const {
@@ -19,10 +17,10 @@ export default function Home() {
 
     const [isVisualLoading, setIsVisualLoading] = useState(true);
     const [showWelcomeModal, setShowWelcomeModal] = useState(false);
-    // Limpieza: Se elimina el estado de control de V2
-    // const [verDashboardV2, setVerDashboardV2] = useState(false);
-    
     const [isFinishingRitual, setIsFinishingRitual] = useState(false);
+    
+    // --- 1. AÑADIDO: El "interruptor" para mostrar el ritual a demanda ---
+    const [mostrandoRitual, setMostrandoRitual] = useState(false);
 
     useEffect(() => {
         const timer = setTimeout(() => setIsVisualLoading(false), 500);
@@ -35,12 +33,19 @@ export default function Home() {
             setShowWelcomeModal(true);
         }
     }, []);
+    
+    // --- 2. AÑADIDO: La función que activará el interruptor ---
+    // Esta función se pasará al botón del lápiz en el Dashboard.
+    const iniciarRitual = () => {
+        setMostrandoRitual(true);
+    };
 
     const handleRitualFinish = async () => {
         setIsFinishingRitual(true);
         if (refrescarDia) {
             await refrescarDia();
         }
+        setMostrandoRitual(false); // Se asegura de apagar el interruptor al terminar.
         setIsFinishingRitual(false);
     };
 
@@ -59,16 +64,21 @@ export default function Home() {
 
     return (
         <div className="h-full w-full">
-            {/* --- Lógica de Renderizado Simplificada --- */}
-            {registroDeHoy ? (
-                // Si hay registro, SÓLO muestra el Dashboard original
+            {/* --- 3. MODIFICADO: La lógica de renderizado ahora considera el interruptor --- */}
+            {mostrandoRitual ? (
+                // Si el interruptor está encendido, FORZAMOS la vista del ritual.
+                <RitualFlow onFinish={handleRitualFinish} />
+            ) : registroDeHoy ? (
+                // Si el interruptor está apagado Y hay registro, mostramos el Dashboard...
+                // ...y le conectamos la función para encender el interruptor.
                 <RegistroDashboard
                     registro={registroDeHoy}
                     fraseDelDia={fraseDelDia}
                     miniMetas={miniMetas}
+                    onEdit={iniciarRitual} // ¡Conexión establecida!
                 />
             ) : (
-                // Si NO hay registro, muestra el Ritual
+                // Si el interruptor está apagado Y NO hay registro, es el inicio del día.
                 <RitualFlow onFinish={handleRitualFinish} />
             )}
         </div>
