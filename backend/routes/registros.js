@@ -46,7 +46,19 @@ router.get('/today', async (req, res) => {
 router.post('/', async (req, res) => {
     try {
         const { id: profileId } = req.user;
-        const { mente_estado, mente_comentario, emocion_estado, emocion_comentario, cuerpo_estado, cuerpo_comentario } = req.body;
+        const { mente_estado, mente_comentario, emocion_estado, emocion_comentario, cuerpo_estado, cuerpo_comentario, meta_descripcion } = req.body;
+
+        let metaPrincipalId = null;
+        if (meta_descripcion && meta_descripcion.trim() !== '') {
+            const { data: metaCreada, error: metaError } = await req.supabase
+                .from('metas')
+                .insert({ profile_id: profileId, descripcion: meta_descripcion })
+                .select('id')
+                .single();
+            
+            if (metaError) throw metaError;
+            metaPrincipalId = metaCreada.id;
+        }
 
         const menteNum = parseInt(mente_estado, 10);
         const emocionNum = parseInt(emocion_estado, 10);
@@ -67,7 +79,8 @@ router.post('/', async (req, res) => {
                 emocion_comentario: emocion_comentario,
                 cuerpo_estado: cuerpoNum,
                 cuerpo_comentario: cuerpo_comentario,
-                estado_general: estado_general
+                estado_general: estado_general,
+                meta_principal_id: metaPrincipalId
             })
             .select()
             .single();

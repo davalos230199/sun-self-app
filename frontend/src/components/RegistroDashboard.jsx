@@ -7,7 +7,7 @@ import { useDia } from '../contexts/DiaContext'; // 1. Ahora el Dashboard obtien
 import sunLoopAnimation from '../assets/animations/sun-loop.json';
 import cloudLoopAnimation from '../assets/animations/cloud-loop.json';
 import rainLoopAnimation from '../assets/animations/rain-loop.json';
-import { Edit2, BookOpen } from 'lucide-react'; // Iconos para los botones
+import { Edit2, BookOpen, Star } from 'lucide-react'; // Iconos para los botones
 
 // --- Sub-componente: ClimaAnimado (Sin cambios, es perfecto) ---
 const ClimaAnimado = ({ estadoGeneral }) => {
@@ -24,27 +24,27 @@ const ClimaAnimado = ({ estadoGeneral }) => {
     );
 };
 
-// --- Sub-componente: MetasWidget (Simplificado y corregido) ---
-const MetasWidget = ({ metas }) => {
-    const metasCompletadas = metas.filter(meta => meta.completada).length;
-    const totalMetas = metas.length;
-
+// --- WIDGET DE LA META PRINCIPAL ---
+// Este nuevo widget se encargará de mostrar solo la meta principal.
+const MetaPrincipalWidget = ({ meta }) => {
+    if (!meta) {
+        return (
+            <div className="card-animada flex flex-col bg-amber-50 border border-amber-200 rounded-2xl p-5 text-center justify-center">
+                <h3 className="font-['Patrick_Hand'] text-xl text-amber-800">
+                    No definiste un norte para hoy.
+                </h3>
+                <p className="text-zinc-500 text-sm mt-1">Puedes añadir metas secundarias abajo.</p>
+            </div>
+        );
+    }
     return (
         <Link to="/metas" className="no-underline text-inherit block">
-            <div className="card-animada relative flex flex-col bg-green-50 border border-green-200 rounded-2xl p-5 text-center min-h-[160px] justify-center">
-                <div className="absolute top-4 left-4 text-2xl">🎯</div>
-                <h3 className="font-['Patrick_Hand'] text-2xl text-green-800 mb-2">
-                    Tus Metas de Hoy
-                </h3>
-                <p className="text-green-700">
-                    {totalMetas > 0 
-                        ? `${metasCompletadas} de ${totalMetas} completadas`
-                        : "Aún no has definido metas para hoy."
-                    }
-                </p>
-                <footer className="mt-auto pt-3 border-t border-dashed border-green-200 text-xs text-zinc-500 font-semibold">
-                    Toca para ver y editar tus metas...
-                </footer>
+            <div className="card-animada flex flex-col bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 text-center shadow-lg">
+                <div className="flex justify-center items-center gap-2">
+                    <Star className="text-amber-500" size={20} />
+                    <h2 className="font-['Patrick_Hand'] text-lg text-amber-800">Tu Norte para Hoy</h2>
+                </div>
+                <p className="text-xl text-zinc-800 font-semibold break-words mt-1">{meta.descripcion}</p>
             </div>
         </Link>
     );
@@ -103,10 +103,14 @@ export default function RegistroDashboard({ onEdit }) {
         return null; 
     }
 
+    const metaPrincipal = registroDeHoy.meta_principal_id
+        ? metas.find(meta => meta.id === registroDeHoy.meta_principal_id)
+        : null;
+
     return (
         <div className="space-y-6 animate-fade-in">
-            <MetasWidget 
-                metas={metas}
+            <MetaPrincipalWidget 
+                meta={metaPrincipal}
             />
             <EstadoWidget 
                 registro={registroDeHoy}

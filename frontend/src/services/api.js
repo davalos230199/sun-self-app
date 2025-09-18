@@ -23,34 +23,50 @@ apiClient.interceptors.request.use(
 );
 
 // --- FUNCIONES CORREGIDAS (sin el prefijo /api) ---
-const getRegistros = () => { return apiClient.get('/registros'); };
-const getRegistroDeHoy = () => { return apiClient.get('/registros/today'); };
+
+// -- REGISTROS --
+const getRegistroDeHoy = () => apiClient.get('/registros/today');
+const saveRegistro = (payload) => apiClient.post('/registros', payload);
+const getRegistroById = (id) => apiClient.get(`/registros/${id}`); // Aún útil para el Diario
+
+// -- DIARIO (antes Hoja de Atrás) --
+const getDiarioByRegistroId = (registroId) => apiClient.get(`/diario/${registroId}`);
+const saveEntradaDiario = (payload) => apiClient.post('/diario', payload);
+
+// -- METAS --
 const getMetasHoy = () => apiClient.get('/metas/today');
-const saveRegistro = (payload) => { return apiClient.post('/registros', payload); };
-const getRegistroById = (id) => { return apiClient.get(`/registros/${id}`); };
-const saveHojaAtras = (id, texto) => { return apiClient.put(`/registros/${id}/hoja_atras`, { texto }); };
-const generarFraseInteligente = (payload) => { return apiClient.post('/sunny/generar-frase', payload); };
+const createMeta = (payload) => apiClient.post('/metas', payload);
+const updateMeta = (id, payload) => apiClient.patch(`/metas/${id}`, payload);
+const deleteMeta = (id) => apiClient.delete(`/metas/${id}`);
+
+// -- SUNNY (IA) --
+const generarFraseInteligente = (payload) => apiClient.post('/sunny/generar-frase', payload);
 const postToSunny = (payload) => { return apiClient.post('/sunny', payload); };
+
 const getMuroEstados = () => { return apiClient.get('/muro/estados'); };
-const getInspiracion = (orbe) => { return apiClient.get(`/inspiracion?orbe=${orbe}`); };
+
 const getChartData = (filter) => {return apiClient.get(`/registros/chart-data?filter=${filter}`);};
 const getRegistroPorFecha = (fecha) => apiClient.get(`/registros/fecha/${fecha}`);
 
 
 // --- EXPORTACIÓN UNIFICADA (sin los endpoints de auth manual que ya no existen) ---
 const api = { 
-  getRegistros, 
   getRegistroDeHoy, 
   saveRegistro, 
   getRegistroById, 
-  saveHojaAtras,
+  getDiarioByRegistroId,
+  saveEntradaDiario,
+  
   generarFraseInteligente,
   postToSunny,
   getMuroEstados,
-  getInspiracion,
   getChartData,
   getRegistroPorFecha,
+  
   getMetasHoy,
+  createMeta,
+  updateMeta,
+  deleteMeta,
 };
 
 export default api;

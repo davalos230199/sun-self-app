@@ -11,12 +11,12 @@ import Auth from './pages/Auth';
 import Filosofia from './pages/Filosofia';
 import Home from './pages/Home';
 import Journal from './pages/Journal';
-import MiniMetasPage from './pages/MiniMetasPage'; 
 import MuroDeSoles from './pages/MuroDeSoles';
 import ResumenDia from './pages/ResumenDia';
 import Settings from './pages/Settings';
 import Sunny from './pages/Sunny';
 import Tracking from './pages/Tracking';
+import MetasPage from './pages/MetasPage';
 
 
 const router = createBrowserRouter([
@@ -46,7 +46,7 @@ const router = createBrowserRouter([
             { path: 'settings', element: <Settings /> },
             { path: 'journal/:id', element: <Journal /> },
             { path: 'muro', element: <MuroDeSoles /> },
-            { path: 'metas', element: <MiniMetasPage /> },
+            { path: 'metas', element: <MetasPage /> },
             { path: 'filosofia', element: <Filosofia /> },
             { path: 'resumen/:fecha', element: <ResumenDia /> },
         ],

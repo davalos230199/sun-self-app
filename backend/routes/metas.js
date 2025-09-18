@@ -32,7 +32,7 @@ router.get('/today', async (req, res) => {
 router.post('/', async (req, res) => {
     try {
         const { id: profileId } = req.user;
-        const { descripcion } = req.body;
+        const { descripcion, hora_objetivo } = req.body;
 
         if (!descripcion) {
             return res.status(400).json({ error: 'La descripción es requerida.' });
@@ -40,7 +40,7 @@ router.post('/', async (req, res) => {
 
         const { data, error } = await req.supabase
             .from('metas')
-            .insert({ profile_id: profileId, descripcion: descripcion })
+            .insert({ profile_id: profileId, descripcion: descripcion, hora_objetivo })
             .select()
             .single();
 
@@ -52,6 +52,47 @@ router.post('/', async (req, res) => {
     }
 });
 
-// ... (Aquí irían las rutas PATCH para actualizar y DELETE para borrar metas en el futuro)
+// PATCH /:id - Actualiza una meta (ej: marcar como completada)
+router.patch('/:id', async (req, res) => {
+    try {
+        const { id: metaId } = req.params;
+        const { id: profileId } = req.user;
+        const { completada } = req.body; // El "payload" solo trae el campo a cambiar
+
+        const { data, error } = await req.supabase
+            .from('metas')
+            .update({ completada: completada })
+            .eq('id', metaId)
+            .eq('profile_id', profileId) // Seguridad: solo puede actualizar sus propias metas
+            .select()
+            .single();
+
+        if (error) throw error;
+        res.status(200).json(data);
+    } catch (err) {
+        console.error("Error en PATCH /api/metas/:id:", err);
+        res.status(500).json({ error: 'Error al actualizar la meta.' });
+    }
+});
+
+// DELETE /:id - Borra una meta
+router.delete('/:id', async (req, res) => {
+    try {
+        const { id: metaId } = req.params;
+        const { id: profileId } = req.user;
+
+        const { error } = await req.supabase
+            .from('metas')
+            .delete()
+            .eq('id', metaId)
+            .eq('profile_id', profileId); // Seguridad: solo puede borrar sus propias metas
+
+        if (error) throw error;
+        res.status(204).send(); // 204 No Content: éxito, pero no hay nada que devolver
+    } catch (err) {
+        console.error("Error en DELETE /api/metas/:id:", err);
+        res.status(500).json({ error: 'Error al eliminar la meta.' });
+    }
+});
 
 module.exports = router;
