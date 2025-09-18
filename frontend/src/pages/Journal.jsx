@@ -1,105 +1,70 @@
-// frontend/src/pages/Journal.jsx
+// frontend/src/pages/Journal.jsx (Versión Reconstruida)
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import LoadingSpinner from '../components/LoadingSpinner'; // 1. Importamos el spinner
-import { useDia } from '../contexts/DiaContext'; 
-
-// --- Iconos para los botones y carga (Componentes internos) ---
-const SaveIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
-);
-
-const CancelIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-);
+import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function Journal() {
-    const { id } = useParams();
+    const { id } = useParams(); // Obtiene el ID del registro desde la URL
     const navigate = useNavigate();
-    const { registroDeHoy } = useDia(); 
-    const [texto, setTexto] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [message, setMessage] = useState('');
 
+    const [texto, setTexto] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [error, setError] = useState('');
+
+    // useEffect para cargar los datos del registro cuando el componente se monta
     useEffect(() => {
-        const fetchJournalEntry = async () => {
+        const fetchRegistro = async () => {
+            setIsLoading(true);
             try {
-                const response = await api.getRegistroById(id);
-                setTexto(response.data.hoja_atras || '');
-            } catch (error) {
-                console.error("Error al cargar la entrada del diario:", error);
-                navigate('/home');
+                const { data } = await api.getRegistroById(id);
+                setTexto(data?.hoja_atras || ''); // Carga el texto existente o un string vacío
+            } catch (err) {
+                setError('No se pudo cargar tu registro.');
             } finally {
-                setLoading(false);
+                setIsLoading(false);
             }
         };
-        fetchJournalEntry();
-    }, [id, navigate]);
+        fetchRegistro();
+    }, [id]);
 
     const handleSave = async () => {
-        setSaving(true);
-        setMessage('');
+        setIsSaving(true);
+        setError('');
         try {
-            // El campo en la DB sigue siendo 'hoja_atras', solo cambia la UI
             await api.saveHojaAtras(id, texto);
-            navigate('/home');
-        } catch (error) {
-            setMessage('Error al guardar.');
-            console.error("Error al guardar:", error);
-            setSaving(false);
+            navigate('/home'); // Vuelve al home después de guardar
+        } catch (err) {
+            setError('No se pudo guardar tu reflexión.');
+            setIsSaving(false);
         }
     };
 
+    if (isLoading) {
+        return <LoadingSpinner message="Abriendo tu diario..." />;
+    }
+
     return (
-            <main className="flex flex-col flex-grow w-full max-w-4xl mx-auto border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-white h-full">
-                
-                {loading ? (
-                    <LoadingSpinner 
-                    message="Hoy recordé cuando..." 
-                    // Si estamos viendo el diario de hoy, usará el estado de hoy.
-                    // Si es un día antiguo, el registroDeHoy no coincidirá y usará el default (sol).
-                    estadoGeneral={registroDeHoy?.id == id ? registroDeHoy.estado_general : null}
-                />
-                ) : (
-                    <>
-                        <div className="flex-grow flex">
-                            <textarea
-                                placeholder="Escribe libremente aquí... pensamientos, ideas, listas. Este es tu espacio."
-                                value={texto}
-                                onChange={(e) => setTexto(e.target.value)}
-                                className="font-['Patrick_Hand'] break-words w-full h-full p-5 sm:p-6 text-base sm:text-lg leading-relaxed text-zinc-800 bg-transparent border-0 resize-none focus:outline-none focus:ring-0 placeholder:text-zinc-400"
-                                disabled={saving}
-                            />
-                        </div>
-                        
-                        <div className="flex-shrink-0 flex items-center justify-between gap-4 p-3 sm:p-4 border-t border-amber-300 bg-zinc-50/70">
-                            <div className="flex-grow">
-                                {message && <span className="text-sm text-red-600 italic">{message}</span>}
-                                {saving && <span className="text-sm text-zinc-600 italic animate-pulse">Guardando cambios...</span>}
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <button 
-                                    onClick={() => navigate('/home')} 
-                                    className="flex items-center gap-2 py-2 px-4 rounded-lg font-semibold bg-white text-zinc-700 border border-amber-300 hover:bg-zinc-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2"
-                                >
-                                    <CancelIcon />
-                                    <span className="hidden sm:inline">Cancelar</span>
-                                </button>
-                                
-                                <button 
-                                    onClick={handleSave} 
-                                    disabled={saving} 
-                                    className="flex items-center gap-2 py-2 px-4 rounded-lg font-semibold bg-amber-500 text-white hover:bg-amber-600 transition-colors duration-200 disabled:bg-zinc-300 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
-                                >
-                                    <SaveIcon />
-                                    <span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar'}</span>
-                                </button>
-                            </div>
-                        </div>
-                    </>
-                )}
-            </main>
+        <div className="flex flex-col h-full p-4 animate-fade-in">
+            <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800 mb-4">La Hoja de Atrás</h2>
+            <p className="text-sm text-zinc-500 mb-4">
+                Este es tu espacio privado para la reflexión. Escribe sin filtros. ¿Qué raíz encontraste en tu estado de hoy?
+            </p>
+            <textarea
+                className="flex-grow w-full p-3 border border-zinc-200 rounded-lg resize-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400"
+                value={texto}
+                onChange={(e) => setTexto(e.target.value)}
+                placeholder="Tus pensamientos aquí..."
+            />
+            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+            <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="mt-4 w-full p-3 rounded-lg bg-gradient-to-r from-orange-500 to-amber-400 text-white font-semibold disabled:bg-zinc-300 transition-all hover:enabled:scale-[1.02]"
+            >
+                {isSaving ? 'Guardando...' : 'Guardar Reflexión'}
+            </button>
+        </div>
     );
 }

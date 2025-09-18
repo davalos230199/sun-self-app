@@ -1,11 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createClient } = require('@supabase/supabase-js');
 const authMiddleware = require('../middleware/auth');
-
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 router.use(authMiddleware);
 
@@ -18,8 +13,7 @@ router.get('/', async (req, res) => {
     }
 
     try {
-        // CAMBIO CLAVE: Nos aseguramos de que estamos llamando a la función correcta y más reciente.
-        const { data, error } = await supabase.rpc('get_inspiracion_aleatoria', { 
+        const { data, error } = await req.supabase.rpc('get_inspiracion_aleatoria', {
             p_orbe: orbe 
         });
 

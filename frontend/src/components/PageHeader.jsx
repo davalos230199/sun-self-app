@@ -50,7 +50,7 @@ export default function PageHeader({ title, registroDeHoy, showBackButton }) {
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-4 flex-1">
                     <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800">
-                        Hola, {user?.nombre || 'viajero'}
+                        Hola, {user?.username || 'Viajero'}
                     </h2>
                 </div>
 

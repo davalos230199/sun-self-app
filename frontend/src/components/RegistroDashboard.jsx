@@ -1,111 +1,87 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import Lottie from 'lottie-react'; // Usamos Lottie directamente para más control
+import Lottie from 'lottie-react';
+import { useDia } from '../contexts/DiaContext'; // 1. Ahora el Dashboard obtiene sus propios datos.
 
-// --- Importar las animaciones ---
+// --- Importar animaciones ---
 import sunLoopAnimation from '../assets/animations/sun-loop.json';
 import cloudLoopAnimation from '../assets/animations/cloud-loop.json';
 import rainLoopAnimation from '../assets/animations/rain-loop.json';
+import { Edit2, BookOpen } from 'lucide-react'; // Iconos para los botones
 
-// --- Helper Functions ---
-const formatTiempo = (ms) => {
-    if (ms <= 0) return "";
-    const totalSegundos = Math.floor(ms / 1000);
-    const horas = Math.floor(totalSegundos / 3600).toString().padStart(2, '0');
-    const minutos = Math.floor((totalSegundos % 3600) / 60).toString().padStart(2, '0');
-    const segundos = (totalSegundos % 60).toString().padStart(2, '0');
-    return `${horas}:${minutos}:${segundos}`;
-};
-
-// --- 2. Modificar la función para que devuelva el estado como string ---
-const determinarClima = (reg) => {
-    if (!reg) return 'desconocido';
-    const valores = [reg.mente_estat, reg.emocion_estat, reg.cuerpo_estat];
-    const puntaje = valores.reduce((acc, val) => {
-        if (val === 'alto') return acc + 1;
-        if (val === 'bajo') return acc - 1;
-        return acc;
-    }, 0);
-    if (puntaje >= 2) return 'soleado';
-    if (puntaje <= -2) return 'lluvioso';
-    return 'nublado';
-};
-
-// --- 3. Nuevo sub-componente para la animación del clima ---
+// --- Sub-componente: ClimaAnimado (Sin cambios, es perfecto) ---
 const ClimaAnimado = ({ estadoGeneral }) => {
     const animationMap = {
         soleado: sunLoopAnimation,
         nublado: cloudLoopAnimation,
         lluvioso: rainLoopAnimation,
     };
-    // Leemos directamente de estadoGeneral. Si no existe, default a nublado.
     const animationData = animationMap[estadoGeneral] || cloudLoopAnimation;
-
     return (
-        <div className="w-24 h-24 mx-auto my-2">
+        <div className="w-24 h-24 mx-auto -my-2">
             <Lottie animationData={animationData} loop={true} />
         </div>
     );
 };
 
+// --- Sub-componente: MetasWidget (Simplificado y corregido) ---
+const MetasWidget = ({ metas }) => {
+    const metasCompletadas = metas.filter(meta => meta.completada).length;
+    const totalMetas = metas.length;
 
-// --- Sub-componentes Estilizados ---
-
-const MetasWidget = ({ registro, proximaMeta, isLoading }) => {
     return (
         <Link to="/metas" className="no-underline text-inherit block">
-            <div className="card-animada relative flex flex-col bg-green-100 border border-green-300 rounded-2xl p-5 text-center min-h-[180px]">
+            <div className="card-animada relative flex flex-col bg-green-50 border border-green-200 rounded-2xl p-5 text-center min-h-[160px] justify-center">
                 <div className="absolute top-4 left-4 text-2xl">🎯</div>
-                <h3 className="font-['Patrick_Hand'] text-2xl text-green-800 mt-8 mb-4 break-words">
-                    {registro.meta_del_dia || 'Define tu meta principal del día.'}
+                <h3 className="font-['Patrick_Hand'] text-2xl text-green-800 mb-2">
+                    Tus Metas de Hoy
                 </h3>
-                <div className="mt-auto pt-3 border-t border-dashed border-green-300 text-sm text-green-700 italic">
-                    {isLoading ? <p>Cargando metas...</p> : (
-                        !proximaMeta ? (
-                            <p>¡Todas las metas completadas! ✨</p>
-                        ) : (
-                            <span>Próxima: {proximaMeta.descripcion} a las {proximaMeta.hora_objetivo.substring(0, 5)}</span>
-                        )
-                    )}
-                </div>
+                <p className="text-green-700">
+                    {totalMetas > 0 
+                        ? `${metasCompletadas} de ${totalMetas} completadas`
+                        : "Aún no has definido metas para hoy."
+                    }
+                </p>
+                <footer className="mt-auto pt-3 border-t border-dashed border-green-200 text-xs text-zinc-500 font-semibold">
+                    Toca para ver y editar tus metas...
+                </footer>
             </div>
         </Link>
     );
 };
 
-const EstadoWidget = ({ registro, fraseDelDia, tiempoRestante, onEdit }) => {
+// --- Sub-componente: EstadoWidget (Simplificado y corregido) ---
+const EstadoWidget = ({ registro, onEdit }) => {
     const navigate = useNavigate();
+    // La frase de Sunny ahora viene directamente del objeto registro.
+    const fraseDelDia = registro.frase_sunny || "Tu reflexión te espera...";
+
     return (
         <Link to="/tracking" className="no-underline text-inherit block">
-            <div className="card-animada relative flex flex-col border border-yellow-300 bg-yellow-100 rounded-2xl p-5 text-center min-h-[180px]">
-                {/* Header del post-it con timer y botones */}
-                <div className="absolute top-2 left-2 right-2 flex justify-between items-center">
-                    <div className="text-xs font-semibold text-zinc-500 bg-black/5 px-2 py-1 rounded-full min-w-[70px] text-center">
-                        {tiempoRestante > 0 && `⏳ ${formatTiempo(tiempoRestante)}`}
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <button
-                            className="text-xl text-zinc-500 border border-yellow-100 hover:text-zinc-800 transition-colors p-1 disabled:opacity-30 disabled:cursor-not-allowed"
-                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(); }}
-                            title="Registrar nuevo estado"
-                            disabled={tiempoRestante > 0}
-                        >✏️</button>
-                        <button
-                            className="text-xl text-zinc-500 border border-yellow-100 hover:text-zinc-800 transition-colors p-1"
-                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/journal/${registro.id}`); }}
-                            title="Escribir en La Hoja de Atrás"
-                        >📝</button>
-                    </div>
+            <div className="card-animada relative flex flex-col border border-amber-200 bg-amber-50 rounded-2xl p-5 text-center min-h-[220px]">
+                {/* Botones de acción */}
+                <div className="absolute top-3 right-3 flex items-center gap-2">
+                    <button
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/journal/${registro.id}`); }}
+                        title="Escribir en La Hoja de Atrás"
+                        className="p-2 rounded-full hover:bg-amber-100 text-zinc-500 hover:text-zinc-800 transition-colors"
+                    >
+                        <BookOpen size={20} />
+                    </button>
+                    <button
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(); }}
+                        title="Editar registro (nuevo ritual)"
+                        className="p-2 rounded-full hover:bg-amber-100 text-zinc-500 hover:text-zinc-800 transition-colors"
+                    >
+                        <Edit2 size={20} />
+                    </button>
                 </div>
 
                 {/* Contenido principal */}
-                <h3 className="font-['Patrick_Hand'] text-xl text-yellow-800 mt-8">Tu estado de hoy</h3>
-                
-                {/* --- 4. Reemplazar el emoji por la animación --- */}
+                <h3 className="font-['Patrick_Hand'] text-xl text-amber-800">Tu estado de hoy</h3>
                 <ClimaAnimado estadoGeneral={registro.estado_general} />
-
-                <p className="flex-grow text-zinc-700 italic text-sm -mt-2">"{fraseDelDia}"</p>
-                <footer className="mt-auto pt-3 border-t border-dashed border-yellow-300 text-xs text-zinc-500 font-semibold">
+                <p className="flex-grow text-zinc-700 italic text-sm">"{fraseDelDia}"</p>
+                <footer className="mt-auto pt-3 border-t border-dashed border-amber-200 text-xs text-zinc-500 font-semibold">
                     Toca para ver tu historial completo...
                 </footer>
             </div>
@@ -113,57 +89,28 @@ const EstadoWidget = ({ registro, fraseDelDia, tiempoRestante, onEdit }) => {
     );
 };
 
-// --- Componente Principal ---
 
-export default function RegistroDashboard({ registro, miniMetas, fraseDelDia, isLoadingAdicional, onEdit }) {
-    const [tiempoRestante, setTiempoRestante] = useState(0);
-    const [proximaMeta, setProximaMeta] = useState(null);
+// --- Componente Principal (Ahora más limpio) ---
+export default function RegistroDashboard({ onEdit }) {
+    // 2. Obtiene los datos directamente del contexto. Ya no necesita recibir props complejos.
+    const { registroDeHoy, metas } = useDia();
 
-    useEffect(() => {
-        const actualizarProximaMeta = () => {
-            const ahora = new Date();
-            const horaActual = ahora.getHours().toString().padStart(2, '0') + ':' + ahora.getMinutes().toString().padStart(2, '0');
-            const metasPendientes = miniMetas
-                .filter(meta => !meta.completada && meta.hora_objetivo)
-                .sort((a, b) => a.hora_objetivo.localeCompare(b.hora_objetivo));
-            const siguiente = metasPendientes.find(meta => meta.hora_objetivo > horaActual) || metasPendientes[0] || null;
-            setProximaMeta(siguiente);
-        };
-
-        actualizarProximaMeta();
-        const intervalo = setInterval(actualizarProximaMeta, 60000);
-        return () => clearInterval(intervalo);
-    }, [miniMetas]);
-
-    useEffect(() => {
-        const createdAt = registro?.created_at;
-        if (!createdAt) return;
-        const PERIODO_BLOQUEO = 4 * 60 * 60 * 1000;
-        const registroTimestamp = new Date(createdAt).getTime();
-        const ahora = Date.now();
-        const tiempoPasado = ahora - registroTimestamp;
-        const restanteInicial = PERIODO_BLOQUEO - tiempoPasado;
-        setTiempoRestante(restanteInicial > 0 ? restanteInicial : 0);
-
-        const intervalo = setInterval(() => {
-            setTiempoRestante(prevTiempo => (prevTiempo > 1000 ? prevTiempo - 1000 : 0));
-        }, 1000);
-        return () => clearInterval(intervalo);
-    }, [registro?.created_at]);
-
+    // El timer de 4 horas se queda, pero ahora es más simple
+    // const [tiempoRestante, setTiempoRestante] = useState(0); // Este timer puede ser una mejora futura, lo desactivamos por ahora para simplificar
+    
+    // Si por alguna razón no hay registro, no renderizamos nada (Home se encargará de mostrar el ritual).
+    if (!registroDeHoy) {
+        return null; 
+    }
 
     return (
-        <div className="space-y-6">
-            <EstadoWidget 
-                registro={registro}
-                fraseDelDia={fraseDelDia}
-                tiempoRestante={tiempoRestante}
-                onEdit={onEdit}
-            />
+        <div className="space-y-6 animate-fade-in">
             <MetasWidget 
-                registro={registro}
-                proximaMeta={proximaMeta}
-                isLoading={isLoadingAdicional}
+                metas={metas}
+            />
+            <EstadoWidget 
+                registro={registroDeHoy}
+                onEdit={onEdit}
             />
         </div>
     );

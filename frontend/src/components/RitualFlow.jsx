@@ -44,12 +44,12 @@ export default function RitualFlow({ onFinish }) {
 
         const registroParaEnviar = {
             mente_estado: ritualData.mente.estado,
-            mente_descripcion: ritualData.mente.comentario,
+            mente_comentario: ritualData.mente.comentario,
             emocion_estado: ritualData.emocion.estado,
-            emocion_descripcion: ritualData.emocion.comentario,
+            emocion_comentario: ritualData.emocion.comentario,
             cuerpo_estado: ritualData.cuerpo.estado,
-            cuerpo_descripcion: ritualData.cuerpo.comentario,
-            meta_descripcion: metaData,
+            cuerpo_comentario: ritualData.cuerpo.comentario,
+            meta_comentario: metaData,
         };
 
         try {

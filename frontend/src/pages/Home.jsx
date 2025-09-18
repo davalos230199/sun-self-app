@@ -7,48 +7,27 @@ import WelcomeModal from '../components/WelcomeModal';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function Home() {
-    const {
-        isLoading: isContextLoading,
-        registroDeHoy,
-        miniMetas,
-        fraseDelDia,
-        refrescarDia,
-    } = useDia();
+    // 1. Usamos 'isLoading' directamente del contexto. Ya no lo renombramos.
+    const { registroDeHoy, isLoading, refrescarDia } = useDia();
 
-    const [isVisualLoading, setIsVisualLoading] = useState(true);
+    // 2. ELIMINAMOS el estado 'isVisualLoading'.
     const [showWelcomeModal, setShowWelcomeModal] = useState(false);
-    const [isFinishingRitual, setIsFinishingRitual] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     
-    // --- 1. AÑADIDO: El "interruptor" para mostrar el ritual a demanda ---
-    const [mostrandoRitual, setMostrandoRitual] = useState(false);
-
-    useEffect(() => {
-        const timer = setTimeout(() => setIsVisualLoading(false), 500);
-        return () => clearTimeout(timer);
-    }, []);
-
     useEffect(() => {
         const haVistoManifiesto = localStorage.getItem('sunself_manifiesto_visto');
         if (!haVistoManifiesto) {
-            setShowWelcomeModal(true);
+            setShowWelcomeModal(false); // Cambiado a false para evitar que se muestre por ahora
         }
     }, []);
     
-    // --- 2. AÑADIDO: La función que activará el interruptor ---
-    // Esta función se pasará al botón del lápiz en el Dashboard.
-    const iniciarRitual = () => {
-        setMostrandoRitual(true);
-    };
-
     const handleRitualFinish = async () => {
-        setIsFinishingRitual(true);
-        if (refrescarDia) {
-            await refrescarDia();
-        }
-        setMostrandoRitual(false); // Se asegura de apagar el interruptor al terminar.
-        setIsFinishingRitual(false);
+        setIsSubmitting(true);
+        await refrescarDia();
+        setIsSubmitting(false);
     };
 
+    // El modal de bienvenida.
     if (showWelcomeModal) {
         return (
             <WelcomeModal onAccept={() => {
@@ -58,27 +37,20 @@ export default function Home() {
         );
     }
     
-    if (isContextLoading || isVisualLoading || isFinishingRitual) {
-        return <LoadingSpinner message="Preparando tu día..." estadoGeneral={registroDeHoy?.estado_general} />;
+    // 3. La condición de carga ahora es mucho más simple y robusta.
+    if (isLoading || isSubmitting) {
+        return <LoadingSpinner message="Preparando tu día..." />;
     }
 
+    // El return principal ahora depende de una lógica clara.
     return (
         <div className="h-full w-full">
-            {/* --- 3. MODIFICADO: La lógica de renderizado ahora considera el interruptor --- */}
-            {mostrandoRitual ? (
-                // Si el interruptor está encendido, FORZAMOS la vista del ritual.
-                <RitualFlow onFinish={handleRitualFinish} />
-            ) : registroDeHoy ? (
-                // Si el interruptor está apagado Y hay registro, mostramos el Dashboard...
-                // ...y le conectamos la función para encender el interruptor.
-                <RegistroDashboard
-                    registro={registroDeHoy}
-                    fraseDelDia={fraseDelDia}
-                    miniMetas={miniMetas}
-                    onEdit={iniciarRitual} // ¡Conexión establecida!
-                />
+            {registroDeHoy ? (
+                // Si SÍ hay registro, muestra el Dashboard.
+                // Le pasamos 'onEdit' para el futuro, aunque aún no lo hemos implementado.
+                <RegistroDashboard onEdit={() => { console.log('Editar presionado')}} />
             ) : (
-                // Si el interruptor está apagado Y NO hay registro, es el inicio del día.
+                // Si NO hay registro, muestra el Ritual.
                 <RitualFlow onFinish={handleRitualFinish} />
             )}
         </div>

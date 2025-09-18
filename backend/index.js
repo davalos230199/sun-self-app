@@ -22,7 +22,7 @@ const corsOptions = {
             callback(null, true);
         } else {
             callback(new Error('No permitido por CORS'));
-        }
+        }   
     },
     allowedHeaders: ['Content-Type', 'Authorization', 'x-client-timezone']
 };
@@ -39,19 +39,18 @@ app.get('/health', (req, res) => {
 });
 
 // --- CONEXIÓN A LOS DEPARTAMENTOS (ARCHIVOS DE RUTAS) ---
-const authRoutes = require('./routes/auth');
 const registrosRoutes = require('./routes/registros');
 const sunnyRoutes = require('./routes/sunny');
 const inspiracionRoutes = require('./routes/inspiracion');
 const muroRoutes = require('./routes/muro');
-const minimetasRouter = require('./routes/minimetas');
+const metasRouter = require('./routes/metas');
 
-app.use('/api/auth', authRoutes);
-app.use('/api/registros', registrosRoutes);
+
 app.use('/api/sunny', sunnyRoutes);
 app.use('/api/inspiracion', inspiracionRoutes);
 app.use('/api/muro', muroRoutes);
-app.use('/api/minimetas', minimetasRouter);
+app.use('/api/metas', metasRouter);
+app.use('/api/registros', registrosRoutes);
 
 // =================================================================
 // 4. INICIO DEL SERVIDOR
