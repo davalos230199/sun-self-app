@@ -23,13 +23,11 @@ const ClimaAnimado = ({ estadoGeneral }) => {
         </div>
     );
 };
-
-// --- WIDGET DE LA META PRINCIPAL ---
-// Este nuevo widget se encargará de mostrar solo la meta principal.
+// --- Sub-componente: MetaPrincipalWidget (Simplificado y corregido) ---
 const MetaPrincipalWidget = ({ meta }) => {
     if (!meta) {
         return (
-            <div className="card-animada flex flex-col bg-amber-50 border border-amber-200 rounded-2xl p-5 text-center justify-center">
+            <div className="flex flex-col bg-green-50 border border-amber-100 rounded-2xl p-5 text-center justify-center">
                 <h3 className="font-['Patrick_Hand'] text-xl text-amber-800">
                     No definiste un norte para hoy.
                 </h3>
@@ -39,12 +37,12 @@ const MetaPrincipalWidget = ({ meta }) => {
     }
     return (
         <Link to="/metas" className="no-underline text-inherit block">
-            <div className="card-animada flex flex-col bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 text-center shadow-lg">
+            <div className="flex flex-col bg-green-100 border-2 border-amber-200 rounded-2xl p-5 text-center shadow-lg">
                 <div className="flex justify-center items-center gap-2">
                     <Star className="text-amber-500" size={20} />
                     <h2 className="font-['Patrick_Hand'] text-lg text-amber-800">Tu Norte para Hoy</h2>
                 </div>
-                <p className="text-xl text-zinc-800 font-semibold break-words mt-1">{meta.descripcion}</p>
+                <h3 className="text-2xl text-transform: uppercase text-green-900 break-words">{meta.descripcion}</h3>
             </div>
         </Link>
     );
@@ -53,34 +51,33 @@ const MetaPrincipalWidget = ({ meta }) => {
 // --- Sub-componente: EstadoWidget (Simplificado y corregido) ---
 const EstadoWidget = ({ registro, onEdit }) => {
     const navigate = useNavigate();
-    // La frase de Sunny ahora viene directamente del objeto registro.
     const fraseDelDia = registro.frase_sunny || "Tu reflexión te espera...";
 
     return (
         <Link to="/tracking" className="no-underline text-inherit block">
-            <div className="card-animada relative flex flex-col border border-amber-200 bg-amber-50 rounded-2xl p-5 text-center min-h-[220px]">
+            <div className="relative flex flex-col border border-amber-200 bg-amber-100 rounded-2xl p-5 text-center min-h-[220px]">
                 {/* Botones de acción */}
                 <div className="absolute top-3 right-3 flex items-center gap-2">
                     <button
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/journal/${registro.id}`); }}
-                        title="Escribir en La Hoja de Atrás"
-                        className="p-2 rounded-full hover:bg-amber-100 text-zinc-500 hover:text-zinc-800 transition-colors"
+                        title="Escribir en el diario"
+                        className="p-2 rounded-full hover:bg-amber-300 bg-transparent border-none text-amber-500 hover:text-zinc-800 transition-colors"
                     >
-                        <BookOpen size={20} />
+                        <BookOpen size={23} />
                     </button>
                     <button
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(); }}
                         title="Editar registro (nuevo ritual)"
-                        className="p-2 rounded-full hover:bg-amber-100 text-zinc-500 hover:text-zinc-800 transition-colors"
+                        className="p-2 rounded-full hover:bg-amber-300 bg-transparent border-none text-amber-500 hover:text-zinc-800 transition-colors"
                     >
-                        <Edit2 size={20} />
+                        <Edit2 size={23} />
                     </button>
                 </div>
 
                 {/* Contenido principal */}
                 <h3 className="font-['Patrick_Hand'] text-xl text-amber-800">Tu estado de hoy</h3>
                 <ClimaAnimado estadoGeneral={registro.estado_general} />
-                <p className="flex-grow text-zinc-700 italic text-sm">"{fraseDelDia}"</p>
+                <p className="flex-grow text-zinc-700 font-['Patrick_Hand']">"{fraseDelDia}"</p>
                 <footer className="mt-auto pt-3 border-t border-dashed border-amber-200 text-xs text-zinc-500 font-semibold">
                     Toca para ver tu historial completo...
                 </footer>
@@ -89,24 +86,15 @@ const EstadoWidget = ({ registro, onEdit }) => {
     );
 };
 
-
 // --- Componente Principal (Ahora más limpio) ---
 export default function RegistroDashboard({ onEdit }) {
-    // 2. Obtiene los datos directamente del contexto. Ya no necesita recibir props complejos.
     const { registroDeHoy, metas } = useDia();
-
-    // El timer de 4 horas se queda, pero ahora es más simple
-    // const [tiempoRestante, setTiempoRestante] = useState(0); // Este timer puede ser una mejora futura, lo desactivamos por ahora para simplificar
-    
-    // Si por alguna razón no hay registro, no renderizamos nada (Home se encargará de mostrar el ritual).
     if (!registroDeHoy) {
         return null; 
     }
-
     const metaPrincipal = registroDeHoy.meta_principal_id
         ? metas.find(meta => meta.id === registroDeHoy.meta_principal_id)
         : null;
-
     return (
         <div className="space-y-6 animate-fade-in">
             <MetaPrincipalWidget 

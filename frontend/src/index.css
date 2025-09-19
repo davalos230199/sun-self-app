@@ -5,19 +5,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@layer components {
-  .card-base {
-    @apply bg-white border border-amber-300 shadow-lg rounded-2xl;
-  }
-  
-  .card-animada {
-    @apply card-base shadow-amber-500/30 transition-shadow duration-300;
-  }
-
-  .card-animada:hover {
-     @apply shadow-xl shadow-amber-500/50;
-  }
-}
 
 /* 3. El resto de tus estilos personalizados van al final. */
 :root {
