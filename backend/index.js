@@ -59,5 +59,5 @@ app.use('/api/diario', diarioRoutes);
 // 4. INICIO DEL SERVIDOR
 // =================================================================
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor de Sun Self corriendo en el puerto ${PORT}`);
+    console.log(`🚀 Servidor de Sun Self corriendo en el puerto tal ${PORT}`);
 });
