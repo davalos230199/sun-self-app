@@ -57,5 +57,5 @@ app.use('/api/minimetas', minimetasRouter);
 // 4. INICIO DEL SERVIDOR
 // =================================================================
 app.listen(PORT, () => {
-    console.log(`Backend escuchando en http://localhost:${PORT}`);
+    console.log(`🚀 Servidor de Sun Self corriendo en el puerto ${PORT}`);
 });
