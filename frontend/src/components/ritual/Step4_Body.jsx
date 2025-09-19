@@ -57,7 +57,7 @@ const Step4_Body = ({ onNextStep }) => {
                         <h3 className="font-['Patrick_Hand'] text-xl text-green-500">El Método</h3>
                         <p className="text-md text-zinc-600 px-2">Escanea tu cuerpo de pies a cabeza, nota cualquier tensión sin juzgarla.</p>
                     </div>
-                    <SunTimer duration={10} onComplete={() => setTimerFinished(true)} />
+                    <SunTimer duration={5} onComplete={() => setTimerFinished(true)} />
                 </motion.div>
             ) : (
                 <motion.div 

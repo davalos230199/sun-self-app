@@ -53,7 +53,7 @@ const Step2_Mind = ({ onNextStep }) => {
                         <h3 className="font-['Patrick_Hand'] text-xl text-indigo-500">El Método</h3>
                         <p className="text-md text-zinc-600 px-2">Observa un objeto a tu alrededor sin juzgarlo. Ancla tu atención.</p>
                     </div>
-                    <SunTimer duration={10} onComplete={() => setTimerFinished(true)} />
+                    <SunTimer duration={5} onComplete={() => setTimerFinished(true)} />
                 </motion.div>
             ) : (
                 <motion.div 

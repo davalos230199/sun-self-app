@@ -1,236 +1,129 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-//import api from '../services/api';
-// Mantenemos el import del CSS por ahora, pero su contenido será mínimo.
-import './Auth.css';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowDown, LogIn } from 'lucide-react';
 
-// --- Formulario de Login ---
-const LoginForm = ({ onSwitchToRegister, onSwitchToForgot }) => {
-    const [form, setForm] = useState({ identifier: '', password: '' });
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
-    const { login } = useAuth();
-
-    const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
-    // CAMBIO: La lógica de submit ahora es mucho más simple y eficiente
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
-        try {
-            // ÚNICA LLAMADA: Usamos la función del contexto.
-            // Esta función se encargará de llamar a la API, guardar el token
-            // y actualizar el estado del usuario. ¡Todo en un solo paso!
-            await login(form);
-            
-            // Si el login es exitoso, navegamos a home.
-            navigate('/home');
-
-        } catch (err) {
-            setError(err.response?.data?.message || 'Credenciales incorrectas.');
-            setLoading(false); // Asegúrate de detener la carga en caso de error
-        }
-        // No necesitamos setLoading(false) en el caso de éxito porque la página va a cambiar.
-    };
-
+// --- Componente Header Fijo (Aparece al hacer scroll) ---
+const FixedHeader = ({ isVisible, onLogin }) => {
     return (
-        <form onSubmit={handleSubmit} noValidate>
-            <h2 className="font-['Patrick_Hand'] text-3xl mb-2 text-zinc-800">Bienvenido de vuelta</h2>
-            <p className="mb-8 text-zinc-500 text-sm">Ingresa con tu apodo o email.</p>
-            {error && <p className="p-2.5 rounded-md mb-5 bg-red-100 text-red-700 text-sm">{error}</p>}
-            
-            <div className="relative mb-6">
-                <input type="text" name="identifier" id="login-identifier" placeholder=" " onChange={handleChange} required 
-                       className="peer w-full border-b-2 border-zinc-300 p-2 bg-transparent text-base outline-none focus:border-orange-400" />
-                <label htmlFor="login-identifier" 
-                       className="absolute top-2 left-2 text-zinc-500 pointer-events-none transition-all duration-200 ease-in-out peer-focus:-top-5 peer-focus:left-0 peer-focus:text-xs peer-focus:text-orange-500 peer-[:not(:placeholder-shown)]:-top-5 peer-[:not(:placeholder-shown)]:left-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-orange-500">
-                    Apodo o Email
-                </label>
-            </div>
-            
-            <div className="relative mb-6">
-                <input type="password" name="password" id="login-password" placeholder=" " onChange={handleChange} required 
-                       className="peer w-full border-b-2 border-zinc-300 p-2 bg-transparent text-base outline-none focus:border-orange-400" />
-                <label htmlFor="login-password" 
-                       className="absolute top-2 left-2 text-zinc-500 pointer-events-none transition-all duration-200 ease-in-out peer-focus:-top-5 peer-focus:left-0 peer-focus:text-xs peer-focus:text-orange-500 peer-[:not(:placeholder-shown)]:-top-5 peer-[:not(:placeholder-shown)]:left-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-orange-500">
-                    Contraseña
-                </label>
-            </div>
-            
-            <button type="submit" disabled={loading}
-                    className="w-full p-3 border-none rounded-lg bg-gradient-to-r from-orange-500 to-amber-400 text-white text-lg font-semibold cursor-pointer transition-all duration-200 hover:enabled:-translate-y-0.5 hover:enabled:shadow-lg hover:enabled:shadow-orange-500/30 disabled:bg-zinc-300 disabled:cursor-not-allowed">
-                {loading ? 'Entrando...' : 'Entrar'}
-            </button>
-            
-            <div className="mt-5 text-sm">
-                <p className="mb-2">
-                    <span className="text-orange-500 font-semibold cursor-pointer p-1 transition-all hover:underline" onClick={onSwitchToForgot} role="button" tabIndex="0">
-                        Olvidé mi contraseña
-                    </span>
-                </p>
-                <p>
-                    ¿Es tu primera vez aquí?{' '}
-                    <span className="text-orange-500 font-semibold cursor-pointer p-1 transition-all hover:underline" onClick={onSwitchToRegister} role="button" tabIndex="0">
-                        Regístrate
-                    </span>
-                </p>
-            </div>
-        </form>
-    );
-};
-
-// --- Formulario de Registro ---
-const RegisterForm = ({ onSwitchToLogin }) => {
-    const [form, setForm] = useState({ nombre: '', apellido: '', apodo: '', email: '', password: '' });
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const [loading, setLoading] = useState(false);
-
-    const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError(''); setSuccess(''); setLoading(true);
-        try {
-            await api.register(form);
-            setSuccess('¡Cuenta creada! Revisa tu email para la confirmación.');
-            setTimeout(() => { onSwitchToLogin(); }, 3000);
-        } catch (err) {
-            setError(err.response?.data?.error || 'Error al registrar la cuenta.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <form onSubmit={handleSubmit} noValidate>
-            {/* CAMBIO DE TEXTO */}
-            <h2 className="font-['Patrick_Hand'] text-3xl mb-2 text-zinc-800">Aquí comienza tu auto-descubrimiento</h2>
-            <p className="mb-8 text-zinc-500 text-sm">Crea tu cuenta para guardar tu progreso.</p>
-            {success && <p className="p-2.5 rounded-md mb-5 bg-green-100 text-green-800 text-sm">{success}</p>}
-            {error && <p className="p-2.5 rounded-md mb-5 bg-red-100 text-red-700 text-sm">{error}</p>}
-            
-            <div className="flex flex-col sm:flex-row sm:gap-5">
-                <div className="relative mb-6 w-full">
-                    <input type="text" name="nombre" id="register-nombre" placeholder=" " onChange={handleChange} required className="peer w-full border-b-2 border-zinc-300 p-2 bg-transparent text-base outline-none focus:border-orange-400" />
-                    <label htmlFor="register-nombre" className="absolute top-2 left-2 text-zinc-500 pointer-events-none transition-all duration-200 ease-in-out peer-focus:-top-5 peer-focus:left-0 peer-focus:text-xs peer-focus:text-orange-500 peer-[:not(:placeholder-shown)]:-top-5 peer-[:not(:placeholder-shown)]:left-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-orange-500">Nombre</label>
-                </div>
-                <div className="relative mb-6 w-full">
-                    <input type="text" name="apellido" id="register-apellido" placeholder=" " onChange={handleChange} required className="peer w-full border-b-2 border-zinc-300 p-2 bg-transparent text-base outline-none focus:border-orange-400" />
-                    <label htmlFor="register-apellido" className="absolute top-2 left-2 text-zinc-500 pointer-events-none transition-all duration-200 ease-in-out peer-focus:-top-5 peer-focus:left-0 peer-focus:text-xs peer-focus:text-orange-500 peer-[:not(:placeholder-shown)]:-top-5 peer-[:not(:placeholder-shown)]:left-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-orange-500">Apellido</label>
-                </div>
-            </div>
-            <div className="relative mb-6"><input type="text" name="apodo" id="register-apodo" placeholder=" " onChange={handleChange} required className="peer w-full border-b-2 border-zinc-300 p-2 bg-transparent text-base outline-none focus:border-orange-400" /><label htmlFor="register-apodo" className="absolute top-2 left-2 text-zinc-500 pointer-events-none transition-all duration-200 ease-in-out peer-focus:-top-5 peer-focus:left-0 peer-focus:text-xs peer-focus:text-orange-500 peer-[:not(:placeholder-shown)]:-top-5 peer-[:not(:placeholder-shown)]:left-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-orange-500">Apodo (único)</label></div>
-            <div className="relative mb-6"><input type="email" name="email" id="register-email" placeholder=" " onChange={handleChange} required className="peer w-full border-b-2 border-zinc-300 p-2 bg-transparent text-base outline-none focus:border-orange-400" /><label htmlFor="register-email" className="absolute top-2 left-2 text-zinc-500 pointer-events-none transition-all duration-200 ease-in-out peer-focus:-top-5 peer-focus:left-0 peer-focus:text-xs peer-focus:text-orange-500 peer-[:not(:placeholder-shown)]:-top-5 peer-[:not(:placeholder-shown)]:left-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-orange-500">Email</label></div>
-            <div className="relative mb-6"><input type="password" name="password" id="register-password" placeholder=" " onChange={handleChange} required className="peer w-full border-b-2 border-zinc-300 p-2 bg-transparent text-base outline-none focus:border-orange-400" /><label htmlFor="register-password" className="absolute top-2 left-2 text-zinc-500 pointer-events-none transition-all duration-200 ease-in-out peer-focus:-top-5 peer-focus:left-0 peer-focus:text-xs peer-focus:text-orange-500 peer-[:not(:placeholder-shown)]:-top-5 peer-[:not(:placeholder-shown)]:left-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-orange-500">Contraseña</label></div>
-            
-            <button type="submit" disabled={loading || !!success} className="w-full p-3 border-none rounded-lg bg-gradient-to-r from-orange-500 to-amber-400 text-white text-lg font-semibold cursor-pointer transition-all duration-200 hover:enabled:-translate-y-0.5 hover:enabled:shadow-lg hover:enabled:shadow-orange-500/30 disabled:bg-zinc-300 disabled:cursor-not-allowed">
-                {loading ? 'Creando...' : 'Crear cuenta'}
-            </button>
-            <p className="mt-5 text-sm">
-                ¿Ya tienes una cuenta?{' '}
-                <span className="text-orange-500 font-semibold cursor-pointer p-1 transition-all hover:underline" onClick={onSwitchToLogin} role="button" tabIndex="0">
-                    Inicia sesión
-                </span>
-            </p>
-        </form>
-    );
-};
-
-// --- Formulario Olvidé Contraseña ---
-const ForgotPasswordForm = ({ onSwitchToLogin }) => {
-    // ... (sin cambios en esta función)
-    const [form, setForm] = useState({ email: '' });
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const [loading, setLoading] = useState(false);
-
-    const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError(''); setSuccess(''); setLoading(true);
-        try {
-            const response = await api.forgotPassword({ email: form.email });
-            setSuccess(response.data.message);
-            setTimeout(() => { onSwitchToLogin(); }, 3000);
-        } catch (err) {
-            setError(err.response?.data?.error || 'No se pudo procesar la solicitud.');
-            setLoading(false);
-        }
-    };
-
-    return (
-        <form onSubmit={handleSubmit} noValidate>
-            <h2 className="font-['Patrick_Hand'] text-3xl mb-2 text-zinc-800">Restablecer Contraseña</h2>
-            <p className="mb-8 text-zinc-500 text-sm">Ingresa tu email y te enviaremos un enlace.</p>
-            {success && <p className="p-2.5 rounded-md mb-5 bg-green-100 text-green-800 text-sm">{success}</p>}
-            {error && <p className="p-2.5 rounded-md mb-5 bg-red-100 text-red-700 text-sm">{error}</p>}
-            <div className="relative mb-6">
-                <input type="email" name="email" id="forgot-email" placeholder=" " onChange={handleChange} required className="peer w-full border-b-2 border-zinc-300 p-2 bg-transparent text-base outline-none focus:border-orange-400" />
-                <label htmlFor="forgot-email" className="absolute top-2 left-2 text-zinc-500 pointer-events-none transition-all duration-200 ease-in-out peer-focus:-top-5 peer-focus:left-0 peer-focus:text-xs peer-focus:text-orange-500 peer-[:not(:placeholder-shown)]:-top-5 peer-[:not(:placeholder-shown)]:left-0 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-orange-500">Email</label>
-            </div>
-            <button type="submit" disabled={loading || !!success} className="w-full p-3 border-none rounded-lg bg-gradient-to-r from-orange-500 to-amber-400 text-white text-lg font-semibold cursor-pointer transition-all duration-200 hover:enabled:-translate-y-0.5 hover:enabled:shadow-lg hover:enabled:shadow-orange-500/30 disabled:bg-zinc-300 disabled:cursor-not-allowed">
-                {loading ? 'Enviando...' : 'Enviar enlace'}
-            </button>
-            <p className="mt-5 text-sm">
-                <span className="text-orange-500 font-semibold cursor-pointer p-1 transition-all hover:underline" onClick={onSwitchToLogin} role="button" tabIndex="0">
-                    Volver a Iniciar sesión
-                </span>
-            </p>
-        </form>
-    );
-};
-
-
-// --- Componente Principal de Autenticación ---
-export default function Auth() {
-    const [view, setView] = useState('intro');
-    
-    return (
-        <div className={`auth-scene ${view !== 'intro' ? 'form-active' : ''}`}>
-            {/* INTRO */}
-            <div className="auth-intro">
-                <h1 className="font-['Patrick_Hand'] text-5xl sm:text-6xl font-semibold text-white [text-shadow:_0_2px_4px_rgb(0_0_0_/_0.2)]">
-                    Sun-Self
-                </h1>
-                <p className="text-lg mt-2 mb-8 text-white font-light [text-shadow:_0_2px_4px_rgb(0_0_0_/_0.2)]">
-                    Tu micro-hábito de auto-observación.
-                </p>
-                <button 
-                    onClick={() => setView('login')}
-                    className="bg-white/20 border border-white text-white py-3 px-8 rounded-full text-base font-semibold cursor-pointer transition-all duration-300 hover:bg-white/30 hover:scale-105"
+        <AnimatePresence>
+            {isVisible && (
+                <motion.header
+                    initial={{ y: '-100%' }}
+                    animate={{ y: '0%' }}
+                    exit={{ y: '-100%' }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-4 bg-white/80 backdrop-blur-md shadow-md"
                 >
-                    Iniciar el viaje
-                </button>
-            </div>
+                    <h1 className="font-['Patrick_Hand'] text-2xl font-bold text-orange-600">
+                        Sun Self
+                    </h1>
+                    <button
+                        onClick={onLogin}
+                        className="bg-orange-500 text-white font-bold py-2 px-4 rounded-full text-sm flex items-center gap-2 hover:bg-orange-600 transition-colors"
+                    >
+                        <LogIn size={16} />
+                        Iniciar Viaje
+                    </button>
+                </motion.header>
+            )}
+        </AnimatePresence>
+    );
+};
 
-            {/* FORMULARIOS */}
-            <div className="auth-form-container">
-                {/* CAMBIO DE ALTURA DINÁMICA */}
-                <div className={`
-                    relative bg-white/80 backdrop-blur-md p-7 sm:p-10 rounded-xl shadow-lg text-center overflow-hidden 
-                    transition-all duration-500 ease-in-out
-                    ${view === 'register' ? 'sm:min-h-[700px] min-h-[680px]' : 'sm:min-h-[620px] min-h-[590px]'}
-                `}>
-                    <div className={`form-wrapper ${view === 'login' ? 'visible' : ''}`}>
-                        <LoginForm 
-                            onSwitchToRegister={() => setView('register')} 
-                            onSwitchToForgot={() => setView('forgot')}
-                        />
-                    </div>
-                    <div className={`form-wrapper ${view === 'register' ? 'visible' : ''}`}>
-                        <RegisterForm onSwitchToLogin={() => setView('login')} />
-                    </div>
-                    <div className={`form-wrapper ${view === 'forgot' ? 'visible' : ''}`}>
-                        <ForgotPasswordForm onSwitchToLogin={() => setView('login')} />
-                    </div>
+// --- Componente Principal: Auth (Landing Page) ---
+export default function Auth() {
+    const { signInWithGoogle } = useAuth();
+    const [isScrolled, setIsScrolled] = useState(false);
+    const scrollContainerRef = useRef(null);
+
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+
+        const handleScroll = () => {
+            const { scrollTop, clientHeight } = container;
+            // El header aparece después de scrollear un 20% de la primera pantalla
+            setIsScrolled(scrollTop > clientHeight * 0.2);
+        };
+
+        container.addEventListener('scroll', handleScroll);
+        return () => container.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const sections = [
+        {
+            title: "¿Qué es Sun Self?",
+            content: "Una herramienta para la auto-observación y el autoconocimiento. Un micro-hábito diario diseñado para que te reencuentres con la persona más importante en tu vida: tú mismo."
+        },
+        {
+            title: "¿Cómo funciona?",
+            content: "Cada día, la app te invita a responder: '¿Cómo estás hoy?' usando tres estados climáticos: Soleado (bien), Nublado (regular) o Lluvioso (mal). Esta simple práctica te ancla en tu presente."
+        },
+        {
+            title: "Tu espacio, tus reglas",
+            content: "Decide si quieres guardar tus registros para un análisis profundo o empezar de cero cada día. La privacidad y el control están en tus manos."
+        }
+    ];
+
+    return (
+        <div ref={scrollContainerRef} className="h-[100dvh] w-full overflow-y-scroll scroll-snap-type-y-mandatory">
+            <FixedHeader isVisible={isScrolled} onLogin={signInWithGoogle} />
+
+            {/* --- Sección 1: Bienvenida (Hero) --- */}
+            <section className="h-full w-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-amber-50 to-orange-100 scroll-snap-align-start relative">
+                <div className="text-center">
+                    <h1 className="font-['Patrick_Hand'] text-6xl sm:text-8xl font-bold text-orange-600 animate-fade-in-down">
+                        Sun Self
+                    </h1>
+                    <p className="text-xl sm:text-2xl mt-2 text-zinc-600 animate-fade-in-up">
+                        Tu micro-hábito de auto-observación.
+                    </p>
+                    <motion.button
+                        onClick={signInWithGoogle}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="bg-gradient-to-r from-orange-500 to-amber-400 text-white font-bold py-4 px-10 rounded-full text-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out flex items-center justify-center mx-auto mt-12"
+                    >
+                        <img src="https://rotulosmatesanz.com/wp-content/uploads/2017/09/2000px-Google_G_Logo.svg_.png" alt="Logo de Google" className="w-6 h-6 mr-3"/>
+                        Iniciar el viaje con Google
+                    </motion.button>
                 </div>
-            </div>
+                <div className="absolute bottom-8 text-zinc-500 animate-bounce">
+                    <ArrowDown size={24} />
+                </div>
+            </section>
+
+            {/* --- Secciones de Información (Generadas dinámicamente) --- */}
+            {sections.map((section, index) => (
+                <section key={index} className="h-full w-full flex flex-col items-center justify-center p-6 bg-white scroll-snap-align-start text-center">
+                    <div className="max-w-2xl">
+                        <h2 className="font-['Patrick_Hand'] text-4xl sm:text-5xl font-bold text-zinc-800 mb-6">
+                            {section.title}
+                        </h2>
+                        <p className="text-lg sm:text-xl text-zinc-600 leading-relaxed">
+                            {section.content}
+                        </p>
+                    </div>
+                </section>
+            ))}
+
+            {/* --- Sección Final: Llamada a la Acción --- */}
+            <section className="h-full w-full flex flex-col items-center justify-center p-4 bg-zinc-800 scroll-snap-align-start text-center text-white">
+                 <h2 className="font-['Patrick_Hand'] text-4xl sm:text-5xl font-bold mb-8">
+                    ¿Listo para empezar a conocerte mejor?
+                </h2>
+                <motion.button
+                    onClick={signInWithGoogle}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-gradient-to-r from-orange-500 to-amber-400 text-white font-bold py-4 px-10 rounded-full text-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out flex items-center justify-center mx-auto"
+                >
+                    <img src="https://rotulosmatesanz.com/wp-content/uploads/2017/09/2000px-Google_G_Logo.svg_.png" alt="Logo de Google" className="w-6 h-6 mr-3"/>
+                    Iniciar el viaje ahora
+                </motion.button>
+            </section>
+
         </div>
     );
 }
-

@@ -1,65 +1,44 @@
-import { createBrowserRouter, RouterProvider, Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from './contexts/AuthContext';
-import { useState, useEffect } from 'react';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import { DiaProvider } from './contexts/DiaContext';
+
+// Layouts y Rutas
+import AppLayout from './components/AppLayout';
+import ProtectedRoute from './components/auth/protectedroute';
+import GuestRoute from './components/auth/guestroute';
+
+// Páginas
 import Auth from './pages/Auth';
+import Filosofia from './pages/Filosofia';
 import Home from './pages/Home';
-import Tracking from './pages/Tracking';
-import Sunny from './pages/Sunny';
-import Settings from './pages/Settings';
-import ProtectedRoute from './components/protectedroute';
-import GuestRoute from './components/guestroute';
 import Journal from './pages/Journal';
 import MuroDeSoles from './pages/MuroDeSoles';
-import UpdatePassword from './pages/UpdatePassword';
-import MiniMetasPage from './pages/MiniMetasPage'; 
-import Filosofia from './pages/Filosofia';
 import ResumenDia from './pages/ResumenDia';
+import Settings from './pages/Settings';
+import Sunny from './pages/Sunny';
+import Tracking from './pages/Tracking';
+import MetasPage from './pages/MetasPage';
 
-const RootHandler = () => {
-    const { user, loading } = useAuth();
-    const location = useLocation();
-    const [isRecovery, setIsRecovery] = useState(false);
-    const [hasChecked, setHasChecked] = useState(false);
-
-    useEffect(() => {
-        if (location.hash.includes('type=recovery')) {
-            setIsRecovery(true);
-        }
-        setHasChecked(true);
-    }, [location.hash]); // Se ejecuta si el hash de la URL cambia
-
-    // Mientras se verifica la sesión inicial o el hash, mostramos un estado de carga
-    if (loading || !hasChecked) {
-        return <div style={{ textAlign: 'center', marginTop: '50px' }}>Iniciando...</div>;
-    }
-
-    // Si es un flujo de recuperación, renderizamos el componente y detenemos cualquier otra lógica
-    if (isRecovery) {
-        return <UpdatePassword />;
-    }
-
-    // Si hay un usuario (y no es un flujo de recuperación), lo llevamos a home
-    if (user) {
-        return <Navigate to="/home" replace />;
-    }
-
-    // Por defecto, si no hay usuario ni es recuperación, va al login
-    return <Navigate to="/login" replace />;
-};
 
 const router = createBrowserRouter([
-    // Grupo de rutas para invitados (usuarios no autenticados)
     {
-        element: <GuestRoute />,
-        children: [
-            { path: 'login', element: <Auth /> },
-            { path: 'register', element: <Auth /> },
-            { path: 'update-password', element: <UpdatePassword /> },
-        ],
-    },
-    // Grupo de rutas protegidas (usuarios autenticados)
+        // RUTA PÚBLICA (no logueados)
+    path: '/',
+    element: (
+      <GuestRoute>
+        <Auth />
+      </GuestRoute>
+    ),
+  },
     {
-        element: <ProtectedRoute />,
+    // GRUPO DE RUTAS PROTEGIDAS (logueados)
+    element: (
+      <ProtectedRoute>
+        <DiaProvider>
+          <AppLayout />
+       </DiaProvider>
+      </ProtectedRoute>
+    ),
+            // Las rutas hijas heredan la protección y el layout.
         children: [
             { path: 'home', element: <Home /> },
             { path: 'tracking', element: <Tracking /> },
@@ -67,20 +46,14 @@ const router = createBrowserRouter([
             { path: 'settings', element: <Settings /> },
             { path: 'journal/:id', element: <Journal /> },
             { path: 'muro', element: <MuroDeSoles /> },
-            { path: 'metas', element: <MiniMetasPage /> },
+            { path: 'metas', element: <MetasPage /> },
             { path: 'filosofia', element: <Filosofia /> },
             { path: 'resumen/:fecha', element: <ResumenDia /> },
         ],
     },
-    // La ruta raíz ahora usa nuestro nuevo componente "inteligente"
-    {
-        path: '/',
-        element: <RootHandler />,
-    },
 ]);
 
 function App() {
-    return <RouterProvider router={router} />;
+  return <RouterProvider router={router} />;    
 }
-
 export default App;

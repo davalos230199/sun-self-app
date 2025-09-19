@@ -44,17 +44,21 @@ export default function RitualFlow({ onFinish }) {
 
         const registroParaEnviar = {
             mente_estado: ritualData.mente.estado,
-            mente_descripcion: ritualData.mente.comentario,
+            mente_comentario: ritualData.mente.comentario,
             emocion_estado: ritualData.emocion.estado,
-            emocion_descripcion: ritualData.emocion.comentario,
+            emocion_comentario: ritualData.emocion.comentario,
             cuerpo_estado: ritualData.cuerpo.estado,
-            cuerpo_descripcion: ritualData.cuerpo.comentario,
+            cuerpo_comentario: ritualData.cuerpo.comentario,
             meta_descripcion: metaData,
         };
 
         try {
             const response = await api.saveRegistro(registroParaEnviar);
             const registroCompleto = response.data;
+
+            if (metaData && metaData.trim() !== '') {
+            await api.createMeta({ descripcion: metaData });
+        }
 
             setRitualData(prev => ({
                 ...prev,

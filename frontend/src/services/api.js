@@ -1,19 +1,18 @@
 import axios from 'axios';
-// Asegúrate de que esta importación sea correcta y use llaves si es una exportación nombrada
-import { supabase } from './supabaseClient'; 
+import { supabase } from './supabaseClient';
 
-// CAMBIO: Añadimos una URL de respaldo directamente en el código.
-// Esto hace que la configuración sea más robusta.
-const baseURL = import.meta.env.VITE_API_URL || 'https://sun-self-backend.onrender.com';
+const baseURL = import.meta.env.VITE_API_URL || 'https://sun-self-backend.onrender.com/api';
 
-const apiClient = axios.create({baseURL: baseURL, headers: {'Content-Type': 'application/json'}});
+const apiClient = axios.create({
+    baseURL: baseURL,
+    headers: {'Content-Type': 'application/json'}
+});
 
-// Función para sincronizar la sesión de Supabase
 apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+  async (config) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      config.headers['Authorization'] = `Bearer ${session.access_token}`;
     }
     config.headers['X-Client-Timezone'] = Intl.DateTimeFormat().resolvedOptions().timeZone;
     return config;
@@ -23,74 +22,51 @@ apiClient.interceptors.request.use(
   }
 );
 
+// --- FUNCIONES CORREGIDAS (sin el prefijo /api) ---
 
-// --- FUNCIONES EXISTENTES (usando apiClient) ---
-const register = (userData) => { return apiClient.post('/api/auth/register', userData); };
-const login = (credentials) => { return apiClient.post('/api/auth/login', credentials); };
-const getMe = () => { return apiClient.get('/api/auth/me'); };
-const getRegistros = () => { return apiClient.get('/api/registros'); };
-const getRegistroDeHoy = () => { return apiClient.get('/api/registros/today'); };
-const getMetasHoy = () => apiClient.get('/api/metas/today');
-const saveRegistro = (payload) => { return apiClient.post('/api/registros', payload); };
-const getRegistroById = (id) => { return apiClient.get(`/api/registros/${id}`); };
-const saveHojaAtras = (id, texto) => { return apiClient.put(`/api/registros/${id}/hoja_atras`, { texto }); };
-const generarFraseInteligente = (payload) => { return apiClient.post('/api/sunny/generar-frase', payload); };
-const postToSunny = (payload) => { return apiClient.post('/api/sunny', payload); };
-const getMuroEstados = () => { return apiClient.get('/api/muro/estados'); };
-const getInspiracion = (orbe) => { return apiClient.get(`/api/inspiracion?orbe=${orbe}`); };
-const forgotPassword = (payload) => apiClient.post('/api/auth/forgot-password', payload);
-const updatePassword = (payload) => apiClient.post('/api/auth/update-password', payload);
-const getChartData = (filter) => {return apiClient.get(`/api/registros/chart-data?filter=${filter}`);};
-const getRegistroPorFecha = (fecha) => apiClient.get(`/api/registros/fecha/${fecha}`);
+// -- REGISTROS --
+const getRegistroDeHoy = () => apiClient.get('/registros/today');
+const saveRegistro = (payload) => apiClient.post('/registros', payload);
+const getRegistroById = (id) => apiClient.get(`/registros/${id}`); // Aún útil para el Diario
 
-// --- NUEVAS FUNCIONES PARA MINI-METAS (AHORA USANDO apiClient) ---
+// -- DIARIO (antes Hoja de Atrás) --
+const getDiarioByRegistroId = (registroId) => apiClient.get(`/diario/${registroId}`);
+const saveEntradaDiario = (payload) => apiClient.post('/diario', payload);
 
-// Llama a: GET /api/minimetas/for-registro/:registroId
-const getMiniMetas = (registroId) => {
-    // No necesita 'await' aquí, apiClient devuelve la promesa
-    return apiClient.get(`/api/minimetas/for-registro/${registroId}`);
-};
+// -- METAS --
+const getMetasHoy = () => apiClient.get('/metas/today');
+const createMeta = (payload) => apiClient.post('/metas', payload);
+const updateMeta = (id, payload) => apiClient.patch(`/metas/${id}`, payload);
+const deleteMeta = (id) => apiClient.delete(`/metas/${id}`);
 
-// Llama a: POST /api/minimetas
-const createMiniMeta = (payload) => {
-    // El payload debe ser un objeto: { descripcion, registro_id }
-    return apiClient.post('/api/minimetas', payload);
-};
+// -- SUNNY (IA) --
+const generarFraseInteligente = (payload) => apiClient.post('/sunny/generar-frase', payload);
+const postToSunny = (payload) => { return apiClient.post('/sunny', payload); };
 
-// Llama a: PATCH /api/minimetas/:id
-const updateMiniMetaStatus = (miniMetaId, completada) => {
-    // El payload es: { completada: true/false }
-    return apiClient.patch(`/api/minimetas/${miniMetaId}`, { completada });
-};
+const getMuroEstados = () => { return apiClient.get('/muro/estados'); };
 
-// Llama a: DELETE /api/minimetas/:id
-const deleteMiniMeta = (miniMetaId) => {
-    return apiClient.delete(`/api/minimetas/${miniMetaId}`);
-};
+const getChartData = (filter) => {return apiClient.get(`/registros/chart-data?filter=${filter}`);};
+const getRegistroPorFecha = (fecha) => apiClient.get(`/registros/fecha/${fecha}`);
 
-// --- EXPORTACIÓN UNIFICADA ---
+
+// --- EXPORTACIÓN UNIFICADA (sin los endpoints de auth manual que ya no existen) ---
 const api = { 
-  register, 
-  login, 
-  getMe, 
-  getRegistros, 
   getRegistroDeHoy, 
   saveRegistro, 
   getRegistroById, 
-  saveHojaAtras,
+  getDiarioByRegistroId,
+  saveEntradaDiario,
+  
   generarFraseInteligente,
   postToSunny,
   getMuroEstados,
-  getInspiracion,
   getChartData,
-  forgotPassword,
-  updatePassword,
-  getMiniMetas,
-  createMiniMeta,
-  updateMiniMetaStatus,
-  deleteMiniMeta,
   getRegistroPorFecha,
+  
   getMetasHoy,
+  createMeta,
+  updateMeta,
+  deleteMeta,
 };
 
 export default api;

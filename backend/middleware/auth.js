@@ -1,28 +1,46 @@
-// backend/middleware/auth.js
-
-const jwt = require('jsonwebtoken');
+// backend/middleware/auth.js (Versión de Depuración)
+const { createClient } = require('@supabase/supabase-js');
+const supabaseAdmin = require('../config/supabase');
 
 const authMiddleware = async (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    console.log(`[Auth Middleware] Petición recibida para: ${req.originalUrl}`); // <-- LOG 1
 
-    if (!token) {
-        return res.status(401).json({ error: 'Acceso denegado. No se proporcionó un token.' });
+    const authHeader = req.headers['authorization'];
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        console.log('[Auth Middleware] RECHAZADO: No hay cabecera de autorización.');
+        return res.status(401).json({ message: 'Acceso denegado. Formato de token inválido.' });
     }
 
-    try {
-        // CAMBIO: Verificamos el token localmente usando nuestro secreto.
-        // No hay más llamadas a Supabase aquí.
-        const decodedUser = jwt.verify(token, process.env.JWT_SECRET);
+    const token = authHeader.split(' ')[1];
 
-        // Adjuntamos el payload del token (que es nuestro objeto de usuario) a la solicitud.
-        req.user = decodedUser;
+    try {
+        console.log('[Auth Middleware] Validando token con Supabase...'); // <-- LOG 2
+        const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+
+        if (error) {
+            // Si Supabase devuelve un error, lo registramos para verlo.
+            console.error('[Auth Middleware] ERROR de Supabase al validar token:', error.message); // <-- LOG 3
+            return res.status(403).json({ message: 'Token inválido o expirado.' });
+        }
         
+        if (!user) {
+            console.log('[Auth Middleware] RECHAZADO: Token válido pero sin usuario asociado.');
+            return res.status(403).json({ message: 'Token no válido.' });
+        }
+
+        console.log(`[Auth Middleware] ÉXITO: Usuario ${user.id} validado. Pasando a la ruta...`); // <-- LOG 4
+        req.user = user;
+        
+        const supabaseUrl = process.env.SUPABASE_URL;
+        const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+        req.supabase = createClient(supabaseUrl, supabaseAnonKey, {
+            global: { headers: { Authorization: `Bearer ${token}` } }
+        });
+
         next();
     } catch (err) {
-        // Si el token es inválido (firma incorrecta o expirado), devolvemos un error.
-        console.error('Error de validación de JWT:', err.message);
-        return res.status(403).json({ error: 'Token inválido o expirado.' });
+        console.error('[Auth Middleware] ERROR CATASTRÓFICO:', err); // <-- LOG 5
+        res.status(500).json({ message: 'Error interno del servidor durante la autenticación.' });
     }
 };
 

@@ -9,38 +9,35 @@ const DiaContext = createContext();
 export const DiaProvider = ({ children }) => {
     const { user } = useAuth();
 
+    // ESTADOS SIMPLIFICADOS: Solo lo que necesitamos ahora.
     const [registroDeHoy, setRegistroDeHoy] = useState(null);
-    const [miniMetas, setMiniMetas] = useState([]);
-    const [fraseDelDia, setFraseDelDia] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [metas, setMetas] = useState([]);
 
     const refrescarDia = useCallback(async () => {
         if (!user) {
             setIsLoading(false);
+            setRegistroDeHoy(null);
+            setMetas([]);
             return;
         }
+
         setIsLoading(true);
         try {
+            // ÚNICA LLAMADA A LA API: Simple y directa.
+            const [registroResponse, metasResponse] = await Promise.all([
+                api.getRegistroDeHoy(),
+                api.getMetasHoy()
+            ]);
 
+            setRegistroDeHoy(registroResponse.data?.registro || null);
+            setMetas(metasResponse.data || []);
 
-            const registroResponse = await api.getRegistroDeHoy();
-            const registro = registroResponse?.data?.registro || null;
-            setRegistroDeHoy(registro);
-
-            if (registro) {
-                const metasResponse = await api.getMiniMetas(registro.id);
-                setMiniMetas(metasResponse?.data || []);
-                setFraseDelDia(registro.frase_sunny || "Una frase inspiradora te espera.");
-            } else {
-                setMiniMetas([]);
-                setFraseDelDia('');
-            }
         } catch (error) {
-            console.error("Error al cargar datos del día en DiaContext:", error);
-            setRegistroDeHoy(null);
-            setMiniMetas([]);
-            setFraseDelDia('');
+            console.error("Error al cargar el registro del día en DiaContext:", error);
+            setRegistroDeHoy(null); // Si falla, nos aseguramos de que el estado sea nulo.
         } finally {
+            // Pase lo que pase, terminamos de cargar.
             setIsLoading(false);
         }
     }, [user]);
@@ -49,12 +46,12 @@ export const DiaProvider = ({ children }) => {
         refrescarDia();
     }, [refrescarDia]);
 
+    // El valor compartido ahora es más limpio.
     const value = {
         registroDeHoy,
-        miniMetas,
-        fraseDelDia,
         isLoading,
         refrescarDia,
+        metas,
     };
 
     return (
@@ -65,5 +62,9 @@ export const DiaProvider = ({ children }) => {
 };
 
 export const useDia = () => {
-    return useContext(DiaContext);
+    const context = useContext(DiaContext);
+    if (context === undefined) {
+        throw new Error('useDia debe ser usado dentro de un DiaProvider');
+    }
+    return context;
 };
