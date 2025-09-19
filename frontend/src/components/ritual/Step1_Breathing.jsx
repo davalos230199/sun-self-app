@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import LottieIcon from '../LottieIcon';
 import breathingAnimation from '../../assets/animations/breath.json';
 
-const EJERCICIO_DURATION_SEC = 24;
+const EJERCICIO_DURATION_SEC = 3;
 
 const Step1_Breathing = ({ onNextStep }) => {
     const [text, setText] = useState('Inhala...');

@@ -2,13 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { OpenAI } = require('openai');
 const authMiddleware = require('../middleware/auth');
-const { createClient } = require('@supabase/supabase-js');
 const { PERSONALIDAD_SUNNY } = require('../config/prompts.js');
-
-// --- Conexión a Supabase ---
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 // --- Inicialización de OpenAI ---
 const openai = new OpenAI({
@@ -80,7 +74,7 @@ router.post('/generar-frase', async (req, res) => {
         const fraseGenerada = completion.choices[0].message.content.trim();
 
         // Usamos la nueva función RPC para actualizar la frase
-        const { error: dbError } = await supabase.rpc('update_frase_sunny', {
+        const { error: dbError } = await req.supabase.rpc('update_frase_sunny', {
             p_user_id: userId,
             p_registro_id: registroId,
             p_frase: fraseGenerada

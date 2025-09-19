@@ -1,105 +1,76 @@
-// frontend/src/pages/Journal.jsx
+// frontend/src/pages/Journal.jsx (Versión Final)
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import LoadingSpinner from '../components/LoadingSpinner'; // 1. Importamos el spinner
-import { useDia } from '../contexts/DiaContext'; 
+import LoadingSpinner from '../components/LoadingSpinner';
 
-// --- Iconos para los botones y carga (Componentes internos) ---
-const SaveIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
-);
-
-const CancelIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+// Pequeño componente para mostrar cada entrada del diario
+const EntradaDiario = ({ entrada }) => (
+    <div className="bg-amber-50 p-3 rounded-lg border border-amber-200">
+        <p className="text-zinc-700 whitespace-pre-wrap">{entrada.texto}</p>
+        <p className="text-right text-xs text-zinc-400 mt-2">
+            {new Date(entrada.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} hs
+        </p>
+    </div>
 );
 
 export default function Journal() {
-    const { id } = useParams();
+    const { id: registroId } = useParams();
     const navigate = useNavigate();
-    const { registroDeHoy } = useDia(); 
-    const [texto, setTexto] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [message, setMessage] = useState('');
+
+    const [entradas, setEntradas] = useState([]);
+    const [nuevoTexto, setNuevoTexto] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
-        const fetchJournalEntry = async () => {
+        const fetchDiario = async () => {
+            setIsLoading(true);
             try {
-                const response = await api.getRegistroById(id);
-                setTexto(response.data.hoja_atras || '');
-            } catch (error) {
-                console.error("Error al cargar la entrada del diario:", error);
-                navigate('/home');
+                const { data } = await api.getDiarioByRegistroId(registroId);
+                setEntradas(data);
             } finally {
-                setLoading(false);
+                setIsLoading(false);
             }
         };
-        fetchJournalEntry();
-    }, [id, navigate]);
+        fetchDiario();
+    }, [registroId]);
 
     const handleSave = async () => {
-        setSaving(true);
-        setMessage('');
+        if (!nuevoTexto.trim()) return;
+        setIsSaving(true);
         try {
-            // El campo en la DB sigue siendo 'hoja_atras', solo cambia la UI
-            await api.saveHojaAtras(id, texto);
-            navigate('/home');
-        } catch (error) {
-            setMessage('Error al guardar.');
-            console.error("Error al guardar:", error);
-            setSaving(false);
+            const { data: nuevaEntrada } = await api.saveEntradaDiario({ registro_id: registroId, texto: nuevoTexto });
+            setEntradas(prev => [...prev, nuevaEntrada]);
+            setNuevoTexto(''); // Limpiamos el textarea
+        } finally {
+            setIsSaving(false);
         }
     };
 
+    if (isLoading) return <LoadingSpinner message="Abriendo tu diario..." />;
+
     return (
-            <main className="flex flex-col flex-grow w-full max-w-4xl mx-auto border border-amber-300 shadow-lg rounded-2xl overflow-hidden bg-white h-full">
-                
-                {loading ? (
-                    <LoadingSpinner 
-                    message="Hoy recordé cuando..." 
-                    // Si estamos viendo el diario de hoy, usará el estado de hoy.
-                    // Si es un día antiguo, el registroDeHoy no coincidirá y usará el default (sol).
-                    estadoGeneral={registroDeHoy?.id == id ? registroDeHoy.estado_general : null}
-                />
+        <div className="flex flex-col h-full p-4">
+            <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800 mb-4">Diario de Hoy</h2>
+            
+            <div className="flex-grow overflow-y-auto space-y-3 mb-4 pr-2">
+                {entradas.length === 0 ? (
+                    <p className="text-zinc-400 text-center mt-8">Aún no has escrito nada hoy.</p>
                 ) : (
-                    <>
-                        <div className="flex-grow flex">
-                            <textarea
-                                placeholder="Escribe libremente aquí... pensamientos, ideas, listas. Este es tu espacio."
-                                value={texto}
-                                onChange={(e) => setTexto(e.target.value)}
-                                className="font-['Patrick_Hand'] break-words w-full h-full p-5 sm:p-6 text-base sm:text-lg leading-relaxed text-zinc-800 bg-transparent border-0 resize-none focus:outline-none focus:ring-0 placeholder:text-zinc-400"
-                                disabled={saving}
-                            />
-                        </div>
-                        
-                        <div className="flex-shrink-0 flex items-center justify-between gap-4 p-3 sm:p-4 border-t border-amber-300 bg-zinc-50/70">
-                            <div className="flex-grow">
-                                {message && <span className="text-sm text-red-600 italic">{message}</span>}
-                                {saving && <span className="text-sm text-zinc-600 italic animate-pulse">Guardando cambios...</span>}
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <button 
-                                    onClick={() => navigate('/home')} 
-                                    className="flex items-center gap-2 py-2 px-4 rounded-lg font-semibold bg-white text-zinc-700 border border-amber-300 hover:bg-zinc-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2"
-                                >
-                                    <CancelIcon />
-                                    <span className="hidden sm:inline">Cancelar</span>
-                                </button>
-                                
-                                <button 
-                                    onClick={handleSave} 
-                                    disabled={saving} 
-                                    className="flex items-center gap-2 py-2 px-4 rounded-lg font-semibold bg-amber-500 text-white hover:bg-amber-600 transition-colors duration-200 disabled:bg-zinc-300 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
-                                >
-                                    <SaveIcon />
-                                    <span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar'}</span>
-                                </button>
-                            </div>
-                        </div>
-                    </>
+                    entradas.map(entrada => <EntradaDiario key={entrada.id} entrada={entrada} />)
                 )}
-            </main>
+            </div>
+            
+            <textarea
+                className="w-full p-3 h-24 border border-zinc-200 rounded-lg resize-none focus:ring-2 focus:ring-amber-400"
+                value={nuevoTexto}
+                onChange={(e) => setNuevoTexto(e.target.value)}
+                placeholder="Añade una nueva reflexión..."
+            />
+            <button onClick={handleSave} disabled={isSaving} className="mt-2 w-full p-3 rounded-lg bg-gradient-to-r from-orange-500 to-amber-400 text-white font-semibold">
+                {isSaving ? 'Guardando...' : 'Añadir al Diario'}
+            </button>
+        </div>
     );
 }

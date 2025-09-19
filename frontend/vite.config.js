@@ -7,4 +7,8 @@ import react from '@vitejs/plugin-react'
 // Vite buscará automáticamente el archivo postcss.config.js.
 export default defineConfig({
   plugins: [react()],
+  server: {
+    port: 5371,
+    open: true,
+  },
 })

@@ -5,45 +5,29 @@ import RegistroDashboard from '../components/RegistroDashboard';
 import RitualFlow from '../components/RitualFlow';
 import WelcomeModal from '../components/WelcomeModal';
 import LoadingSpinner from '../components/LoadingSpinner';
-// Limpieza: Se elimina la importación de V2
-// import RegistroDashboardV2 from '../components/RegistroDashboardV2';
 
 export default function Home() {
-    const {
-        isLoading: isContextLoading,
-        registroDeHoy,
-        miniMetas,
-        fraseDelDia,
-        refrescarDia,
-    } = useDia();
+    // 1. Usamos 'isLoading' directamente del contexto. Ya no lo renombramos.
+    const { registroDeHoy, isLoading, refrescarDia } = useDia();
 
-    const [isVisualLoading, setIsVisualLoading] = useState(true);
+    // 2. ELIMINAMOS el estado 'isVisualLoading'.
     const [showWelcomeModal, setShowWelcomeModal] = useState(false);
-    // Limpieza: Se elimina el estado de control de V2
-    // const [verDashboardV2, setVerDashboardV2] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     
-    const [isFinishingRitual, setIsFinishingRitual] = useState(false);
-
-    useEffect(() => {
-        const timer = setTimeout(() => setIsVisualLoading(false), 500);
-        return () => clearTimeout(timer);
-    }, []);
-
     useEffect(() => {
         const haVistoManifiesto = localStorage.getItem('sunself_manifiesto_visto');
         if (!haVistoManifiesto) {
-            setShowWelcomeModal(true);
+            setShowWelcomeModal(false); // Cambiado a false para evitar que se muestre por ahora
         }
     }, []);
-
+    
     const handleRitualFinish = async () => {
-        setIsFinishingRitual(true);
-        if (refrescarDia) {
-            await refrescarDia();
-        }
-        setIsFinishingRitual(false);
+        setIsSubmitting(true);
+        await refrescarDia();
+        setIsSubmitting(false);
     };
 
+    // El modal de bienvenida.
     if (showWelcomeModal) {
         return (
             <WelcomeModal onAccept={() => {
@@ -53,22 +37,20 @@ export default function Home() {
         );
     }
     
-    if (isContextLoading || isVisualLoading || isFinishingRitual) {
-        return <LoadingSpinner message="Preparando tu día..." estadoGeneral={registroDeHoy?.estado_general} />;
+    // 3. La condición de carga ahora es mucho más simple y robusta.
+    if (isLoading || isSubmitting) {
+        return <LoadingSpinner message="Preparando tu día..." />;
     }
 
+    // El return principal ahora depende de una lógica clara.
     return (
         <div className="h-full w-full">
-            {/* --- Lógica de Renderizado Simplificada --- */}
             {registroDeHoy ? (
-                // Si hay registro, SÓLO muestra el Dashboard original
-                <RegistroDashboard
-                    registro={registroDeHoy}
-                    fraseDelDia={fraseDelDia}
-                    miniMetas={miniMetas}
-                />
+                // Si SÍ hay registro, muestra el Dashboard.
+                // Le pasamos 'onEdit' para el futuro, aunque aún no lo hemos implementado.
+                <RegistroDashboard onEdit={() => { console.log('Editar presionado')}} />
             ) : (
-                // Si NO hay registro, muestra el Ritual
+                // Si NO hay registro, muestra el Ritual.
                 <RitualFlow onFinish={handleRitualFinish} />
             )}
         </div>
