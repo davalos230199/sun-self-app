@@ -1,8 +1,8 @@
 import { Outlet, useLocation } from 'react-router-dom';
-import { useDia } from '../contexts/DiaContext';
+import { useDia } from '../../contexts/DiaContext';
 import PageHeader from './PageHeader';
 import Navbar from './Navbar';
-import LoadingSpinner from './LoadingSpinner';
+import LoadingSpinner from '../LoadingSpinner';
 
 const getPageTitle = (pathname, tieneRegistro) => {
     switch (true) { // Usamos 'true' para poder evaluar condiciones con startsWith
@@ -34,8 +34,8 @@ export default function AppLayout() {
     const showBackButton = pathsWithBackButton.some(path => location.pathname.startsWith(path));
 
     return (
-        <div className="h-[100dvh] w-screen bg-amber-100 p-2 sm:p-4">
-        <div className="h-full w-full max-w-lg mx-auto bg-white shadow-2xl rounded-2xl flex flex-col overflow-hidden">
+        <div className="h-[100dvh] w-screen bg-blue-300 p-2 sm:p-4">
+        <div className="h-full w-full max-w-lg mx-auto bg-amber-50 shadow-lg rounded-2xl flex flex-col overflow-hidden">
             <div className="p-2 sm:p-4 pb-0">
                 <PageHeader
                     title={getPageTitle(location.pathname, !!registroDeHoy)}

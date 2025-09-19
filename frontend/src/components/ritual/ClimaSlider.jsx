@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import LottieIcon from './LottieIcon';
-import rainLoopAnimation from '../assets/animations/rain-loop.json';
-import cloudLoopAnimation from '../assets/animations/cloud-loop.json';
-import sunLoopAnimation from '../assets/animations/sun-loop.json';
+import LottieIcon from '../LottieIcon';
+import rainLoopAnimation from '../../assets/animations/rain-loop.json';
+import cloudLoopAnimation from '../../assets/animations/cloud-loop.json';
+import sunLoopAnimation from '../../assets/animations/sun-loop.json';
 
 const aspectoConfig = {
     mente: {

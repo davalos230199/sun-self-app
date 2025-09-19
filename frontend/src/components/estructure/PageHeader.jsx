@@ -1,14 +1,14 @@
 // frontend/src/components/PageHeader.jsx
 
-import { useAuth } from '../contexts/AuthContext';
-import BotonAtras from './common/BotonAtras';
+import { useAuth } from '../../contexts/AuthContext';
+import BotonAtras from '../common/BotonAtras';
 import { motion, AnimatePresence } from 'framer-motion';
 import Lottie from 'lottie-react'; // 1. Importamos Lottie
 
 // --- Importamos las animaciones que usaremos ---
-import sunLoopAnimation from '../assets/animations/sun-loop.json';
-import cloudLoopAnimation from '../assets/animations/cloud-loop.json';
-import rainLoopAnimation from '../assets/animations/rain-loop.json';
+import sunLoopAnimation from '../../assets/animations/sun-loop.json';
+import cloudLoopAnimation from '../../assets/animations/cloud-loop.json';
+import rainLoopAnimation from '../../assets/animations/rain-loop.json';
 
 
 // --- Sub-componente para la animación ---

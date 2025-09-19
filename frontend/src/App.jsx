@@ -2,7 +2,7 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { DiaProvider } from './contexts/DiaContext';
 
 // Layouts y Rutas
-import AppLayout from './components/AppLayout';
+import AppLayout from './components/estructure/AppLayout';
 import ProtectedRoute from './components/auth/protectedroute';
 import GuestRoute from './components/auth/guestroute';
 

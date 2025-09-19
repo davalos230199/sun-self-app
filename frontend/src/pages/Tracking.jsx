@@ -1,134 +1,129 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { useDia } from '../contexts/DiaContext'; // 1. Importamos el hook de nuestro contexto
 import LoadingSpinner from '../components/LoadingSpinner';
-import HistorialChart from '../components/HistorialChart'; // 2. Importamos el gráfico desde su nuevo archivo
 import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css'; // Estilos para el calendario
+import 'react-calendar/dist/Calendar.css'; // Estilos base del calendario
+import HistorialChart from '../components/HistorialChart'; // Asumimos que este componente existe
 
-// --- Componente Principal de la Página ---
+// Estilos específicos para el calendario, ahora fuera del return para más limpieza
+const calendarCustomStyles = `
+    .react-calendar { 
+        border: none; 
+        font-family: 'Patrick Hand', sans-serif; 
+        width: 100%;
+    }
+    .react-calendar__navigation button {
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+    .react-calendar__month-view__weekdays__weekday {
+        text-align: center;
+        font-weight: bold;
+    }
+    .react-calendar__tile { 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        justify-content: flex-start; 
+        height: 60px;
+        font-size: 0.9rem;
+        padding: 2px;
+        border-radius: 8px; /* Bordes redondeados */
+    }
+    .react-calendar__tile--now { /* Estilo para el día de hoy */
+        background: #fef3c7; /* Ámbar claro */
+    }
+    .react-calendar__tile:enabled:hover,
+    .react-calendar__tile:enabled:focus {
+        background: #fde68a; /* Ámbar más oscuro al pasar el ratón */
+    }
+`;
+
 export default function Tracking() {
-    // 3. Obtenemos el registro de hoy desde el contexto para usar su estado general
-    const { registroDeHoy } = useDia(); 
-    
-    // Estados locales específicos de esta página
-    const [activeFilter, setActiveFilter] = useState('mes');
-    const [registrosCompletos, setRegistrosCompletos] = useState([]);
-    const [isLoadingPage, setIsLoadingPage] = useState(true);
+    const [historial, setHistorial] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
-    const mainContainerRef = useRef(null);
 
-    // Este efecto carga todos los registros para poder colorear el calendario
+    // 1. Hook para buscar los datos del historial cuando se monta la página
     useEffect(() => {
-        const fetchAllRegistros = async () => {
+        const fetchHistorial = async () => {
             try {
-                const response = await api.getRegistros();
-                setRegistrosCompletos(response.data || []);
-            } catch (error) {
-                console.error("Error al cargar registros para el calendario:", error);
+                setIsLoading(true);
+                // Usamos la nueva ruta del API
+                const response = await api.getHistorialRegistros(); 
+                setHistorial(response.data || []);
+            } catch (err) {
+                console.error("Error al cargar el historial:", err);
+                setError("No se pudo cargar tu historial. Inténtalo de nuevo.");
             } finally {
-                setIsLoadingPage(false);
+                setIsLoading(false);
             }
         };
-        fetchAllRegistros();
-    }, []);
 
-    // Este efecto asegura que la página siempre inicie desde arriba
-    useEffect(() => {
-        if (mainContainerRef.current) {
-            mainContainerRef.current.scrollTop = 0;
-        }
-    }, []);
+        fetchHistorial();
+    }, []); // El array vacío asegura que se ejecute solo una vez
 
-    // Función para añadir emojis a los días con registro en el calendario
+    // 2. Función para renderizar el contenido de cada día en el calendario
     const tileContent = ({ date, view }) => {
         if (view === 'month') {
-            const dateString = date.toISOString().split('T')[0];
-            const registroDelDia = registrosCompletos.find(r => r.created_at.startsWith(dateString));
+            // Buscamos si hay un registro para la fecha actual del tile
+            const registroDelDia = historial.find(r => {
+                const registroDate = new Date(r.created_at);
+                return registroDate.getFullYear() === date.getFullYear() &&
+                       registroDate.getMonth() === date.getMonth() &&
+                       registroDate.getDate() === date.getDate();
+            });
+
             if (registroDelDia) {
                 let emoji = '❔';
                 if (registroDelDia.estado_general === 'soleado') emoji = '☀️';
                 if (registroDelDia.estado_general === 'nublado') emoji = '⛅';
                 if (registroDelDia.estado_general === 'lluvioso') emoji = '🌧️';
-                return <span className="block text-xl mt-1">{emoji}</span>;
+                return <span className="block text-2xl mt-1">{emoji}</span>;
             }
         }
         return null;
     };
     
-    // Función para manejar el clic en un día del calendario
+    // 3. Función para manejar el clic en un día (sin cambios)
     const handleDayClick = (date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const fechaFormateada = `${year}-${month}-${day}`;
-        navigate(`/resumen/${fechaFormateada}`);
+        const dateString = date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+        navigate(`/resumen/${dateString}`);
     };
-    
-    const filters = [{ key: 'semana', label: '7d' }, { key: 'quince', label: '15d' }, { key: 'mes', label: '1m' }, { key: 'todo', label: 'Todo' }];
 
-    // Estilos personalizados para el calendario
-    const calendarStyles = `
-        .react-calendar { border: none; font-family: 'Patrick Hand', sans-serif; }
-        .react-calendar__tile { 
-            display: flex; flex-direction: column; align-items: center; justify-content: flex-start; height: 60px;
-        }
-    `;
+    if (isLoading) {
+        return <LoadingSpinner message="Revisando tus anales..." />;
+    }
+
+    if (error) {
+        return <div className="text-center text-red-500">{error}</div>;
+    }
 
     return (
         <>
-            <style>{calendarStyles}</style>
-            <main ref={mainContainerRef} className="h-full overflow-y-auto bg-zinc-50 snap-y snap-mandatory">
-                {isLoadingPage ? (
-                    <div className="h-full flex justify-center items-center">
-                        {/* 4. El spinner ahora usa el estado del día desde el contexto */}
-                        <LoadingSpinner 
-                            message="Observando el pasado..." 
-                            estadoGeneral={registroDeHoy?.estado_general}
-                        />
-                    </div>
-                ) : (
-                    <div className="flex flex-col space-y-6">
-                        {/* Sección del Calendario */}
-                        <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6 snap-start">
-                            <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800 mb-4">Calendario de Reflejos</h2>
-                            <Calendar
-                                className="w-full"
-                                tileContent={tileContent}
-                                onClickDay={handleDayClick}
-                            />
-                        </section>
-                        
-                        {/* Sección del Gráfico */}
-                        <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6 snap-start">
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800">Tu Fluctuación</h2>
-                                <div className="flex items-center gap-2 bg-zinc-100 border border-zinc-200 rounded-full p-1">
-                                    {filters.map(filter => (
-                                        <button key={filter.key} onClick={() => setActiveFilter(filter.key)} className={`px-3 py-1 text-sm font-semibold rounded-full transition-colors ${activeFilter === filter.key ? 'bg-white text-amber-600 shadow-sm' : 'text-zinc-500 hover:bg-zinc-200/50'}`}>
-                                            {filter.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            {/* 5. Llamamos al componente del gráfico y le pasamos el estado del día */}
-                            <HistorialChart 
-                                filter={activeFilter} 
-                                estadoGeneral={registroDeHoy?.estado_general} 
-                            />
-                        </section>
-                        
-                        {/* Sección de Recuerdos (Platzhalter) */}
-                        <section className="bg-white border border-amber-300 shadow-lg rounded-2xl p-4 sm:p-6 snap-start">
-                            <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800 mb-4">Tus Recuerdos</h2>
-                            <div className="text-center py-10 text-zinc-400 italic">
-                                (Próximamente: La 'Lista de Recuerdos' recuperada vivirá aquí)
-                            </div>
-                        </section>
-                    </div>
+            <style>{calendarCustomStyles}</style>
+            <div className="space-y-6 animate-fade-in">
+                {/* Sección del Calendario */}
+                <section className="bg-white border border-amber-200 shadow-lg rounded-2xl p-4">
+                    <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800 mb-4 text-center">Tu Viaje Interior</h2>
+                    <Calendar
+                        onClickDay={handleDayClick}
+                        tileContent={tileContent}
+                        maxDate={new Date()} // No se pueden seleccionar días futuros
+                    />
+                </section>
+                
+                {/* Sección del Gráfico */}
+                {historial.length > 0 && (
+                     <section className="bg-white border border-amber-200 shadow-lg rounded-2xl p-4">
+                        <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800 mb-4 text-center">La Marea de tu Ser</h2>
+                        {/* El componente del gráfico ahora recibe todo el historial */}
+                        <HistorialChart data={historial} />
+                     </section>
                 )}
-            </main>
+            </div>
         </>
     );
 }

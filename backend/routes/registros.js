@@ -42,6 +42,27 @@ router.get('/today', async (req, res) => {
     }
 });
 
+// GET /historial - NUEVO ENDPOINT PARA EL TRACKING
+router.get('/historial', async (req, res) => {
+    try {
+        const { id: profileId } = req.user;
+
+        const { data, error } = await req.supabase
+            .from('registros')
+            .select('*') // Seleccionamos todos los campos
+            .eq('profile_id', profileId)
+            .order('created_at', { ascending: true }); // Ordenamos del más antiguo al más nuevo
+
+        if (error) throw error;
+
+        res.status(200).json(data);
+
+    } catch (err) {
+        console.error("Error en GET /registros/historial:", err.message);
+        res.status(500).json({ error: 'Error al obtener el historial de registros.' });
+    }
+});
+
 // POST / - ADAPTADO A LA NUEVA ESTRUCTURA
 router.post('/', async (req, res) => {
     try {

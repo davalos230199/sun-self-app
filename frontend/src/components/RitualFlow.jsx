@@ -56,10 +56,6 @@ export default function RitualFlow({ onFinish }) {
             const response = await api.saveRegistro(registroParaEnviar);
             const registroCompleto = response.data;
 
-            if (metaData && metaData.trim() !== '') {
-            await api.createMeta({ descripcion: metaData });
-        }
-
             setRitualData(prev => ({
                 ...prev,
                 ...registroParaEnviar,

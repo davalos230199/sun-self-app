@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import LottieIcon from '../LottieIcon';
-import ClimaSlider from '../ClimaSlider';
-import SunTimer from '../SunTimer';
+import ClimaSlider from './ClimaSlider';
+import SunTimer from './SunTimer';
 import brainRevealAnimation from '../../assets/animations/brain-reveal.json';
 import brainLoopAnimation from '../../assets/animations/brain-loop.json';
 

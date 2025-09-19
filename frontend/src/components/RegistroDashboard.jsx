@@ -55,7 +55,7 @@ const EstadoWidget = ({ registro, onEdit }) => {
 
     return (
         <Link to="/tracking" className="no-underline text-inherit block">
-            <div className="relative flex flex-col border border-amber-200 bg-amber-100 rounded-2xl p-5 text-center min-h-[220px]">
+            <div className="relative flex flex-col border border-amber-200 bg-amber-100 rounded-2xl p-5 text-center min-h-[220px] shadow-lg">
                 {/* Botones de acción */}
                 <div className="absolute top-3 right-3 flex items-center gap-2">
                     <button
