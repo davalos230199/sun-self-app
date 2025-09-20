@@ -43,13 +43,11 @@ const registrosRoutes = require('./routes/registros');
 const diarioRoutes = require('./routes/diario');
 const sunnyRoutes = require('./routes/sunny');
 const metasRouter = require('./routes/metas');
-const inspiracionRoutes = require('./routes/inspiracion');
 const muroRoutes = require('./routes/muro');
 
 
 
 app.use('/api/sunny', sunnyRoutes);
-app.use('/api/inspiracion', inspiracionRoutes);
 app.use('/api/muro', muroRoutes);
 app.use('/api/metas', metasRouter);
 app.use('/api/registros', registrosRoutes);

@@ -1,57 +1,69 @@
-// frontend/src/components/HistorialChart.jsx
-
-import React, { useState, useEffect } from 'react';
-import api from '../services/api';
-import LoadingSpinner from './LoadingSpinner';
+import React, { useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-// La línea que causaba el error (`import "./EstadoChart.css";`) ha sido eliminada.
+import Lottie from 'lottie-react';
 
-const yAxisTickFormatter = (value) => {
-    if (value === 4) return '☀️';
-    if (value === 3) return '⛅';
-    if (value === 2) return '🌧️';
-    return '';
-};
+// --- Animaciones ---
+import sunLoopAnimation from '../assets/animations/sun-loop.json';
+import cloudLoopAnimation from '../assets/animations/cloud-loop.json';
+import rainLoopAnimation from '../assets/animations/rain-loop.json';
 
-const HistorialChart = ({ filter, estadoGeneral }) => {
-    const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+const COLORS = { mente: '#3b82f6', emocion: '#8b5cf6', cuerpo: '#10b981', grid: '#e5e7eb' };
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                await new Promise(res => setTimeout(res, 500));
-                const response = await api.getChartData(filter);
-                setData(response.data);
-                setError(null);
-            } catch (err) {
-                setError("No se pudieron cargar los datos.");
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, [filter]);
+export default function HistorialChart({ data, filter, visibility }) {
+    
+    const processedData = useMemo(() => {
+        // ... (lógica de procesamiento de datos no cambia) ...
+        const endDate = new Date();
+        let startDate = new Date();
+        
+        switch (filter) {
+            case 'dia': startDate.setDate(endDate.getDate() - 1); break;
+            case 'semana': startDate.setDate(endDate.getDate() - 7); break;
+            case 'quince': startDate.setDate(endDate.getDate() - 15); break;
+            case 'todo':
+            default: startDate = new Date(0);
+        }
 
-    if (loading) return <LoadingSpinner message="Dibujando tus días..." estadoGeneral={estadoGeneral} />;
-    if (error) return <div className="text-center py-10 text-red-600 italic">{error}</div>;
-    if (data.length === 0) return <div className="text-center py-10 text-zinc-500 italic">No hay datos para este período.</div>;
+        const filteredByDate = data.filter(item => new Date(item.created_at) >= startDate && new Date(item.created_at) <= endDate);
+        const groupedByDay = filteredByDate.reduce((acc, curr) => {
+            const day = new Date(curr.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+            if (!acc[day]) acc[day] = [];
+            acc[day].push(curr);
+            return acc;
+        }, {});
+        
+        return Object.keys(groupedByDay).map(day => {
+            const dayEntries = groupedByDay[day];
+            const avg = (key) => dayEntries.reduce((sum, entry) => sum + entry[key], 0) / dayEntries.length;
+            return { name: day, mente: avg('mente_estado'), emocion: avg('emocion_estado'), cuerpo: avg('cuerpo_estado') };
+        });
+    }, [data, filter]);
+
+    if (!processedData || processedData.length === 0) {
+        return <div className="text-center text-zinc-500 py-10">No hay datos para mostrar en este período.</div>;
+    }
 
     return (
-        <div className="w-full h-[400px]">
+        <div className="relative w-full h-[350px]">
+            {/* ... (Indicadores de estado en el eje Y no cambian) ... */}
+            <div className="absolute top-0 left-0 w-8 h-full z-10">
+                <div className="absolute w-10 h-10" style={{ top: '12%', transform: 'translateY(-50%)' }} title="Soleado (83)"><Lottie animationData={sunLoopAnimation} loop={true} /></div>
+                <div className="absolute w-10 h-10" style={{ top: '45%', transform: 'translateY(-50%)' }} title="Nublado (50)"><Lottie animationData={cloudLoopAnimation} loop={true} /></div>
+                <div className="absolute w-10 h-10" style={{ top: '78%', transform: 'translateY(-50%)' }} title="Lluvioso (16)"><Lottie animationData={rainLoopAnimation} loop={true} /></div>
+            </div>
+
             <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                    <XAxis dataKey="fecha" tick={{ fontSize: 12, fill: '#666' }} />
-                    <YAxis domain={[1.5, 4.5]} ticks={[2, 3, 4]} tickFormatter={yAxisTickFormatter} tick={{ fontSize: 16 }} />
-                    <Tooltip contentStyle={{ borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }} />
-                    <Line type="monotone" dataKey="valor" name="Fluctuación" stroke="#f59e0b" strokeWidth={3} dot={{ r: 5 }} activeDot={{ r: 8 }} />
+                <LineChart data={processedData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={COLORS.grid} />
+                    <XAxis dataKey="name" tick={{ fontFamily: 'Patrick Hand', fontSize: 12 }} />
+                    <YAxis domain={[0, 100]} tick={{ fontFamily: 'Patrick Hand', fontSize: 12 }} />
+                    <Tooltip contentStyle={{ borderRadius: '0.75rem', borderColor: '#fcd34d', fontFamily: 'Patrick Hand' }} />
+                    {/* Las líneas ahora usan la prop 'visibility' que viene de Tracking.jsx */}
+                    <Line type="monotone" dataKey="mente" stroke={COLORS.mente} strokeWidth={3} dot={false} activeDot={{ r: 6 }} hide={!visibility.mente} />
+                    <Line type="monotone" dataKey="emocion" stroke={COLORS.emocion} strokeWidth={3} dot={false} activeDot={{ r: 6 }} hide={!visibility.emocion} />
+                    <Line type="monotone" dataKey="cuerpo" stroke={COLORS.cuerpo} strokeWidth={3} dot={false} activeDot={{ r: 6 }} hide={!visibility.cuerpo} />
                 </LineChart>
             </ResponsiveContainer>
         </div>
     );
-};
-
-export default React.memo(HistorialChart);
+}
