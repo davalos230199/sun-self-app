@@ -63,6 +63,57 @@ router.get('/historial', async (req, res) => {
     }
 });
 
+// GET /by-date/:date - NUEVO ENDPOINT PARA BUSCAR REGISTROS DE UN DÍA ESPECÍFICO
+router.get('/by-date/:date', async (req, res) => {
+    try {
+        const { id: profileId } = req.user;
+        const { date } = req.params;
+
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+            return res.status(400).json({ error: 'Formato de fecha inválido. Usar YYYY-MM-DD.' });
+        }
+
+        // --- PASO 1: Obtener los registros del día (con sus metas) ---
+        const { data: registros, error: registrosError } = await req.supabase
+            .from('registros')
+            .select('*, metas ( * )')
+            .eq('profile_id', profileId)
+            .gte('created_at', `${date}T00:00:00.000Z`)
+            .lte('created_at', `${date}T23:59:59.999Z`)
+            .order('created_at', { ascending: true });
+
+        if (registrosError) throw registrosError;
+        if (!registros || registros.length === 0) {
+            return res.status(200).json([]); // Si no hay registros, devolvemos un array vacío
+        }
+
+        // --- PASO 2: Obtener las entradas del diario asociadas a esos registros ---
+        const registroIds = registros.map(r => r.id); // Sacamos los IDs de los registros encontrados
+        
+        const { data: diarios, error: diariosError } = await req.supabase
+            .from('diario') // Buscamos en la tabla 'diario'
+            .select('*')
+            .in('registro_id', registroIds); // Donde el registro_id esté en nuestra lista de IDs
+
+        if (diariosError) throw diariosError;
+
+        // --- PASO 3: Unir los diarios a sus respectivos registros ---
+        const diariosMap = new Map(diarios.map(d => [d.registro_id, d])); // Creamos un mapa para búsqueda rápida
+
+        const registrosCompletos = registros.map(registro => ({
+            ...registro,
+            // Añadimos el objeto 'diario' si existe en el mapa
+            diario: diariosMap.get(registro.id) || null, 
+        }));
+
+        res.status(200).json(registrosCompletos);
+
+    } catch (err) {
+        console.error("Error en GET /registros/by-date:", err.message);
+        res.status(500).json({ error: 'Error al obtener los registros de la fecha.' });
+    }
+});
+
 // POST / - ADAPTADO A LA NUEVA ESTRUCTURA
 router.post('/', async (req, res) => {
     try {

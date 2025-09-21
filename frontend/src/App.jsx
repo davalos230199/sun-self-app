@@ -1,5 +1,7 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { DiaProvider } from './contexts/DiaContext';
+import { TrackingProvider } from './contexts/TrackingContext';
+import { HeaderProvider } from './contexts/HeaderContext'; // Importa el HeaderProvider
 
 // Layouts y Rutas
 import AppLayout from './components/estructure/AppLayout';
@@ -33,22 +35,24 @@ const router = createBrowserRouter([
     // GRUPO DE RUTAS PROTEGIDAS (logueados)
     element: (
       <ProtectedRoute>
-        <DiaProvider>
-          <AppLayout />
-       </DiaProvider>
-      </ProtectedRoute>
+            <DiaProvider>
+                <HeaderProvider> {/* Envolver AppLayout */}
+                    <AppLayout />
+                </HeaderProvider>
+            </DiaProvider>
+        </ProtectedRoute>
     ),
             // Las rutas hijas heredan la protección y el layout.
         children: [
             { path: 'home', element: <Home /> },
-            { path: 'tracking', element: <Tracking /> },
+            { path: 'tracking', element: <TrackingProvider><Tracking /></TrackingProvider> }, 
             { path: 'sunny', element: <Sunny /> },
             { path: 'settings', element: <Settings /> },
             { path: 'journal/:id', element: <Journal /> },
             { path: 'muro', element: <MuroDeSoles /> },
             { path: 'metas', element: <MetasPage /> },
             { path: 'filosofia', element: <Filosofia /> },
-            { path: 'resumen/:fecha', element: <ResumenDia /> },
+            { path: 'resumen/:date', element: <ResumenDia /> },
         ],
     },
 ]);

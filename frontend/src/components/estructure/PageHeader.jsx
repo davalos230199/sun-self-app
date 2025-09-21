@@ -46,7 +46,7 @@ export default function PageHeader({ title, registroDeHoy, showBackButton }) {
     // 2. Ya no necesitamos la función determinarClima ni la variable climaEmoji
 
     return (
-        <header className="bg-white border border-amber-400 rounded-lg shadow-md p-4 w-full flex-shrink-0">
+        <header className="bg-amber-50 border border-amber-400 rounded-lg shadow-md p-4 w-full flex-shrink-0">
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-4 flex-1">
                     <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800">

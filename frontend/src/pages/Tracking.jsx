@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { useTracking } from '../contexts/TrackingContext'; 
 import LoadingSpinner from '../components/LoadingSpinner';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -40,7 +41,7 @@ const calendarCustomStyles = `
         border-radius: 8px; /* Bordes redondeados */
     }
     .react-calendar__tile--now { /* Estilo para el día de hoy */
-        background: #fef3c7; /* Ámbar claro */
+        background: #ceb552ff; /* Ámbar claro */
     }
     .react-calendar__tile:enabled:hover,
     .react-calendar__tile:enabled:focus {
@@ -54,7 +55,8 @@ export default function Tracking() {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     const [activeDateFilter, setActiveDateFilter] = useState('semana');
-     const [aspectVisibility, setAspectVisibility] = useState({ mente: true, emocion: true, cuerpo: true });
+    const [aspectVisibility, setAspectVisibility] = useState({ mente: true, emocion: true, cuerpo: true });
+    const { activeStartDate, setActiveStartDate } = useTracking(); // Usar el contexto
 
     const handleAspectClick = (dataKey) => {
         const isOnlyOneVisible = aspectVisibility[dataKey] && Object.values(aspectVisibility).filter(v => v).length === 1;
@@ -137,17 +139,19 @@ export default function Tracking() {
          <>
             <style>{calendarCustomStyles}</style>
             <div className="h-full overflow-y-auto space-y-6 animate-fade-in snap-y snap-mandatory">
-                <section className="bg-white border border-amber-200 shadow-lg rounded-2xl p-4 snap-start">
+                <section className="bg-amber-50 border border-amber-400 shadow-lg rounded-2xl p-4 snap-start">
                     <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800 mb-4 text-center">Tu Calendario</h2>
                     <Calendar
                         onClickDay={handleDayClick}
                         tileContent={tileContent}
                         maxDate={new Date()}
+                        activeStartDate={activeStartDate} // Leer desde el contexto
+                        onActiveStartDateChange={({ activeStartDate }) => setActiveStartDate(activeStartDate)} // Escribir al contexto
                     />
                 </section>
                 
             {historial.length > 0 && (
-                     <section className="bg-white border border-amber-200 shadow-lg rounded-2xl p-4 snap-start">
+                     <section className="bg-white border border-amber-400 shadow-lg rounded-2xl p-4 snap-start">
                         {/* Contenedor del Título y Filtro de Fechas */}
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800">Fluctuación</h2>

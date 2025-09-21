@@ -27,7 +27,7 @@ const ClimaAnimado = ({ estadoGeneral }) => {
 const MetaPrincipalWidget = ({ meta }) => {
     if (!meta) {
         return (
-            <div className="flex flex-col bg-green-50 border border-amber-100 rounded-2xl p-5 text-center justify-center">
+            <div className="flex flex-col bg-green-50 border border-amber-400 rounded-2xl p-5 text-center justify-center">
                 <h3 className="font-['Patrick_Hand'] text-xl text-amber-800">
                     No definiste un norte para hoy.
                 </h3>
@@ -37,7 +37,7 @@ const MetaPrincipalWidget = ({ meta }) => {
     }
     return (
         <Link to="/metas" className="no-underline text-inherit block">
-            <div className="flex flex-col bg-green-100 border-2 border-amber-200 rounded-2xl p-5 text-center shadow-lg">
+            <div className="flex flex-col bg-green-100 border-2 border-amber-400 rounded-2xl p-5 text-center shadow-lg">
                 <div className="flex justify-center items-center gap-2">
                     <Star className="text-amber-500" size={20} />
                     <h2 className="font-['Patrick_Hand'] text-lg text-amber-800">Tu Norte para Hoy</h2>
@@ -55,7 +55,7 @@ const EstadoWidget = ({ registro, onEdit }) => {
 
     return (
         <Link to="/tracking" className="no-underline text-inherit block">
-            <div className="relative flex flex-col border border-amber-200 bg-amber-100 rounded-2xl p-5 text-center min-h-[220px] shadow-lg">
+            <div className="relative flex flex-col border border-amber-400 bg-amber-100 rounded-2xl p-5 text-center min-h-[220px] shadow-lg">
                 {/* Botones de acción */}
                 <div className="absolute top-3 right-3 flex items-center gap-2">
                     <button
