@@ -1,49 +1,34 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../services/supabaseClient';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext'; // Importamos el hook completo
 import LoadingSpinner from '../components/LoadingSpinner';
-import { useDia } from '../contexts/DiaContext'; // 1. CONEXIÓN: Ya tenías la importación, la usaremos
+import { useDia } from '../contexts/DiaContext';
 
 export default function Settings() {
-    const navigate = useNavigate();
-    const { setUser } = useAuth();
-    // 2. CONEXIÓN: Obtenemos el registro del día para pasárselo al spinner
-    const { registroDeHoy } = useDia(); 
+    // 1. Obtenemos la función 'logout' de nuestro contexto
+    const { signOut } = useAuth();
+    const { registroDeHoy } = useDia();
 
-    // --- LIMPIEZA: Eliminamos el estado del modal del ritual ---
-    // const [showRitualModal, setShowRitualModal] = useState(false); 
-    
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [isPageLoading, setIsPageLoading] = useState(true);
 
-    // Tu lógica de carga visual se mantiene
     useEffect(() => {
-        const entryTimer = setTimeout(() => {
-            setIsPageLoading(false);
-        }, 750);
+        const entryTimer = setTimeout(() => setIsPageLoading(false), 750);
         return () => clearTimeout(entryTimer);
     }, []);
 
     const handleLogout = async () => {
         setIsLoggingOut(true);
+        // La nueva lógica es increíblemente simple
         try {
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            const { error } = await supabase.auth.signOut();
-            if (error) {
-                console.error('Error al cerrar sesión:', error);
-            }
-            localStorage.removeItem('token');
-            setUser(null);
-            navigate('/login');
-        } catch (err) {
-            console.error('Error inesperado al cerrar sesión:', err);
+            await signOut();
+            // No necesitamos hacer navigate() ni setUser(null), el AuthContext ya lo hace.
+        } catch (error) {
+            console.error("Error al cerrar sesión desde Settings:", error);
+            // Si falla, al menos nos aseguramos de que el spinner se detenga
             setIsLoggingOut(false);
         }
     };
-    
-    // --- LIMPIEZA: La función handleRitualFinish ya no es necesaria ---
-    // const handleRitualFinish = (ritualData) => { ... };
 
     if (isPageLoading || isLoggingOut) {
         const message = isLoggingOut ? "Vuelve siempre que quieras..." : "Revisando tu espacio...";
@@ -68,8 +53,6 @@ export default function Settings() {
                     <p className="['Patrick_Hand'] text-zinc-600 mb-6">
                         Aquí podrás gestionar tu cuenta en el futuro.
                     </p>
-                    
-                    {/* --- LIMPIEZA: Eliminamos el botón de "Probar Ritual" --- */}
                 </div>
             </div>
 
@@ -77,15 +60,14 @@ export default function Settings() {
                 <Link to="/filosofia" className="block text-center w-full bg-white hover:bg-zinc-100 text-zinc-700 border border-amber-300 font-['Patrick_Hand'] text-lg py-2.5 px-4 rounded-lg transition-colors duration-200">
                     Leer nuestra filosofía
                 </Link>
-                <button 
-                    onClick={handleLogout} 
-                    className="w-full bg-zinc-700 hover:bg-zinc-800 text-white font-['Patrick_Hand'] text-lg py-2.5 px-4 rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
-                >
-                    Cerrar Sesión
-                </button>
+            <button 
+                onClick={handleLogout} 
+                disabled={isLoggingOut} // Usamos el estado para deshabilitar el botón
+                className="w-full bg-zinc-700 hover:bg-zinc-800 text-white ... disabled:bg-zinc-500"
+            >
+                {isLoggingOut ? 'Cerrando sesión...' : 'Cerrar Sesión'}
+            </button>
             </div>
-            
-            {/* --- LIMPIEZA: Eliminamos el renderizado del modal del RitualFlow --- */}
         </main>
     );
 }
