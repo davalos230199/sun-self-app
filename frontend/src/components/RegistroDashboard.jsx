@@ -16,7 +16,7 @@ import bodyLoopAnimation from '../assets/animations/body-loop.json';
 
 // --- SUB-COMPONENTES REFACTORIZADOS ---
 
-const MetaPrincipalWidget = ({ meta, metasDelDia }) => {
+export const MetaPrincipalWidget = ({ meta, metasDelDia }) => {
     // Lógica para el contador de metas, tal como lo pediste
     const completadas = metasDelDia?.filter(m => m.completada).length || 0;
     const total = metasDelDia?.length || 0;
@@ -48,7 +48,7 @@ const MetaPrincipalWidget = ({ meta, metasDelDia }) => {
     );
 };
 
-const MiniHistorial = ({ historial }) => {
+export const MiniHistorial = ({ historial }) => {
     
     const scrollContainerRef = useRef(null);
     // Función para obtener la etiqueta correcta del día ("Ayer" o el nombre del día)
@@ -105,7 +105,7 @@ const MiniHistorial = ({ historial }) => {
     );
 };
 
-const EstadoWidget = ({ registro, onEdit, historial }) => {
+export const EstadoWidget = ({ registro, onEdit, historial }) => {
 
     const navigate = useNavigate();
         // Pequeño componente para mostrar cada comentario
@@ -141,17 +141,17 @@ const EstadoWidget = ({ registro, onEdit, historial }) => {
 
 // --- NUEVOS WIDGETS PARA EL DASHBOARD ---
 
-const DiarioWidget = ({ registroId }) => (
+export const DiarioWidget = ({ registroId }) => (
     <Link to={`/journal/${registroId}`} className="no-underline text-inherit block h-full group">
         {/* Usamos un color azul pizarra, elegante y sobrio */}
         <div className="h-full bg-slate-700 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-lg hover:bg-slate-600 transition-colors">
             <h3 className="font-['Patrick_Hand'] italic text-lg text-white">Tablero</h3>
-            <p className="text-xs text-slate-300">Organiza tu dia.</p>
+            <p className="text-xs font-['Patrick_Hand'] italic text-slate-300">Organiza tu dia.</p>
         </div>
     </Link>
 );
 
-const PersonalizacionWidget = () => (
+export const PersonalizacionWidget = () => (
     <div className="h-full bg-zinc-100 border border-dashed border-zinc-300 rounded-2xl p-4 flex flex-col items-center justify-center text-center">
         <Settings className="text-zinc-400 mb-2" size={40} />
         <h3 className="font-['Patrick_Hand'] text-lg text-zinc-700">Personaliza tu Ritual</h3>
@@ -164,11 +164,11 @@ const PersonalizacionWidget = () => (
 export default function RegistroDashboard({ onEdit }) {
     const { registroDeHoy, metas } = useDia();
     const [historialSemanal, setHistorialSemanal] = useState([]);
-        useEffect(() => {
+        
+    useEffect(() => {
         const fetchHistorial = async () => {
             try {
                 const response = await api.getResumenSemanal();
-                // Filtramos el registro de hoy para no mostrarlo duplicado
                 const ayerYAntes = response.data.filter(reg => 
                     new Date(reg.created_at).toDateString() !== new Date().toDateString()
                 );
@@ -187,16 +187,10 @@ export default function RegistroDashboard({ onEdit }) {
         : null;
 
     return (
-        // Nuevo orden de filas: Meta, Estado, y al final los widgets del Diario/Personalización
         <div className="h-full grid grid-rows-[auto_1fr_auto] gap-4 animate-fade-in">
-            {/* Fila 1 (Meta) */}
             <div><MetaPrincipalWidget meta={metaPrincipal} metasDelDia={metas} /></div>
-
-            {/* Fila 2 (Estado, ahora se expande y contiene el historial) */}
             <div><EstadoWidget registro={registroDeHoy} onEdit={onEdit} historial={historialSemanal} /></div>
-
-            {/* Fila 3 (Diario y Personalización) */}
-            <div className="grid grid-cols-2 gap-4 h-32"> {/* Damos una altura fija a la fila inferior */}
+            <div className="grid grid-cols-2 gap-4 h-32">
                 <div className="col-span-1"><DiarioWidget registroId={registroDeHoy.id} /></div>
                 <div className="col-span-1"><PersonalizacionWidget /></div>
             </div>
