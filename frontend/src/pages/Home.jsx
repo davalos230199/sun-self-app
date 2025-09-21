@@ -7,10 +7,8 @@ import WelcomeModal from '../components/WelcomeModal';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function Home() {
-    // 1. Usamos 'isLoading' directamente del contexto. Ya no lo renombramos.
-    const { registroDeHoy, isLoading, refrescarDia } = useDia();
 
-    // 2. ELIMINAMOS el estado 'isVisualLoading'.
+    const { registroDeHoy, isLoading, refrescarDia } = useDia();
     const [showWelcomeModal, setShowWelcomeModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     
@@ -44,15 +42,12 @@ export default function Home() {
 
     // El return principal ahora depende de una lógica clara.
     return (
-        <div className="h-full w-full">
+        <> 
             {registroDeHoy ? (
-                // Si SÍ hay registro, muestra el Dashboard.
-                // Le pasamos 'onEdit' para el futuro, aunque aún no lo hemos implementado.
                 <RegistroDashboard onEdit={() => { console.log('Editar presionado')}} />
             ) : (
-                // Si NO hay registro, muestra el Ritual.
                 <RitualFlow onFinish={handleRitualFinish} />
             )}
-        </div>
+        </>
     );
 }

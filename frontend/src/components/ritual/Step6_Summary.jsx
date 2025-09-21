@@ -1,73 +1,70 @@
-// Archivo: frontend/src/components/ritual/Step6_Summary.jsx
+// frontend/src/components/ritual/Step6_Summary.jsx
 
-import React from 'react';
+import React, { useState } from 'react'; // Importamos useState
 import { motion } from 'framer-motion';
-import LottieIcon from '../LottieIcon';
+import Lottie from 'lottie-react';
 
-// 1. Importamos TODAS las animaciones 'reveal' necesarias
+// Importamos las animaciones
 import sunRevealAnimation from '../../assets/animations/sun-reveal.json';
+import sunLoopAnimation from '../../assets/animations/sun-loop.json';
 import cloudRevealAnimation from '../../assets/animations/cloud-reveal.json';
+import cloudLoopAnimation from '../../assets/animations/cloud-loop.json';
 import rainRevealAnimation from '../../assets/animations/rain-reveal.json';
+import rainLoopAnimation from '../../assets/animations/rain-loop.json';
 
-// 2. Creamos un objeto de configuración para manejar la lógica visual
-const summaryConfig = {
-    soleado: {
-        animation: sunRevealAnimation,
-        borderColor: 'border-yellow-400',
-        buttonColor: 'bg-yellow-400 hover:bg-yellow-500',
-    },
-    nublado: {
-        animation: cloudRevealAnimation,
-        borderColor: 'border-slate-400',
-        buttonColor: 'bg-slate-400 hover:bg-slate-500',
-    },
-    lluvioso: {
-        animation: rainRevealAnimation,
-        borderColor: 'border-sky-400',
-        buttonColor: 'bg-sky-400 hover:bg-sky-500',
-    },
+const animationMap = {
+    soleado: { reveal: sunRevealAnimation, loop: sunLoopAnimation },
+    nublado: { reveal: cloudRevealAnimation, loop: cloudLoopAnimation },
+    lluvioso: { reveal: rainRevealAnimation, loop: rainLoopAnimation },
 };
 
-const Step6_Summary = ({ ritualData, onNextStep }) => {
-    // 3. Seleccionamos la configuración correcta basada en el estadoGeneral.
-    // Añadimos un fallback a 'soleado' por si el dato no llega, para evitar que la app crashee.
-    const config = summaryConfig[ritualData.estadoGeneral] || summaryConfig['soleado'];
+export default function Step6_Summary({ ritualData, onNextStep }) {
+    // --- 1. DESTRUCTURAMOS los datos que necesitamos de la 'caja' ritualData ---
+    const { estadoGeneral, fraseDelDia } = ritualData;
+
+    // Obtenemos las animaciones correctas, con un valor por defecto
+    const anims = animationMap[estadoGeneral] || animationMap.nublado;
+
+    // --- 2. MOVEMOS los hooks useState DENTRO del componente ---
+    const [currentAnimation, setCurrentAnimation] = useState(anims.reveal);
+    const [shouldLoop, setShouldLoop] = useState(false);
+
+    const handleRevealComplete = () => {
+        // Solo cambiamos a loop si la animación actual es la de 'reveal'
+        // para evitar que se llame en un bucle infinito si onComplete se dispara de nuevo.
+        if (currentAnimation === anims.reveal) {
+            setCurrentAnimation(anims.loop);
+            setShouldLoop(true);
+        }
+    };
 
     return (
         <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
-            // 4. Aplicamos los estilos dinámicos del borde
-            className={`bg-white rounded-2xl shadow-xl p-8 text-center flex flex-col items-center justify-between gap-4 w-full max-w-sm border-2 ${config.borderColor} min-h-[580px]`}
-        >
-            <div className="w-full flex flex-col items-center gap-4">
-                <h2 className="font-['Patrick_Hand'] text-3xl text-zinc-800">Tu Resumen del Día</h2>
-                <LottieIcon 
-                    // 5. Aplicamos la animación dinámica
-                    animationData={config.animation}
-                    className="w-56 h-56 -mt-8"
-                    loop={false}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.5 }}
+            className="bg-white rounded-2xl shadow-xl p-8 text-center flex flex-col items-center justify-center gap-4 w-full max-w-sm border-2 border-slate-300 min-h-[580px]"
+        >   
+            <h2 className="font-['Patrick_Hand'] text-3xl italic text-zinc-800">Piensa en lo siguiente</h2>
+                <Lottie 
+                    className="w-56 h-56"
+                    animationData={currentAnimation} 
+                    loop={shouldLoop}
+                    onComplete={handleRevealComplete}
                 />
-            </div>
-            
-            <div className="w-full flex flex-col items-center gap-4">
-                 <p className="text-md text-zinc-600 px-2 italic">Sunny dice:</p>
-                <p className="text-lg text-zinc-800 font-semibold px-4">
-                    "{ritualData.fraseDelDia || 'Cargando tu insight...'}"
-                </p>
-                
-                <button
-                    onClick={onNextStep}
-                    // 6. Aplicamos los estilos dinámicos del botón
-                    className={`mt-4 text-white font-['Patrick_Hand'] text-xl px-8 py-3 w-full rounded-xl shadow-lg transition-colors ${config.buttonColor}`}
-                >
-                    Finalizar
-                </button>
-            </div>
+
+            <p className="font-['Patrick_Hand'] italic text-2xl text-zinc-700 mt-4">
+                {/* --- 3. Usamos la variable 'fraseDelDia' que ya destructuramos --- */}
+                "{fraseDelDia || 'Un momento de claridad...'}"
+            </p>
+
+            <button
+                onClick={onNextStep}
+                className="mt-8 w-full bg-amber-500 text-white font-bold py-3 px-4 rounded-xl hover:bg-amber-600 transition-colors shadow-lg"
+            >
+                Finalizar
+            </button>
         </motion.div>
     );
-};
-
-export default Step6_Summary;
+}

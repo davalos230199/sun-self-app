@@ -73,44 +73,75 @@ router.get('/by-date/:date', async (req, res) => {
             return res.status(400).json({ error: 'Formato de fecha inválido. Usar YYYY-MM-DD.' });
         }
 
-        // --- PASO 1: Obtener los registros del día (con sus metas) ---
+        // --- PASO 1: Obtener los registros del día (con sus metas principales) ---
         const { data: registros, error: registrosError } = await req.supabase
-            .from('registros')
-            .select('*, metas ( * )')
-            .eq('profile_id', profileId)
-            .gte('created_at', `${date}T00:00:00.000Z`)
-            .lte('created_at', `${date}T23:59:59.999Z`)
-            .order('created_at', { ascending: true });
-
+            .from('registros').select('*, metas ( * )').eq('profile_id', profileId)
+            .gte('created_at', `${date}T00:00:00.000Z`).lte('created_at', `${date}T23:59:59.999Z`);
         if (registrosError) throw registrosError;
-        if (!registros || registros.length === 0) {
-            return res.status(200).json([]); // Si no hay registros, devolvemos un array vacío
-        }
 
-        // --- PASO 2: Obtener las entradas del diario asociadas a esos registros ---
-        const registroIds = registros.map(r => r.id); // Sacamos los IDs de los registros encontrados
-        
+        // --- PASO 2: Obtener TODAS las metas de ese día ---
+        const { data: metasDelDia, error: metasError } = await req.supabase
+            .from('metas').select('*').eq('profile_id', profileId)
+            .gte('created_at', `${date}T00:00:00.000Z`).lte('created_at', `${date}T23:59:59.999Z`);
+        if (metasError) throw metasError;
+
+        // --- PASO 3: Obtener las entradas del diario asociadas ---
+        const registroIds = registros.map(r => r.id);
         const { data: diarios, error: diariosError } = await req.supabase
-            .from('diario') // Buscamos en la tabla 'diario'
-            .select('*')
-            .in('registro_id', registroIds); // Donde el registro_id esté en nuestra lista de IDs
-
+            .from('diario').select('*').in('registro_id', registroIds);
         if (diariosError) throw diariosError;
+        const diariosMap = new Map(diarios.map(d => [d.registro_id, d]));
 
-        // --- PASO 3: Unir los diarios a sus respectivos registros ---
-        const diariosMap = new Map(diarios.map(d => [d.registro_id, d])); // Creamos un mapa para búsqueda rápida
-
+        // --- PASO 4: Unir todo ---
         const registrosCompletos = registros.map(registro => ({
             ...registro,
-            // Añadimos el objeto 'diario' si existe en el mapa
-            diario: diariosMap.get(registro.id) || null, 
+            diario: diariosMap.get(registro.id) || null,
+            metasDelDia: metasDelDia || [], // Adjuntamos la lista completa de metas del día
         }));
 
         res.status(200).json(registrosCompletos);
-
-    } catch (err) {
+    }
+    catch (err) {
         console.error("Error en GET /registros/by-date:", err.message);
         res.status(500).json({ error: 'Error al obtener los registros de la fecha.' });
+    }
+});
+
+// GET /historial/resumen-semanal - REESCRITO CON LÓGICA JS
+router.get('/historial/resumen-semanal', async (req, res) => {
+    try {
+        const { id: profileId } = req.user;
+        const haceSieteDias = new Date();
+        haceSieteDias.setDate(haceSieteDias.getDate() - 7);
+
+        // 1. Traemos TODOS los registros de los últimos 7 días, del más nuevo al más viejo.
+        const { data: todosLosRegistros, error } = await req.supabase
+            .from('registros')
+            .select('id, created_at, estado_general')
+            .eq('profile_id', profileId)
+            .gte('created_at', haceSieteDias.toISOString())
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // 2. Procesamos en JavaScript para quedarnos solo con el último de cada día.
+        const ultimoPorDia = new Map();
+        todosLosRegistros.forEach(registro => {
+            const dia = new Date(registro.created_at).toDateString(); // Clave única para cada día
+            if (!ultimoPorDia.has(dia)) {
+                ultimoPorDia.set(dia, registro);
+            }
+        });
+        
+        // Convertimos el mapa de vuelta a un array y lo ordenamos de nuevo
+        const resultadoFinal = Array.from(ultimoPorDia.values())
+                                    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        res.status(200).json(resultadoFinal);
+
+    } catch (err) {
+        console.error("Error en GET /historial/resumen-semanal:", err.message);
+        res.status(500).json({ error: 'Error al obtener el resumen semanal.' });
     }
 });
 

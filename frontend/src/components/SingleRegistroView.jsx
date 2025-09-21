@@ -41,6 +41,9 @@ export default function SingleRegistroView({ registro }) {
         minute: '2-digit'
     });
 
+    const metasCompletadas = registro.metasDelDia?.filter(meta => meta.completada).length || 0;
+    const totalMetas = registro.metasDelDia?.length || 0;
+
     return (
         <div className={`h-full overflow-y-auto p-4 space-y-5 ${bg} animate-fade-in`}>
             
@@ -55,14 +58,25 @@ export default function SingleRegistroView({ registro }) {
                 </p>
             </header>
 
-            {/* 3. Meta Principal del Día */}
+            {/* Meta Principal del Día - AHORA CON CONTADOR */}
             {registro.metas && (
-                 <section className={`p-4 rounded-2xl bg-green-100/70 border-2 ${border} text-center`}>
-                     <div className="flex justify-center items-center gap-2 mb-1">
-                        <Star className="text-amber-500" size={18} />
-                        <h3 className="font-['Patrick_Hand'] text-lg text-amber-800">Tu Norte ese día</h3>
-                    </div>
-                    <p className="text-xl text-zinc-900 font-semibold break-words">{registro.metas.descripcion}</p>
+                 <section className={`p-4 rounded-2xl bg-green-100/70 border-2 ${border} space-y-2`}>
+                     <div className="text-center">
+                         <div className="flex justify-center items-center gap-2 mb-1">
+                            <Star className="text-amber-500" size={18} />
+                            <h3 className="font-['Patrick_Hand'] text-lg text-amber-800">Tu Norte ese día</h3>
+                        </div>
+                        <p className="text-xl text-zinc-900 font-semibold break-words">{registro.metas.descripcion}</p>
+                     </div>
+
+                    {/* --- NUEVO INDICADOR DE PROGRESO --- */}
+                {totalMetas > 0 && (
+                        <div className="mt-3 pt-2 border-t border-dashed border-amber-300">
+                             <div className="bg-white/50 rounded-lg p-2 text-center text-sm font-semibold text-zinc-600 hover:bg-white/80 cursor-pointer transition">
+                                {metasCompletadas} de {totalMetas} metas completadas
+                            </div>
+                        </div>
+                    )}
                 </section>
             )}
 

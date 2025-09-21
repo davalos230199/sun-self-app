@@ -30,6 +30,7 @@ const saveRegistro = (payload) => apiClient.post('/registros', payload);
 const getRegistroById = (id) => apiClient.get(`/registros/${id}`); // Aún útil para el Diario
 const getHistorialRegistros = () => apiClient.get('/registros/historial');
 const getRegistrosByDate= (date) => apiClient.get(`/registros/by-date/${date}`);
+const getResumenSemanal= () => apiClient.get('/registros/historial/resumen-semanal');
 
 // -- DIARIO (antes Hoja de Atrás) --
 const getDiarioByRegistroId = (registroId) => apiClient.get(`/diario/${registroId}`);
@@ -58,6 +59,7 @@ const api = {
   getRegistroById, 
   getHistorialRegistros,
   getRegistrosByDate,
+  getResumenSemanal,
   
   getDiarioByRegistroId,
   saveEntradaDiario,

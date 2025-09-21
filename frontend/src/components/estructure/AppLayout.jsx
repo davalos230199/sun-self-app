@@ -46,7 +46,7 @@ export default function AppLayout() {
 
 
     return (
-        <div className="h-[100dvh] w-screen bg-blue-300 p-2 sm:p-4">
+        <div className="h-[100dvh] w-screen bg-blue-300 p-2 pb-4sm:p-4">
         <div className="h-full w-full max-w-lg mx-auto bg-amber-50 shadow-lg rounded-2xl flex flex-col overflow-hidden">
             <div className="p-2 sm:p-4 pb-0">
                 <PageHeader
