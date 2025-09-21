@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useTracking } from '../contexts/TrackingContext'; 
@@ -8,6 +8,7 @@ import 'react-calendar/dist/Calendar.css';
 import HistorialChart from '../components/HistorialChart';
 import Lottie from 'lottie-react'; // Importamos Lottie para los botones
 import { RotateCw } from 'lucide-react'; // Importamos el icono de reset
+import CalendarTile from '../components/CalendarTile';
 
 // --- Animaciones para los botones de filtro de aspecto ---
 import brainLoopAnimation from '../assets/animations/brain-loop.json';
@@ -95,31 +96,31 @@ export default function Tracking() {
         fetchHistorial();
     }, []); // El array vacío asegura que se ejecute solo una vez
 
+    const registrosMap = useMemo(() => {
+            const map = new Map();
+            historial.forEach(r => {
+            // Usamos una clave simple YYYY-MM-DD para cada día
+            const dateKey = r.created_at.split('T')[0];
+            map.set(dateKey, r);
+            });
+            return map;
+        }, [historial]);
+
     // 2. Función para renderizar el contenido de cada día en el calendario
     const tileContent = ({ date, view }) => {
         if (view === 'month') {
-            // Buscamos si hay un registro para la fecha actual del tile
-            const registroDelDia = historial.find(r => {
-                const registroDate = new Date(r.created_at);
-                return registroDate.getFullYear() === date.getFullYear() &&
-                       registroDate.getMonth() === date.getMonth() &&
-                       registroDate.getDate() === date.getDate();
-            });
+            const dateKey = date.toISOString().split('T')[0];
+            const registroDelDia = registrosMap.get(dateKey); // Búsqueda instantánea en el mapa
 
-            if (registroDelDia) {
-                let emoji = '❔';
-                if (registroDelDia.estado_general === 'soleado') emoji = '☀️';
-                if (registroDelDia.estado_general === 'nublado') emoji = '⛅';
-                if (registroDelDia.estado_general === 'lluvioso') emoji = '🌧️';
-                return <span className="block text-2xl mt-1">{emoji}</span>;
-            }
+            // Pasamos los datos a nuestro componente optimizado
+            return <CalendarTile registro={registroDelDia} date={date} />;
         }
         return null;
     };
     
     // 3. Función para manejar el clic en un día (sin cambios)
     const handleDayClick = (date) => {
-        const dateString = date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    const dateString = date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
         navigate(`/resumen/${dateString}`);
     };
 
