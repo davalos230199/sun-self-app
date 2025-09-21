@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import Lottie from 'lottie-react';
 
-// --- Animaciones ---
-import sunLoopAnimation from '../assets/animations/sun-loop.json';
-import cloudLoopAnimation from '../assets/animations/cloud-loop.json';
-import rainLoopAnimation from '../assets/animations/rain-loop.json';
+
+// --- 1. Importamos los SVGs estáticos ---
+import sunIcon from '../assets/icons/sun.svg';
+import cloudIcon from '../assets/icons/cloud.svg';
+import rainIcon from '../assets/icons/rain.svg';
 
 const COLORS = { mente: '#3b82f6', emocion: '#8b5cf6', cuerpo: '#10b981', grid: '#e5e7eb' };
 
@@ -45,11 +45,17 @@ export default function HistorialChart({ data, filter, visibility }) {
 
     return (
         <div className="relative w-full h-[350px]">
-            {/* ... (Indicadores de estado en el eje Y no cambian) ... */}
-            <div className="absolute top-0 left-0 w-8 h-full z-10">
-                <div className="absolute w-10 h-10" style={{ top: '12%', transform: 'translateY(-50%)' }} title="Soleado (83)"><Lottie animationData={sunLoopAnimation} loop={true} /></div>
-                <div className="absolute w-10 h-10" style={{ top: '45%', transform: 'translateY(-50%)' }} title="Nublado (50)"><Lottie animationData={cloudLoopAnimation} loop={true} /></div>
-                <div className="absolute w-10 h-10" style={{ top: '78%', transform: 'translateY(-50%)' }} title="Lluvioso (16)"><Lottie animationData={rainLoopAnimation} loop={true} /></div>
+                <div className="absolute top-0 left-0 w-8 h-full z-10">
+                {/* --- 2. Reemplazamos Lottie por <img> --- */}
+                <div className="absolute w-10 h-10" style={{ top: '12%', transform: 'translateY(-50%)' }} title="Soleado (83)">
+                    <img src={sunIcon} alt="Soleado" />
+                </div>
+                <div className="absolute w-10 h-10" style={{ top: '45%', transform: 'translateY(-50%)' }} title="Nublado (50)">
+                    <img src={cloudIcon} alt="Nublado" />
+                </div>
+                <div className="absolute w-10 h-10" style={{ top: '78%', transform: 'translateY(-50%)' }} title="Lluvioso (16)">
+                    <img src={rainIcon} alt="Lluvioso" />
+                </div>
             </div>
 
             <ResponsiveContainer width="100%" height="100%">

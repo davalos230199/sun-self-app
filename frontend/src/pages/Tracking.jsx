@@ -6,14 +6,13 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import HistorialChart from '../components/HistorialChart';
-import Lottie from 'lottie-react'; // Importamos Lottie para los botones
 import { RotateCw } from 'lucide-react'; // Importamos el icono de reset
 import CalendarTile from '../components/CalendarTile';
 
-// --- Animaciones para los botones de filtro de aspecto ---
-import brainLoopAnimation from '../assets/animations/brain-loop.json';
-import emotionLoopAnimation from '../assets/animations/emotion-loop.json';
-import bodyLoopAnimation from '../assets/animations/body-loop.json';
+// --- 1. Importamos los SVGs estáticos para los filtros ---
+import brainIcon from '../assets/icons/brain.svg';
+import emotionIcon from '../assets/icons/emotion.svg';
+import bodyIcon from '../assets/icons/body.svg';
 
 
 // Estilos específicos para el calendario, ahora fuera del return para más limpieza
@@ -74,10 +73,7 @@ export default function Tracking() {
     const handleResetAspects = () => {
         setAspectVisibility({ mente: true, emocion: true, cuerpo: true });
     };
-    // --- FIN DE LA LÓGICA DEL FILTRO DE ASPECTOS ---
 
-
-    // 1. Hook para buscar los datos del historial cuando se monta la página
     useEffect(() => {
         const fetchHistorial = async () => {
             try {
@@ -124,8 +120,12 @@ export default function Tracking() {
         navigate(`/resumen/${dateString}`);
     };
 
-  const dateFilters = [{ key: 'dia', label: '1d' }, { key: 'semana', label: '7d' }, { key: 'quince', label: '15d' }, { key: 'todo', label: 'Max' }];
-  const aspectFilters = [{ key: 'mente', anim: brainLoopAnimation }, { key: 'emocion', anim: emotionLoopAnimation }, { key: 'cuerpo', anim: bodyLoopAnimation }];
+    const dateFilters = [{ key: 'dia', label: '1d' }, { key: 'semana', label: '7d' }, { key: 'quince', label: '15d' }, { key: 'todo', label: 'Max' }];
+     const aspectFilters = [
+        { key: 'mente', icon: brainIcon }, 
+        { key: 'emocion', icon: emotionIcon }, 
+        { key: 'cuerpo', icon: bodyIcon }
+    ];
 
     if (isLoading) {
         return <LoadingSpinner message="Cargando tus dias..." />;
@@ -186,7 +186,7 @@ export default function Tracking() {
                                         title={`Filtrar por ${filter.key}`}
                                         className={`transition-all border-none rounded-full  ${aspectVisibility[filter.key] ? 'focus:bg-amber-100 shadow-sm' : 'opacity-40 hover:opacity-100'}`}
                                     >
-                                    <div className="w-6 h-6"><Lottie animationData={filter.anim} loop={true} /></div>
+                                    <div className="w-6 h-6"><img src={filter.icon} alt={filter.key} /></div>
                                     </button>
                                 ))}
                                 <button onClick={handleResetAspects} title="Mostrar todos" className="border-none  rounded-full">

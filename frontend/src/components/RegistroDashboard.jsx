@@ -110,8 +110,8 @@ const DiarioWidget = ({ registroId }) => (
     <Link to={`/journal/${registroId}`} className="no-underline text-inherit block h-full group">
         {/* Usamos un color azul pizarra, elegante y sobrio */}
         <div className="h-full bg-slate-700 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-lg hover:bg-slate-600 transition-colors">
-            <h3 className="font-['Patrick_Hand'] text-lg text-white">Tu Diario</h3>
-            <p className="text-xs text-slate-300">Un espacio para tus pensamientos.</p>
+            <h3 className="font-['Patrick_Hand'] italic text-lg text-white">Tablero</h3>
+            <p className="text-xs text-slate-300">Organiza tu dia.</p>
         </div>
     </Link>
 );

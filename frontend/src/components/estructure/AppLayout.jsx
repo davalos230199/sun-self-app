@@ -19,7 +19,7 @@ const getPageTitle = (pathname, tieneRegistro) => {
         case pathname === '/settings':
             return "Ajustes y Filosofía";
         case pathname.startsWith('/journal'):
-            return "Tu Diario";
+            return "Tu Tablero";
         case pathname.startsWith('/tracking'):
             return "Tus registros";
         case pathname.startsWith('/resumen'):
