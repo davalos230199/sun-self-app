@@ -1,4 +1,4 @@
-import React, { useState, useEffect }  from 'react';
+import React, { useRef, useState, useEffect }  from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Lottie from 'lottie-react';
 import { useDia } from '../contexts/DiaContext';
@@ -48,27 +48,62 @@ const MetaPrincipalWidget = ({ meta, metasDelDia }) => {
     );
 };
 
-const MiniHistorial = ({ historial }) => (
-    <div className="absolute top-3 left-3 w-20 h-20 rounded-lg overflow-hidden bg-black/5">
-        <p className="text-xs font-semibold italic lowercase text-zinc-500 mt-1">Últimos 7 días</p>
-        <div className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide -m-4 ml-1">
-            {historial.map(reg => {
-                const anim = reg.estado_general === 'soleado' ? sunLoopAnimation : reg.estado_general === 'lluvioso' ? rainLoopAnimation : cloudLoopAnimation;
-                const fecha = new Date(reg.created_at);
-                let diaSemana = fecha.toLocaleDateString('es-ES', { weekday: 'short' });
-                diaSemana = diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1).replace('.', '');
+const MiniHistorial = ({ historial }) => {
+    
+    const scrollContainerRef = useRef(null);
+    // Función para obtener la etiqueta correcta del día ("Ayer" o el nombre del día)
+    const getDiaLabel = (fechaRegistro) => {
+        const hoy = new Date();
+        const ayer = new Date();
+        ayer.setDate(hoy.getDate() - 1);
 
-                return (
-                    // 3. Cada diapositiva tiene el MISMO ancho que el contenedor.
-                    <div key={reg.id} className="w-20 flex-shrink-0 snap-center flex flex-col items-center justify-center">
-                        <div className="w-12 h-12"><Lottie animationData={anim} loop={true} /></div>
-                        <p className="text-xs font-semibold text-zinc-500 -mt-2">{diaSemana}</p>
-                    </div>
-                );
-            })}
+        const fecha = new Date(fechaRegistro);
+
+        // Compara solo las fechas, ignorando la hora
+        if (fecha.toDateString() === ayer.toDateString()) {
+            return "Ayer";
+        }
+
+        // Si no es "Ayer", devuelve el nombre del día de la semana
+        let diaSemana = fecha.toLocaleDateString('es-ES', { weekday: 'short' });
+        return diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1).replace('.', '');
+    };
+
+    // Asegura que el historial esté ordenado del más reciente al más antiguo
+    const historialOrdenado = [...historial].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    useEffect(() => {
+        if (scrollContainerRef.current) {
+            const container = scrollContainerRef.current;
+            // Lo movemos al punto más a la derecha posible
+            container.scrollLeft = container.scrollWidth;
+        }
+    }, [historial]);
+
+    return (
+        <div className="absolute top-3 left-3 w-20 h-20 rounded-lg overflow-hidden bg-black/5">
+            <div ref={scrollContainerRef} className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide">
+                {historialOrdenado.map(reg => {
+                    const anim = reg.estado_general === 'soleado' 
+                        ? sunLoopAnimation 
+                        : reg.estado_general === 'lluvioso' 
+                        ? rainLoopAnimation 
+                        : cloudLoopAnimation;
+                    
+                    const label = getDiaLabel(reg.created_at);
+
+                    return (
+                        <div key={reg.id} className="w-20 flex-shrink-0 snap-center flex flex-col items-center justify-center [direction:ltr]">
+                            <div className="w-12 h-12">
+                                <Lottie animationData={anim} loop={true} />
+                            </div>
+                            <p className="text-xs font-semibold text-zinc-500 -mt-2">{label}</p>
+                        </div>
+                    );
+                })}
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 const EstadoWidget = ({ registro, onEdit, historial }) => {
 
