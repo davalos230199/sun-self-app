@@ -24,6 +24,9 @@ apiClient.interceptors.request.use(
 
 // --- FUNCIONES CORREGIDAS (sin el prefijo /api) ---
 
+// --- PRIMERO USUARIO?
+const checkRecordsExistence= () => apiClient.get('/registros/check-existence');
+
 // -- REGISTROS --
 const getRegistroDeHoy = () => apiClient.get('/registros/today');
 const saveRegistro = (payload) => apiClient.post('/registros', payload);
@@ -56,6 +59,8 @@ const getRegistroPorFecha = (fecha) => apiClient.get(`/registros/fecha/${fecha}`
 
 // --- EXPORTACIÓN UNIFICADA (sin los endpoints de auth manual que ya no existen) ---
 const api = { 
+  checkRecordsExistence,
+
   getRegistroDeHoy, 
   saveRegistro, 
   getRegistroById, 

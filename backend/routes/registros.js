@@ -9,7 +9,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 router.use(authMiddleware);
 
-// --- RUTAS REESCRITAS PARA USAR QUERIES DIRECTAS ---
+// --- PRIMERO: TODAS LAS RUTAS GET ESPECÍFICAS ---
 
 // GET /today - REESCRITO SIN RPC
 router.get('/today', async (req, res) => {
@@ -63,6 +63,65 @@ router.get('/historial', async (req, res) => {
     }
 });
 
+// GET /historial/resumen-semanal - REESCRITO CON LÓGICA JS
+router.get('/historial/resumen-semanal', async (req, res) => {
+    try {
+        const { id: profileId } = req.user;
+        const haceSieteDias = new Date();
+        haceSieteDias.setDate(haceSieteDias.getDate() - 7);
+
+        // 1. Traemos TODOS los registros de los últimos 7 días, del más nuevo al más viejo.
+        const { data: todosLosRegistros, error } = await req.supabase
+            .from('registros')
+            .select('id, created_at, estado_general')
+            .eq('profile_id', profileId)
+            .gte('created_at', haceSieteDias.toISOString())
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // 2. Procesamos en JavaScript para quedarnos solo con el último de cada día.
+        const ultimoPorDia = new Map();
+        todosLosRegistros.forEach(registro => {
+            const dia = new Date(registro.created_at).toDateString(); // Clave única para cada día
+            if (!ultimoPorDia.has(dia)) {
+                ultimoPorDia.set(dia, registro);
+            }
+        });
+        
+        // Convertimos el mapa de vuelta a un array y lo ordenamos de nuevo
+        const resultadoFinal = Array.from(ultimoPorDia.values())
+                                    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        res.status(200).json(resultadoFinal);
+
+    } catch (err) {
+        console.error("Error en GET /historial/resumen-semanal:", err.message);
+        res.status(500).json({ error: 'Error al obtener el resumen semanal.' });
+    }
+});
+
+router.get('/check-existence', async (req, res) => {
+    try {
+        const { id: profileId } = req.user;
+        // Solo necesitamos saber si existe al menos UN registro.
+        const { data, error } = await req.supabase
+            .from('registros')
+            .select('id')
+            .eq('profile_id', profileId)
+            .limit(1);
+
+        if (error) throw error;
+
+        // Si data tiene algo, significa que hay registros.
+        res.status(200).json({ hasRecords: data && data.length > 0 });
+
+    } catch (err) {
+        console.error("Error en GET /check-existence:", err.message);
+        res.status(500).json({ error: 'Error al verificar la existencia de registros.' });
+    }
+});
+
 // GET /by-date/:date - NUEVO ENDPOINT PARA BUSCAR REGISTROS DE UN DÍA ESPECÍFICO
 router.get('/by-date/:date', async (req, res) => {
     try {
@@ -107,43 +166,7 @@ router.get('/by-date/:date', async (req, res) => {
     }
 });
 
-// GET /historial/resumen-semanal - REESCRITO CON LÓGICA JS
-router.get('/historial/resumen-semanal', async (req, res) => {
-    try {
-        const { id: profileId } = req.user;
-        const haceSieteDias = new Date();
-        haceSieteDias.setDate(haceSieteDias.getDate() - 7);
 
-        // 1. Traemos TODOS los registros de los últimos 7 días, del más nuevo al más viejo.
-        const { data: todosLosRegistros, error } = await req.supabase
-            .from('registros')
-            .select('id, created_at, estado_general')
-            .eq('profile_id', profileId)
-            .gte('created_at', haceSieteDias.toISOString())
-            .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        // 2. Procesamos en JavaScript para quedarnos solo con el último de cada día.
-        const ultimoPorDia = new Map();
-        todosLosRegistros.forEach(registro => {
-            const dia = new Date(registro.created_at).toDateString(); // Clave única para cada día
-            if (!ultimoPorDia.has(dia)) {
-                ultimoPorDia.set(dia, registro);
-            }
-        });
-        
-        // Convertimos el mapa de vuelta a un array y lo ordenamos de nuevo
-        const resultadoFinal = Array.from(ultimoPorDia.values())
-                                    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-        res.status(200).json(resultadoFinal);
-
-    } catch (err) {
-        console.error("Error en GET /historial/resumen-semanal:", err.message);
-        res.status(500).json({ error: 'Error al obtener el resumen semanal.' });
-    }
-});
 
 router.get('/:id', async (req, res) => {
     try {
@@ -170,6 +193,7 @@ router.get('/:id', async (req, res) => {
         res.status(500).json({ error: 'Error al obtener el registro.' });
     }
 });
+
 
 // POST / - ADAPTADO A LA NUEVA ESTRUCTURA
 router.post('/', async (req, res) => {
