@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import Lottie from 'lottie-react';
 import { useDia } from '../contexts/DiaContext';
 import api from '../services/api';
-import { Star, Settings } from 'lucide-react';
+import { TrendingUp, Settings } from 'lucide-react';
 
 // --- Animaciones ---
 import sunLoopAnimation from '../assets/animations/sun-loop.json';
@@ -24,7 +24,7 @@ const MetaPrincipalWidget = ({ meta, metasDelDia }) => {
     if (!meta) {
         return (
             <div className="bg-green-50 border border-amber-400 rounded-2xl p-5 text-center justify-center">
-                <h3 className="font-['Patrick_Hand'] text-xl text-amber-800">No definiste un norte para hoy.</h3>
+                <h3 className="font-['Patrick_Hand'] text-xl text-amber-800">No definiste una meta para hoy.</h3>
                 <p className="text-zinc-500 text-sm mt-1">Puedes añadir metas secundarias desde la sección Metas.</p>
             </div>
         );
@@ -34,8 +34,8 @@ const MetaPrincipalWidget = ({ meta, metasDelDia }) => {
         <Link to="/metas" className="no-underline text-inherit block">
             <div className="bg-green-100 border-2 border-amber-400 rounded-2xl p-5 text-center shadow-lg space-y-2">
                 <div className="flex justify-center items-center gap-2">
-                    <Star className="text-amber-500" size={20} />
-                    <h2 className="font-['Patrick_Hand'] text-lg text-amber-800">Tu Norte para Hoy</h2>
+                    <h2 className="font-['Patrick_Hand'] text-lg text-amber-800">Tu Meta de Hoy</h2>
+                    <TrendingUp className="text-amber-800" size={24} />
                 </div>
                 <h3 className="text-2xl uppercase text-green-900 break-words">{meta.descripcion}</h3>
                 {total > 0 && (

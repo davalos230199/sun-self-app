@@ -3,7 +3,7 @@ import { useDia } from '../contexts/DiaContext';
 import api from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 // ICONOS: Añadimos Pencil para editar y X para cancelar.
-import { Check, Trash2, Plus, Star, Pencil, X } from 'lucide-react'; 
+import { Check, Trash2, Plus, TrendingUp, Pencil, X } from 'lucide-react'; 
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- Sub-componente: Meta Principal (Sin cambios) ---
@@ -12,8 +12,8 @@ const MetaPrincipal = ({ meta }) => {
     return (
         <div className="flex-shrink-0 bg-green-100 border-2 border-amber-200 rounded-2xl p-5 mb-6 text-center shadow-lg animate-fade-in">
             <div className="flex justify-center items-center gap-2">
-                <Star className="text-amber-500" size={20} />
-                <h2 className="font-['Patrick_Hand'] text-lg text-amber-800">Tu Norte para Hoy</h2>
+                <h2 className="font-['Patrick_Hand'] text-lg text-amber-800">Tu Meta de Hoy</h2>
+                <TrendingUp className="text-amber-800" size={24} />
             </div>
             <h3 className="text-2xl text-transform: uppercase text-green-900 break-words">{meta.descripcion}</h3>
         </div>

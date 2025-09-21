@@ -145,6 +145,32 @@ router.get('/historial/resumen-semanal', async (req, res) => {
     }
 });
 
+router.get('/:id', async (req, res) => {
+    try {
+        const { id: profileId } = req.user;
+        const { id: registroId } = req.params;
+
+        const { data, error } = await req.supabase
+            .from('registros')
+            .select('*, metas (*)') 
+            .eq('profile_id', profileId) // Por seguridad, nos aseguramos que el registro sea del usuario.
+            .eq('id', registroId) // Buscamos por el ID específico.
+            .single(); // Esperamos solo un resultado.
+
+        if (error) throw error;
+        
+        if (!data) {
+            return res.status(404).json({ error: 'Registro no encontrado.' });
+        }
+
+        res.status(200).json(data);
+
+    } catch (err) {
+        console.error(`Error en GET /registros/${req.params.id}:`, err.message);
+        res.status(500).json({ error: 'Error al obtener el registro.' });
+    }
+});
+
 // POST / - ADAPTADO A LA NUEVA ESTRUCTURA
 router.post('/', async (req, res) => {
     try {

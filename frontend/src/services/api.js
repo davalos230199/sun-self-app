@@ -27,7 +27,7 @@ apiClient.interceptors.request.use(
 // -- REGISTROS --
 const getRegistroDeHoy = () => apiClient.get('/registros/today');
 const saveRegistro = (payload) => apiClient.post('/registros', payload);
-const getRegistroById = (id) => apiClient.get(`/registros/${id}`); // Aún útil para el Diario
+const getRegistroById= (id) => apiClient.get(`/registros/${id}`);
 const getHistorialRegistros = () => apiClient.get('/registros/historial');
 const getRegistrosByDate= (date) => apiClient.get(`/registros/by-date/${date}`);
 const getResumenSemanal= () => apiClient.get('/registros/historial/resumen-semanal');
@@ -41,6 +41,7 @@ const getMetasHoy = () => apiClient.get('/metas/today');
 const createMeta = (payload) => apiClient.post('/metas', payload);
 const updateMeta = (id, payload) => apiClient.patch(`/metas/${id}`, payload);
 const deleteMeta = (id) => apiClient.delete(`/metas/${id}`);
+
 
 // -- SUNNY (IA) --
 const generarFraseInteligente = (payload) => apiClient.post('/sunny/generar-frase', payload);
