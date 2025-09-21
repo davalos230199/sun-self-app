@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const MetaPrincipal = ({ meta }) => {
     if (!meta) return null;
     return (
-        <div className="flex-shrink-0 bg-green-100 border-2 border-amber-200 rounded-2xl p-5 mb-6 text-center shadow-lg animate-fade-in">
+        <div className="flex-shrink-0 bg-green-100 border-2 border-amber-400 rounded-2xl p-5 mb-6 text-center shadow-lg animate-fade-in">
             <div className="flex justify-center items-center gap-2">
                 <h2 className="font-['Patrick_Hand'] text-lg text-amber-800">Tu Meta de Hoy</h2>
                 <TrendingUp className="text-amber-800" size={24} />

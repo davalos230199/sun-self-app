@@ -35,6 +35,7 @@ const getResumenSemanal= () => apiClient.get('/registros/historial/resumen-seman
 // -- DIARIO (antes Hoja de Atrás) --
 const getDiarioByRegistroId = (registroId) => apiClient.get(`/diario/${registroId}`);
 const saveEntradaDiario = (payload) => apiClient.post('/diario', payload);
+const deleteEntradaDiario= (id) => apiClient.delete(`/diario/${id}`);
 
 // -- METAS --
 const getMetasHoy = () => apiClient.get('/metas/today');
@@ -64,6 +65,7 @@ const api = {
   
   getDiarioByRegistroId,
   saveEntradaDiario,
+  deleteEntradaDiario,
   
   generarFraseInteligente,
   postToSunny,

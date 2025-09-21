@@ -3,27 +3,69 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { PenSquare, X, TrendingUp } from 'lucide-react';
+import { PenSquare, X, TrendingUp, Pin } from 'lucide-react'; 
 import { motion, AnimatePresence } from 'framer-motion';
 
-const NotaDiario = ({ entrada, onSelect }) => {
-    // Generamos una rotación aleatoria para cada nota, para que se vean más orgánicas
+const NotaDiario = ({ entrada, onSelect, onDelete }) => {
     const rotacion = useState(() => Math.random() * (4 - -4) + -4)[0];
+        const handleDeleteClick = (e) => {
+        e.stopPropagation(); // ¡Muy importante! Evita que se abra la nota al querer borrarla.
+        onDelete(entrada.id);
+    }
+
+    const prioridadColores = {
+        alta: 'bg-red-200/70 border-red-400',
+        media: 'bg-yellow-200/70 border-yellow-400',
+        baja: 'bg-amber-100/70 border-amber-300',
+    };
+    
+    // Si la prioridad es null o no existe, usará el color de 'baja'
+    const colorClase = prioridadColores[entrada.prioridad] || prioridadColores.baja;
 
     return (
         <motion.div
             layoutId={`nota-${entrada.id}`}
             onClick={() => onSelect(entrada)}
-            className="bg-[#FFF8E1] h-40 rounded-md p-3 shadow-md cursor-pointer hover:shadow-xl hover:scale-105 transition-all flex flex-col"
-            style={{ rotate: `${rotacion}deg` }} // Aplicamos la rotación
+            className={`h-40 rounded-md p-3 shadow-md cursor-pointer hover:shadow-xl hover:scale-105 transition-all flex flex-col ${colorClase}`}
+            style={{ rotate: `${rotacion}deg` }}
         >
-            <p className="text-[10px] font-semibold text-zinc-500 italic">
+            <div className="flex justify-between items-start">
+                <p className="text-[10px] font-semibold text-zinc-500 italic">
                 {new Date(entrada.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-            </p>
+                </p>
+                <button 
+                        onClick={handleDeleteClick} 
+                        className="p-1 -mr-1 -mt-1 italic text-zinc-400 hover:text-red-500 border-none transition-colors"
+                        title="Eliminar nota"
+                >
+                    <Pin style={{ transform: 'rotate(45deg)' }} size={16} />
+                </button>
+            </div>
             <p className="text-zinc-800 text-sm italic lowercase line-clamp-5 pt-1">
                 {entrada.texto}
             </p>
         </motion.div>
+    );
+};
+
+const SelectorPrioridad = ({ prioridad, setPrioridad }) => {
+    const prioridades = [
+        { id: 'alta', color: 'bg-red-500', label: 'Alta' },
+        { id: 'media', color: 'bg-yellow-500', label: 'Media' },
+        { id: 'baja', color: 'bg-green-500', label: 'Baja' },
+    ];
+
+    return (
+        <div className="flex items-center gap-2">
+            {prioridades.map(p => (
+                <button
+                    key={p.id}
+                    onClick={() => setPrioridad(p.id)}
+                    title={p.label}
+                    className={`w-5 h-5 rounded-full transition-transform duration-200 ${p.color} ${prioridad === p.id ? 'ring-2 ring-offset-2 ring-slate-800' : 'hover:scale-110'}`}
+                />
+            ))}
+        </div>
     );
 };
 
@@ -59,6 +101,7 @@ export default function Journal() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [notaSeleccionada, setNotaSeleccionada] = useState(null);
+    const [prioridad, setPrioridad] = useState('baja');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -87,14 +130,33 @@ export default function Journal() {
         if (!nuevoTexto.trim()) return;
         setIsSaving(true);
         try {
-            // Asumo que la llamada 'saveEntradaDiario' existe en api.js
-            const { data: nuevaEntrada } = await api.saveEntradaDiario({ registro_id: registroId, texto: nuevoTexto });
-            setEntradas(prev => [...prev, nuevaEntrada]);
+            // Pasamos la prioridad al guardar
+            const { data: nuevaEntrada } = await api.saveEntradaDiario({ 
+                registro_id: registroId, 
+                texto: nuevoTexto,
+                prioridad: prioridad, // ¡Aquí se envía la prioridad!
+            });
+            // Hacemos un 'fetch' de nuevo para obtener la lista ordenada
+            const { data } = await api.getDiarioByRegistroId(registroId);
+            setEntradas(data || []);
             setNuevoTexto('');
-        } catch (error) {
-            console.error("Error al guardar entrada:", error);
+            setPrioridad('baja'); // Reseteamos la prioridad
         } finally {
             setIsSaving(false);
+        }
+    };
+
+        const handleDelete = async (entradaId) => {
+        // Opcional: pedir confirmación
+        // if (!window.confirm("¿Seguro que quieres eliminar esta nota?")) return;
+
+        try {
+            await api.deleteEntradaDiario(entradaId);
+            // Actualizamos el estado para remover la nota de la vista instantáneamente
+            setEntradas(prev => prev.filter(e => e.id !== entradaId));
+        } catch (error) {
+            console.error("Error al eliminar la nota:", error);
+            // Aquí podrías mostrar una notificación de error al usuario
         }
     };
     
@@ -115,7 +177,7 @@ export default function Journal() {
                 {/* Grilla de notas */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
                     {entradas.map(entrada => (
-                        <NotaDiario key={entrada.id} entrada={entrada} onSelect={setNotaSeleccionada} />
+                        <NotaDiario key={entrada.id} entrada={entrada} onSelect={setNotaSeleccionada} onDelete={handleDelete} />
                     ))}
                 </div>
 
@@ -128,7 +190,11 @@ export default function Journal() {
                 {notaSeleccionada && <NotaExpandida entrada={notaSeleccionada} onDeselect={() => setNotaSeleccionada(null)} />}
             </AnimatePresence>
             
-            <div className="flex-shrink-0 mt-auto pt-2">
+            <div className="flex-shrink-0 mt-auto pt-4 space-y-2">
+                <div className="flex justify-between items-center px-2">
+                    <p className="text-sm font-semibold italic text-zinc-500">Prioridad:</p>
+                    <SelectorPrioridad prioridad={prioridad} setPrioridad={setPrioridad} />
+                </div>
                 <div className="relative w-full">
                     <textarea
                         className="w-full p-3 pr-14 bg-white italic border border-zinc-300 rounded-xl outline-none resize-none transition-shadow focus:ring-2 focus:ring-zinc-100"
