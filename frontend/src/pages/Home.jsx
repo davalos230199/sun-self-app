@@ -5,91 +5,68 @@ import api from '../services/api';
 
 import RegistroDashboard from '../components/RegistroDashboard';
 import RitualFlow from '../components/RitualFlow';
-import DashboardDemo from '../components/DashboardDemo'; // Usamos el nuevo DashboardDemo
+import DashboardDemo from '../components/DashboardDemo';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { Eye } from 'lucide-react';
 
 export default function Home() {
     const { registroDeHoy, isLoading: isDiaLoading, refrescarDia } = useDia();
     const { setTitle } = useHeader();
 
-    const [isFirstTime, setIsFirstTime] = useState(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [devShowDemo, setDevShowDemo] = useState(false); // Cambiado para mayor claridad
+    const [view, setView] = useState('loading'); // 'loading', 'dashboard', 'demo', 'ritual'
 
     useEffect(() => {
-        const checkForFirstTime = async () => {
-            if (!isDiaLoading && !registroDeHoy) {
+        const determineView = async () => {
+            if (isDiaLoading) {
+                setView('loading');
+                return;
+            }
+
+            if (registroDeHoy) {
+                setView('dashboard');
+            } else {
                 try {
                     const response = await api.checkRecordsExistence();
-                    setIsFirstTime(!response.data.hasRecords);
+                    if (response.data.hasRecords) {
+                        setView('ritual'); // Usuario recurrente, sin registro hoy
+                    } else {
+                        setView('demo'); // Usuario nuevo
+                        setTitle("¡Bienvenido a Sun Self!");
+                    }
                 } catch (error) {
-                    console.error("Error verificando registros:", error);
-                    setIsFirstTime(false);
+                    console.error("Error verificando historial:", error);
+                    setView('ritual'); // Fallback seguro
                 }
-            } else if (registroDeHoy) {
-                setIsFirstTime(false);
             }
         };
-        checkForFirstTime();
-    }, [isDiaLoading, registroDeHoy]);
 
-    useEffect(() => {
-        // Si es la primera vez (real) O estamos en modo DEV, muestra el título de bienvenida
-        if (isFirstTime || devShowDemo) {
-            setTitle("¡Bienvenido a Sun Self!");
-        }
-        return () => setTitle(null);
-    }, [isFirstTime, devShowDemo, setTitle]);
+        determineView();
+
+        return () => setTitle(null); // Limpieza del título
+    }, [isDiaLoading, registroDeHoy, setTitle]);
 
     const handleRitualFinish = async () => {
-        setIsSubmitting(true);
+        setView('loading'); // Mostramos spinner mientras se refresca
         await refrescarDia();
-        setIsSubmitting(false);
-        setIsFirstTime(false);
+        // El useEffect se encargará de poner la vista en 'dashboard'
     };
 
-    // Botón de desarrollador para previsualizar la demo
-    const DevToggleButton = () => (
-        <button 
-            onClick={() => setDevShowDemo(prev => !prev)}
-            title="Previsualizar Dashboard Demo"
-            className={`fixed bottom-20 right-5 z-50 p-3 rounded-full shadow-lg transition-colors ${devShowDemo ? 'bg-green-500 text-white' : 'bg-slate-700 text-white'}`}
-        >
-            <Eye size={24} />
-        </button>
-    );
+    // --- LÓGICA DE RENDERIZADO BASADA EN EL ESTADO 'view' ---
 
-    // Condición de carga principal
-    if (isDiaLoading || isSubmitting || isFirstTime === null) {
-        return <LoadingSpinner message="Preparando tu día..." />;
-    }
-    
-    // --- Lógica de Renderizado Principal ---
-    
-    // Variable para decidir qué componente principal mostrar
-    let content;
+    switch (view) {
+        case 'loading':
+            return <LoadingSpinner message="Preparando tu día..." />;
+        
+        case 'dashboard':
+            // onEdit simplemente cambia la vista a 'ritual'
+            return <RegistroDashboard onEdit={() => setView('ritual')} />;
 
-    if (registroDeHoy) {
-        content = <RegistroDashboard />;
-    } else if (isFirstTime) {
-        // Si es la primera vez, muestra la DEMO.
-        // El botón "Iniciar" simplemente cambiará el estado para mostrar el Ritual.
-        content = <DashboardDemo onStart={() => setIsFirstTime(false)} />;
-    } else {
-        // Si no es la primera vez y no hay registro, muestra el ritual.
-        content = <RitualFlow onFinish={handleRitualFinish} />;
-    }
-    
-    // Si estamos en modo DEV, forzamos la vista de la DEMO
-    if (devShowDemo) {
-        content = <DashboardDemo onStart={() => setDevShowDemo(false)} />;
-    }
+        case 'demo':
+            return <DashboardDemo onStart={() => setView('ritual')} />;
 
-    return (
-        <div className="relative h-full w-full">
-            <DevToggleButton />
-            {content}
-        </div>
-    );
+        case 'ritual':
+            return <RitualFlow onFinish={handleRitualFinish} />;
+
+        default:
+            return <p>Error al determinar el estado.</p>;
+    }
 }

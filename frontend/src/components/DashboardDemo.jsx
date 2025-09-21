@@ -13,6 +13,18 @@ import nightCloudLoopAnimation from '../assets/animations/cloud-night-loop.json'
 
 
 // --- WIDGETS DE EXHIBICIÓN ---
+const MicroHabitoButtonDemo = ({ onClick }) => (
+    <button
+        onClick={onClick}
+        title="Comenzar Micro-Hábito"
+        className="absolute top-3 right-3 z-10 w-20 h-20 rounded-lg flex flex-col items-center justify-center -mt-0 pt-2 bg-amber-100/80 backdrop-blur-sm shadow-lg border border-amber-200 hover:scale-105 transition-transform"
+    >
+        <div className="w-12 h-12">
+            <Lottie animationData={sunLoopAnimation} loop={true} />
+        </div>
+        <span className="font-['Patrick_Hand'] text-xs text-zinc-700 font-semibold break-words">Iniciar</span>
+    </button>
+);
 
 const MiniHistorialDemo = () => {
     // Lógica para la secuencia de animación
@@ -54,7 +66,7 @@ const MetaPrincipalDemo = () => (
     </div>
 );
 
-const EstadoWidgetDemo = () => {
+const EstadoWidgetDemo = ({ onStart }) => {
     const ComentarioItem = ({ anim, text }) => (
         <div className="flex items-center gap-2 text-left">
             <div className="w-8 h-8 flex-shrink-0 -ml-1"><Lottie animationData={anim} loop={true} /></div>
@@ -65,6 +77,7 @@ const EstadoWidgetDemo = () => {
     return (
         <div className="relative flex flex-col border border-amber-400 bg-amber-100 rounded-2xl p-4 text-center shadow-lg h-full justify-between">
             <MiniHistorialDemo />
+            <MicroHabitoButtonDemo onClick={onStart} />
             <h3 className="font-['Patrick_Hand'] text-xl text-amber-800">Tu Estado Diario</h3>
             <div className="w-24 h-24 mx-auto -my-2"><Lottie animationData={sunLoopAnimation} loop={true} /></div>
             <p className="flex-grow text-zinc-700 font-['Patrick_Hand'] italic">"Aqui visualizarás tu estado general, una frase personalizada y tus reflexiones del micro-hábito para tu mente, emoción y cuerpo."</p>
@@ -87,35 +100,26 @@ const DiarioWidgetDemo = () => (
     </Link>
 );
 
-// Botón rediseñado para ser más sutil y coherente
-const IniciarMicroHabitoWidget = ({ onStart }) => (
-    <button 
-        onClick={onStart} 
-        className="h-full w-full bg-amber-400 text-slate-800 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-lg hover:bg-amber-500 transition-colors"
-    >
-        <h3 className="font-['Patrick_Hand'] text-lg font-bold">Comenzar</h3>
-        <p className="text-xs">Tu primer Micro-Hábito</p>
-    </button>
+export const PersonalizacionWidget = () => (
+    <div className="h-full bg-zinc-100 border border-dashed border-zinc-300 rounded-2xl p-4 flex flex-col items-center justify-center text-center">
+        <Settings className="text-zinc-400 mb-2" size={40} />
+        <h4 className="font-['Patrick_Hand'] text-lg italic text-zinc-700">Personaliza tu Micro-Habito</h4>
+        <p className="text-sm text-zinc-500">(Próximamente)</p>
+    </div>
 );
-
 
 // --- El Componente Principal de la Demo ---
 export default function DashboardDemo({ onStart }) {
     return (
         <div className="h-full grid grid-rows-[auto_1fr_auto] gap-4 animate-fade-in">
             <div><MetaPrincipalDemo /></div>
-            <div><EstadoWidgetDemo /></div>
-            {/* Fila 3 (Tablero y Llamada a la Acción) */}
+            
+            {/* 3. Le pasamos la función onStart al EstadoWidgetDemo */}
+            <div><EstadoWidgetDemo onStart={onStart} /></div>
+
             <div className="grid grid-cols-2 gap-4 h-32">
-                <div className="col-span-1">
-                    <DiarioWidgetDemo />
-                </div>
-                
-                {/* --- AQUÍ ESTÁ LA SOLUCIÓN DE ALINEACIÓN --- */}
-                {/* Al hacer que la celda de la grilla sea un contenedor flex, su hijo (el botón) se estirará para ocupar toda la altura */}
-                <div className="col-span-1 flex"> 
-                    <IniciarMicroHabitoWidget onStart={onStart} />
-                </div>
+                <div className="col-span-1"><DiarioWidgetDemo /></div>
+                <div className="col-span-1"><PersonalizacionWidget /></div>
             </div>
         </div>
     );

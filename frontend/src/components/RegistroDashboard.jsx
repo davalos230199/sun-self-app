@@ -16,6 +16,24 @@ import bodyLoopAnimation from '../assets/animations/body-loop.json';
 
 // --- SUB-COMPONENTES REFACTORIZADOS ---
 
+const MicroHabitoButton = ({ onClick }) => (
+    <button
+        onClick={(e) => {
+            // 2. Detenemos la propagación INMEDIATAMENTE
+            e.stopPropagation();
+            // 3. Luego, ejecutamos la acción que queremos
+            onClick();
+        }}
+        title="Iniciar Micro-Hábito"
+        className="absolute botton-3 right-3 w-20 h-20 rounded-lg -mt-0 flex flex-col items-center p-2  bg-amber-100/80 backdrop-blur-sm shadow-lg border border-amber-200 hover:scale-105 transition-transform"
+    >
+        <div className="w-12 h-12">
+            <Lottie animationData={sunLoopAnimation} loop={true} />
+        </div>
+        <span className="font-['Patrick_Hand'] text-xs text-zinc-700 font-semibold">Micro-Hábito</span>
+    </button>
+);
+
 export const MetaPrincipalWidget = ({ meta, metasDelDia }) => {
     // Lógica para el contador de metas, tal como lo pediste
     const completadas = metasDelDia?.filter(m => m.completada).length || 0;
@@ -105,10 +123,10 @@ export const MiniHistorial = ({ historial }) => {
     );
 };
 
+
 export const EstadoWidget = ({ registro, onEdit, historial }) => {
 
     const navigate = useNavigate();
-        // Pequeño componente para mostrar cada comentario
     const ComentarioItem = ({ anim, text }) => (
         <div className="flex items-center gap-2 text-left">
             <div className="w-8 h-8 flex-shrink-0 -ml-1">
@@ -119,13 +137,16 @@ export const EstadoWidget = ({ registro, onEdit, historial }) => {
     );
 
     return (
-        <Link to="/tracking" className="no-underline text-inherit block">
         <div className="relative flex flex-col border border-amber-400 bg-amber-100 rounded-2xl p-4 text-center shadow-lg h-full justify-between">
-            {/* El historial vive aquí, en su esquina */}
-            <MiniHistorial historial={historial} />         
+            <MiniHistorial historial={historial} /> 
+            <MicroHabitoButton onClick={onEdit} /> 
+
+            <Link to="/tracking" className="no-underline text-inherit flex flex-col items-center justify-center flex-grow pt-10">
                 <h3 className="font-['Patrick_Hand'] text-xl text-amber-800">Tu estado de hoy</h3>
                 <div className="w-24 h-24 mx-auto -my-2"><Lottie animationData={registro.estado_general === 'soleado' ? sunLoopAnimation : registro.estado_general === 'lluvioso' ? rainLoopAnimation : cloudLoopAnimation} loop={true} /></div>
                 <p className="flex-grow text-zinc-700 font-['Patrick_Hand']">"{registro.frase_sunny || '...'}"</p>
+            </Link>
+
                 <div className="space-y-2 border-t border-dashed border-amber-300 pt-3 text-left">
                 <ComentarioItem anim={brainLoopAnimation} text={registro.mente_comentario} />
                 <ComentarioItem anim={emotionLoopAnimation} text={registro.emocion_comentario} />
@@ -135,7 +156,6 @@ export const EstadoWidget = ({ registro, onEdit, historial }) => {
                     Toca para ver tu historial completo...
                 </footer>
         </div>
-        </Link>
     );
 };
 
@@ -154,7 +174,7 @@ export const DiarioWidget = ({ registroId }) => (
 export const PersonalizacionWidget = () => (
     <div className="h-full bg-zinc-100 border border-dashed border-zinc-300 rounded-2xl p-4 flex flex-col items-center justify-center text-center">
         <Settings className="text-zinc-400 mb-2" size={40} />
-        <h3 className="font-['Patrick_Hand'] text-lg text-zinc-700">Personaliza tu Ritual</h3>
+        <h4 className="font-['Patrick_Hand'] text-lg italic text-zinc-700">Personaliza tu Micro-Habito</h4>
         <p className="text-sm text-zinc-500">(Próximamente)</p>
     </div>
 );
