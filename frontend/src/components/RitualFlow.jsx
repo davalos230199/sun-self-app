@@ -7,9 +7,9 @@ import Step1_Breathing from './ritual/Step1_Breathing';
 import Step2_Mind from './ritual/Step2_Mind';
 import Step3_Emotion from './ritual/Step3_Emotion';
 import Step4_Body from './ritual/Step4_Body';
-import Step5_Calculating from './ritual/Step5_Calculating';
-import Step6_Summary from './ritual/Step6_Summary';
-import Step7_Goal from './ritual/Step7_Goal';
+import Step5_Goal from './ritual/Step5_Goal'; // Correcto
+import Step6_Calculating from './ritual/Step6_Calculating'; // Lo renombramos para claridad
+import Step7_Summary from './ritual/Step7_Summary';
 
 export default function RitualFlow({ onFinish }) { 
     const [step, setStep] = useState(1);
@@ -40,7 +40,7 @@ export default function RitualFlow({ onFinish }) {
 
         setIsProcessing(true);
         setError('');
-        setStep(5);
+        setStep(6);
 
         const registroParaEnviar = {
             mente_estado: ritualData.mente.estado,
@@ -63,7 +63,7 @@ export default function RitualFlow({ onFinish }) {
                 estadoGeneral: registroCompleto.estado_general,
             }));
             
-            setStep(6);
+            setStep(7);
 
         } catch (err) {
             console.error("Error al guardar el ritual:", err);
@@ -75,14 +75,15 @@ export default function RitualFlow({ onFinish }) {
     };
 
     const renderStep = () => {
+        // --- 3. CAMBIO DE LÓGICA: Re-numeramos el switch ---
         switch (step) {
             case 1: return <Step1_Breathing onNextStep={() => advanceRitual(null, 2)} />;
-            case 2: return <Step2_Mind onNextStep={(data) => advanceRitual(data)} />;
-            case 3: return <Step3_Emotion onNextStep={(data) => advanceRitual(data)} />;
-            case 4: return <Step4_Body onNextStep={(data) => advanceRitual(data, 7)} />;
-            case 7: return <Step7_Goal onFinish={handleProcessAndSave} />;
-            case 5: return <Step5_Calculating />;
-            case 6: return <Step6_Summary ritualData={ritualData} onNextStep={onFinish} />;
+            case 2: return <Step2_Mind onNextStep={(data) => advanceRitual(data)} />; // va al 3
+            case 3: return <Step3_Emotion onNextStep={(data) => advanceRitual(data)} />; // va al 4
+            case 4: return <Step4_Body onNextStep={(data) => advanceRitual(data, 5)} />; // va al 5
+            case 5: return <Step5_Goal onFinish={handleProcessAndSave} />; // onFinish lo manda al 6
+            case 6: return <Step6_Calculating />; // Pantalla de carga
+            case 7: return <Step7_Summary ritualData={ritualData} onNextStep={onFinish} />; // El final
             default: return null;
         }
     };

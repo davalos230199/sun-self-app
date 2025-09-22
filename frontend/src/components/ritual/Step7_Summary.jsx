@@ -18,20 +18,21 @@ const animationMap = {
     lluvioso: { reveal: rainRevealAnimation, loop: rainLoopAnimation },
 };
 
-export default function Step6_Summary({ ritualData, onNextStep }) {
-    // --- 1. DESTRUCTURAMOS los datos que necesitamos de la 'caja' ritualData ---
+const bgMap = {
+    soleado: 'from-amber-100 to-amber-50',
+    nublado: 'from-slate-200 to-slate-50',
+    lluvioso: 'from-blue-100 to-blue-50',
+};
+
+export default function Step7_Summary({ ritualData, onNextStep }) {
     const { estadoGeneral, fraseDelDia } = ritualData;
-
-    // Obtenemos las animaciones correctas, con un valor por defecto
     const anims = animationMap[estadoGeneral] || animationMap.nublado;
+    const bgGradient = bgMap[estadoGeneral] || bgMap.nublado;
 
-    // --- 2. MOVEMOS los hooks useState DENTRO del componente ---
     const [currentAnimation, setCurrentAnimation] = useState(anims.reveal);
     const [shouldLoop, setShouldLoop] = useState(false);
 
     const handleRevealComplete = () => {
-        // Solo cambiamos a loop si la animación actual es la de 'reveal'
-        // para evitar que se llame en un bucle infinito si onComplete se dispara de nuevo.
         if (currentAnimation === anims.reveal) {
             setCurrentAnimation(anims.loop);
             setShouldLoop(true);
@@ -44,24 +45,30 @@ export default function Step6_Summary({ ritualData, onNextStep }) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.5 }}
-            className="bg-white rounded-2xl shadow-xl p-8 text-center flex flex-col items-center justify-center gap-4 w-full max-w-sm border-2 border-slate-300 min-h-[580px]"
-        >   
-            <h2 className="font-['Patrick_Hand'] text-3xl italic text-zinc-800">Piensa en lo siguiente</h2>
-                <Lottie 
-                    className="w-56 h-56"
-                    animationData={currentAnimation} 
-                    loop={shouldLoop}
-                    onComplete={handleRevealComplete}
-                />
+            // --- ESTILO ÉPICO Y FAMILIAR ---
+            className={`bg-gradient-to-b ${bgGradient} rounded-2xl shadow-xl p-8 text-center flex flex-col items-center justify-between w-full max-w-sm border-2 border-white/50 min-h-[580px]`}
+        >
+            <div /> {/* Elemento vacío para empujar el contenido con justify-between */}
 
-            <p className="font-['Patrick_Hand'] italic text-2xl text-zinc-700 mt-4">
-                {/* --- 3. Usamos la variable 'fraseDelDia' que ya destructuramos --- */}
-                "{fraseDelDia || 'Un momento de claridad...'}"
-            </p>
+            <div className="flex flex-col items-center">
+                <div className="w-48 h-48">
+                    <Lottie 
+                        animationData={currentAnimation} 
+                        loop={shouldLoop}
+                        onComplete={handleRevealComplete}
+                    />
+                </div>
+                <div className="mt-4 px-4">
+                    <h2 className="font-['Patrick_Hand'] text-xl text-zinc-600">Sunny tiene una reflexión para ti:</h2>
+                    <p className="font-['Patrick_Hand'] italic text-2xl text-zinc-800 mt-2">
+                        "{fraseDelDia || 'Un momento de claridad...'}"
+                    </p>
+                </div>
+            </div>
 
             <button
                 onClick={onNextStep}
-                className="mt-8 w-full bg-amber-500 text-white font-bold py-3 px-4 rounded-xl hover:bg-amber-600 transition-colors shadow-lg"
+                className="w-full bg-slate-800 text-white font-bold py-3 px-4 rounded-xl hover:bg-slate-900 transition-colors shadow-lg"
             >
                 Finalizar
             </button>
