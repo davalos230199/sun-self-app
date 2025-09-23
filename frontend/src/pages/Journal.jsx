@@ -92,7 +92,12 @@ const NotaExpandida = ({ entrada, onDeselect }) => {
             onClick={onDeselect}
         >
             <motion.div
+                layout
                 layoutId={`nota-${entrada.id}`}
+                initial={{ opacity: 0, scale: 0.8, y: 50 }} // Estado inicial: invisible, un poco más pequeña y 50px más abajo
+                animate={{ opacity: 1, scale: 1, y: 0 }} // Estado final: visible, tamaño normal y en su posición
+                exit={{ opacity: 0, scale: 0.5 }} // Al salir (borrarse): se desvanece y encoge
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }} 
                 onClick={(e) => e.stopPropagation()}
                 // 2. Reemplazamos el color fijo 'bg-[#FFF8E1]' por nuestra variable dinámica 'colorClase'.
                 className={`w-full max-w-lg rounded-xl p-6 shadow-2xl ${colorClase}`}
@@ -197,20 +202,20 @@ export default function Journal() {
                 
                 {/* Grilla de notas */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
+                <AnimatePresence>
                     {entradas.map(entrada => (
                         <NotaDiario key={entrada.id} entrada={entrada} onSelect={setNotaSeleccionada} onDelete={handleDelete} />
                     ))}
+                </AnimatePresence>    
                 </div>
 
                  {entradas.length === 0 && !isLoading && (
                     <p className="text-zinc-400 text-center italic mt-8">aun no has añadido notas...</p>
                 )}
             </div>
-
             <AnimatePresence>
                 {notaSeleccionada && <NotaExpandida entrada={notaSeleccionada} onDeselect={() => setNotaSeleccionada(null)} />}
             </AnimatePresence>
-            
             <div className="flex-shrink-0 mt-auto pt-4 space-y-2">
                 <div className="flex justify-between items-center px-2">
                     <p className="text-sm font-semibold italic text-zinc-500">Prioridad:</p>

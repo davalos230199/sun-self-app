@@ -74,7 +74,7 @@ export default function Step2_Mind({ onNextStep }) {
                 <div className="w-full flex flex-col items-center gap-4">
                     <p className="text-zinc-600 px-2 italic text-sm">"{cita}"</p>
                     <textarea 
-                        placeholder="Un pensamiento que destaque..." 
+                        placeholder="cada pensamiento que escribas, libera espacio en la mente..." 
                         value={thought} 
                         onChange={(e) => setThought(e.target.value)} 
                         rows="2" 
