@@ -50,16 +50,16 @@ export const MetaPrincipalWidget = ({ meta, metasDelDia }) => {
 
     return (
         <Link to="/metas" className="no-underline text-inherit block">
-            <div className="bg-green-100 border-2 border-amber-400 rounded-2xl p-5 text-center shadow-lg space-y-2">
+            <div className="bg-green-100 border border-amber-400 rounded-2xl p-3 text-center shadow-lg space-y-1">
+                <h3 className="text-2xl uppercase text-green-900 break-words mt-2 -mb-1">{meta.descripcion}</h3>
                 <div className="flex justify-center items-center gap-2">
-                    <h2 className="font-['Patrick_Hand'] text-lg text-amber-800">Tu Meta de Hoy</h2>
+                    <h2 className="font-['Patrick_Hand'] text-lg text-amber-800 -mb-1">Tu Meta de Hoy</h2>
                     <TrendingUp className="text-amber-800" size={24} />
                 </div>
-                <h3 className="text-2xl uppercase text-green-900 break-words">{meta.descripcion}</h3>
                 {total > 0 && (
-                    <div className="text-xs font-semibold text-zinc-500 bg-white/50 rounded-full px-2 py-1 inline-block">
+                    <p className="text-xs font-semibold text-amber-800 italic bg-white/50 rounded-full -mt-2 inline-block">
                         {completadas} de {total - 1} metas completadas
-                    </div>
+                    </p>
                 )}
             </div>
         </Link>
@@ -142,19 +142,18 @@ export const EstadoWidget = ({ registro, onEdit, historial }) => {
             <MicroHabitoButton onClick={onEdit} /> 
 
             <Link to="/tracking" className="no-underline text-inherit flex flex-col items-center justify-center flex-grow pt-10">
-                <h3 className="font-['Patrick_Hand'] text-xl text-amber-800">Tu estado de hoy</h3>
                 <div className="w-24 h-24 mx-auto -my-2"><Lottie animationData={registro.estado_general === 'soleado' ? sunLoopAnimation : registro.estado_general === 'lluvioso' ? rainLoopAnimation : cloudLoopAnimation} loop={true} /></div>
+                <h3 className="font-['Patrick_Hand'] text-xl text-amber-800 -mb-1">Hoy</h3>
                 <p className="flex-grow text-zinc-700 font-['Patrick_Hand']">"{registro.frase_sunny || '...'}"</p>
-            </Link>
-
                 <div className="space-y-2 border-t border-dashed border-amber-300 pt-3 text-left">
                 <ComentarioItem anim={brainLoopAnimation} text={registro.mente_comentario} />
                 <ComentarioItem anim={emotionLoopAnimation} text={registro.emocion_comentario} />
                 <ComentarioItem anim={bodyLoopAnimation} text={registro.cuerpo_comentario} />
                 </div>
-                <footer className="mt-auto pt-3 border-t border-dashed border-amber-200 text-xs text-zinc-500 font-semibold">
-                    Toca para ver tu historial completo...
+                <footer className="mt-auto pt-3 border-t border-dashed italic border-amber-200 text-xs text-zinc-500 font-semibold">
+                    Toca para acceder a tu calendario
                 </footer>
+            </Link>    
         </div>
     );
 };
