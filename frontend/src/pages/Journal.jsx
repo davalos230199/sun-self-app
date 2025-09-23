@@ -23,7 +23,12 @@ const NotaDiario = ({ entrada, onSelect, onDelete }) => {
     const colorClase = prioridadColores[entrada.prioridad] || prioridadColores.baja;
 
     return (
-        <motion.div
+         <motion.div
+            layout // Esta prop anima los cambios de posición (cuando otra nota se borra, por ej.)
+            initial={{ opacity: 0, scale: 0.8, y: 50 }} // Estado inicial: invisible, un poco más pequeña y 50px más abajo
+            animate={{ opacity: 1, scale: 1, y: 0 }} // Estado final: visible, tamaño normal y en su posición
+            exit={{ opacity: 0, scale: 0.5 }} // Al salir (borrarse): se desvanece y encoge
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }} // Física de la animación para que se sienta natural
             layoutId={`nota-${entrada.id}`}
             onClick={() => onSelect(entrada)}
             className={`h-40 rounded-md p-3 shadow-md cursor-pointer hover:shadow-xl hover:scale-105 transition-all flex flex-col ${colorClase}`}
@@ -69,29 +74,44 @@ const SelectorPrioridad = ({ prioridad, setPrioridad }) => {
     );
 };
 
-const NotaExpandida = ({ entrada, onDeselect }) => (
-    <motion.div 
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-        onClick={onDeselect}
-    >
-        <motion.div
-            layoutId={`nota-${entrada.id}`}
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg bg-[#FFF8E1] rounded-xl p-6 shadow-2xl"
+const NotaExpandida = ({ entrada, onDeselect }) => {
+    // 1. Añadimos la misma lógica de mapeo de colores que tiene NotaDiario.
+    const prioridadColores = {
+        alta: 'bg-red-200/70 border-red-400',
+        media: 'bg-yellow-200/70 border-yellow-400',
+        baja: 'bg-amber-100/70 border-amber-300',
+    };
+    
+    // Si la prioridad es null, usará el color de 'baja' por defecto.
+    const colorClase = prioridadColores[entrada.prioridad] || prioridadColores.baja;
+
+    return (
+        <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={onDeselect}
         >
-            <div className="flex justify-between items-center mb-4">
-                <p className="font-semibold text-zinc-500 italic">
-                    {new Date(entrada.created_at).toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' })}
+            <motion.div
+                layoutId={`nota-${entrada.id}`}
+                onClick={(e) => e.stopPropagation()}
+                // 2. Reemplazamos el color fijo 'bg-[#FFF8E1]' por nuestra variable dinámica 'colorClase'.
+                className={`w-full max-w-lg rounded-xl p-6 shadow-2xl ${colorClase}`}
+            >
+                <div className="flex justify-between items-center mb-4">
+                    <p className="font-semibold text-zinc-500 italic">
+                        {new Date(entrada.created_at).toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' })}
+                    </p>
+                    <button onClick={onDeselect} className="p-1 rounded-full bg-transparent border-none hover:bg-zinc-200/50">
+                        <X size={20} className="text-zinc-600"/>
+                    </button>
+                </div>
+                <p className="text-zinc-800 whitespace-pre-wrap max-h-[60vh] overflow-y-auto italic font-['Patrick_Hand'] text-lg">
+                    {entrada.texto}
                 </p>
-                <button onClick={onDeselect} className="p-1 rounded-full bg-transparent border-none hover:bg-zinc-200"><X size={20} className="text-zinc-600"/></button>
-            </div>
-            <p className="text-zinc-800 whitespace-pre-wrap max-h-[60vh] overflow-y-auto italic font-['Patrick_Hand'] text-lg">
-                {entrada.texto}
-            </p>
+            </motion.div>
         </motion.div>
-    </motion.div>
-);
+    );
+};
 
 export default function Journal() {
     const { id: registroId } = useParams();
@@ -138,18 +158,19 @@ export default function Journal() {
             });
             // Hacemos un 'fetch' de nuevo para obtener la lista ordenada
             const { data } = await api.getDiarioByRegistroId(registroId);
-            setEntradas(data || []);
+            setEntradas(prevEntradas => [...prevEntradas, nuevaEntrada]);
             setNuevoTexto('');
             setPrioridad('baja'); // Reseteamos la prioridad
+
+        } catch (error) {
+        console.error("Error al guardar la nota:", error);
+        // Si algo saliera mal, aquí podríamos quitar la nota que agregamos "optimistamente".    
         } finally {
             setIsSaving(false);
         }
     };
 
         const handleDelete = async (entradaId) => {
-        // Opcional: pedir confirmación
-        // if (!window.confirm("¿Seguro que quieres eliminar esta nota?")) return;
-
         try {
             await api.deleteEntradaDiario(entradaId);
             // Actualizamos el estado para remover la nota de la vista instantáneamente

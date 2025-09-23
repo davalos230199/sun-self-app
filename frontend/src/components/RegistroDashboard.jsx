@@ -58,7 +58,7 @@ export const MetaPrincipalWidget = ({ meta, metasDelDia }) => {
                 <h3 className="text-2xl uppercase text-green-900 break-words">{meta.descripcion}</h3>
                 {total > 0 && (
                     <div className="text-xs font-semibold text-zinc-500 bg-white/50 rounded-full px-2 py-1 inline-block">
-                        {completadas} de {total} metas completadas
+                        {completadas} de {total - 1} metas completadas
                     </div>
                 )}
             </div>

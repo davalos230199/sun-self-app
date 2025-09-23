@@ -28,7 +28,7 @@ const MetaItem = ({ meta, onToggle, onDelete, onEdit, onSave, onCancelEdit, isEd
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, x: -50 }}
         transition={{ duration: 0.3 }}
-        className={`flex items-start p-4 rounded-xl transition-all duration-300 shadow-sm ${meta.completada ? 'bg-green-100/70' : 'bg-white/80'}`}
+        className={`flex items-start p-4 rounded-xl border-2 transition-all duration-300 shadow-sm ${meta.completada ? 'bg-green-100/70' : 'bg-white/80'}`}
     >
         {!isEditing ? (
             // --- MODO VISTA ---
@@ -89,8 +89,6 @@ export default function MetasPage() {
     const { registroDeHoy, metas, isLoading, refrescarDia } = useDia();
     const [nuevaMeta, setNuevaMeta] = useState('');
     const [nuevaHora, setNuevaHora] = useState('');
-    
-    // --- ESTADO PARA LA EDICIÓN ---
     const [editingMetaId, setEditingMetaId] = useState(null); // Guarda el ID de la meta que se está editando.
     const [editingText, setEditingText] = useState('');     // Guarda el texto nuevo mientras se edita.
 
@@ -168,7 +166,7 @@ export default function MetasPage() {
                             />
                         ))
                     ) : (
-                        <p className="text-zinc-500 text-center mt-8">Añade pequeños pasos para alcanzar tu norte.</p>
+                        <p className="text-zinc-500 text-center mt-8">Añade pequeños pasos para avanzar en tu dia.</p>
                     )}
                 </AnimatePresence>
             </div>
