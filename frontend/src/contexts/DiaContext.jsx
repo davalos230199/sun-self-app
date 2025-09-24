@@ -51,6 +51,7 @@ export const DiaProvider = ({ children }) => {
         registroDeHoy,
         isLoading,
         refrescarDia,
+        setMetas,
         metas,
     };
 

@@ -1,5 +1,5 @@
 // frontend/src/pages/MetasPage.jsx (Refactorizado)
-
+//Mantene
 import React, { useState } from 'react';
 import { useDia } from '../contexts/DiaContext';
 import api from '../services/api';
@@ -25,7 +25,7 @@ const MetaPrincipal = ({ meta }) => {
 };
 
 // --- Sub-componente: MetaItem (NUEVO DISEÑO) ---
-const MetaItem = ({ meta, onToggle, onDelete, onEdit, isExpanded, onExpand }) => {
+const MetaItem = ({ meta, onToggle, onDelete, onEdit, isExpanded, onExpand, isEditing, editingText, setEditingText, onSave, onCancel }) => {
 
     const handleActionClick = (e) => {
         e.stopPropagation(); // Evita que el evento 'onExpand' del div padre se dispare
@@ -33,14 +33,38 @@ const MetaItem = ({ meta, onToggle, onDelete, onEdit, isExpanded, onExpand }) =>
 
     return (
         <motion.div
-            layout // Mantenemos layout para animar reordenamientos
+            layout="position" // Mantenemos layout para animar reordenamientos
             onClick={onExpand} // 1. El evento principal ahora es onClick
             className="relative flex items-center p-4 rounded-xl shadow-md transition-all duration-300 cursor-pointer"
             style={{
                 backgroundColor: meta.completada ? '#fef3c7' : '#fef3c7',
                 opacity: meta.completada ? 0.7 : 1,
             }}
-        >
+        >        
+        {/* Si está en modo edición, muestra el formulario */}
+        {isEditing ? (
+                <div className="w-full flex items-center">
+                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl bg-amber-500`}></div>
+                    <button
+                    onClick={(e) => {
+                    handleActionClick(e);
+                    onToggle(meta.id, !meta.completada);
+                    }}
+                    className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-300 transform hover:scale-110 ${meta.completada ? 'bg-green-500 border-green-600' : 'border-zinc-300 hover:border-amber-500'}`}
+                    ></button>
+                    <input
+                        type="text"
+                        value={editingText}
+                        onChange={(e) => setEditingText(e.target.value)}
+                        className="font-['Patrick_Hand'] font-semibold ml-4 mt-2 text-s bg-transparent border-none focus:outline-none focus:shadow-none focus:ring-0"
+                        autoFocus
+                        onKeyDown={(e) => e.key === 'Enter' && onSave(meta.id)}
+                    />
+                    <button onClick={() => onSave(meta.id)} className="p-2 text-green-500 border-none hover:text-green-700"><Check size={18} /></button>
+                    <button onClick={onCancel} className="p-2 text-red-400 border-none hover:text-red-500"><X size={18} /></button>
+                </div>
+            ) : (
+        <>
             {/* Barra de estado vertical */}
             <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${meta.completada ? 'bg-green-500' : 'bg-amber-500'}`}></div>
             
@@ -78,6 +102,8 @@ const MetaItem = ({ meta, onToggle, onDelete, onEdit, isExpanded, onExpand }) =>
                     </motion.div>
                 )}
             </AnimatePresence>
+        </>
+        )}
         </motion.div>
     );
 };
@@ -146,31 +172,24 @@ const FormularioNuevaMeta = ({ onAdd }) => {
 export default function MetasPage() {
     // Asumimos que el context provee 'metas' y 'setMetas'
     const { registroDeHoy, metas, setMetas, isLoading } = useDia();
-    const [expandedMetaId, setExpandedMetaId] = useState(null); // 3. Estado centralizado
-    const handleMetaExpand = (metaId) => {
-        // Si tocamos la meta ya expandida, se cierra. Si no, se expande la nueva.
-        setExpandedMetaId(currentId => (currentId === metaId ? null : metaId));
-    };
-    
-    // Estados para la edición en línea (se pueden mover a un componente aparte si crece)
-    // Por ahora lo omitimos para simplificar la primera refactorización.
+    const [expandedMetaId, setExpandedMetaId] = useState(null);
+    const [editingMetaId, setEditingMetaId] = useState(null); 
+    const [editingText, setEditingText] = useState(''); 
 
+    const handleMetaExpand = (metaId) => {
+    setExpandedMetaId(currentId => (currentId === metaId ? null : metaId));
+    };
     const metaPrincipal = registroDeHoy?.meta_principal_id ? metas.find(m => m.id === registroDeHoy.meta_principal_id) : null;
     const metasSecundarias = metas.filter(m => m.id !== registroDeHoy?.meta_principal_id);
 
-    // --- MANEJADORES OPTIMISTAS ---
+  
     const handleAddMeta = async (descripcion, hora) => {
-        // 1. Creación optimista del objeto (sin ID de la DB aún)
         const nuevaMetaTemp = { id: `temp-${Date.now()}`, descripcion, hora_objetivo: hora, completada: false };
         setMetas(prev => [...prev, nuevaMetaTemp]);
-        
-        // 2. Llamada a la API en segundo plano
         try {
             const { data: metaGuardada } = await api.createMeta({ descripcion, hora_objetivo: hora });
-            // 3. Reemplazar la meta temporal con la real de la DB
             setMetas(prev => prev.map(m => m.id === nuevaMetaTemp.id ? metaGuardada : m));
         } catch (error) {
-            // Revertir si falla
             setMetas(prev => prev.filter(m => m.id !== nuevaMetaTemp.id));
         }
     };
@@ -195,7 +214,34 @@ export default function MetasPage() {
         }
     };
 
-    // La lógica de edición en línea se omite por brevedad, pero seguiría el mismo patrón optimista.
+        const handleStartEdit = (meta) => {
+        setEditingMetaId(meta.id);
+        setEditingText(meta.descripcion);
+        setExpandedMetaId(null); // Opcional: cierra los otros botones para una UI más limpia
+    };
+
+    const handleCancelEdit = () => {
+        setEditingMetaId(null);
+        setEditingText('');
+    };
+
+    const handleSaveEdit = async (id) => {
+        if (!editingText.trim()) return; // No guardar si está vacío
+
+        const metaOriginal = metas.find(m => m.id === id);
+        const metasOriginales = [...metas];
+
+        // Actualización optimista
+        setMetas(prev => prev.map(m => m.id === id ? { ...m, descripcion: editingText } : m));
+        handleCancelEdit(); // Sale del modo edición inmediatamente
+
+        try {
+            await api.updateMeta(id, { descripcion: editingText });
+        } catch (error) {
+            console.error("Error al guardar la meta:", error);
+            setMetas(metasOriginales); // Revertir en caso de error
+        }
+    };
 
     if (isLoading) return <LoadingSpinner message="Cargando tus metas..." />;
 
@@ -213,10 +259,14 @@ export default function MetasPage() {
                             meta={meta} 
                             onToggle={handleToggleMeta} 
                             onDelete={handleDeleteMeta}
-                            onEdit={() => { /* Lógica de edición a implementar */ }}
-                            // 4. Pasamos el estado y el manejador al hijo
-                            isExpanded={expandedMetaId === meta.id}
+                            onEdit={handleStartEdit} 
+                            isExpanded={expandedMetaId === meta.id && editingMetaId !== meta.id}
                             onExpand={() => handleMetaExpand(meta.id)}
+                            isEditing={editingMetaId === meta.id}
+                            editingText={editingText}
+                            setEditingText={setEditingText}
+                            onSave={handleSaveEdit}
+                            onCancel={handleCancelEdit}
                         />
                     ))}
                 </AnimatePresence>

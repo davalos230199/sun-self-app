@@ -57,13 +57,34 @@ router.patch('/:id', async (req, res) => {
     try {
         const { id: metaId } = req.params;
         const { id: profileId } = req.user;
-        const { completada } = req.body; // El "payload" solo trae el campo a cambiar
+        
+        // 1. Extraemos los campos permitidos del body.
+        const { descripcion, completada, hora_objetivo } = req.body;
 
+        // 2. Creamos un objeto 'updates' solo con los campos que realmente se enviaron.
+        // Esto evita intentar actualizar campos con 'undefined'.
+        const updates = {};
+        if (descripcion !== undefined) {
+            updates.descripcion = descripcion;
+        }
+        if (completada !== undefined) {
+            updates.completada = completada;
+        }
+        if (hora_objetivo !== undefined) {
+            updates.hora_objetivo = hora_objetivo;
+        }
+        
+        // Si el objeto de actualizaciones está vacío, no hacemos nada.
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({ error: 'No se proporcionaron campos para actualizar.' });
+        }
+
+        // 3. Usamos el objeto 'updates' genérico en la consulta.
         const { data, error } = await req.supabase
             .from('metas')
-            .update({ completada: completada })
+            .update(updates) // <-- La magia está aquí.
             .eq('id', metaId)
-            .eq('profile_id', profileId) // Seguridad: solo puede actualizar sus propias metas
+            .eq('profile_id', profileId)
             .select()
             .single();
 
