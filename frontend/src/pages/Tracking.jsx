@@ -154,14 +154,14 @@ export default function Tracking() {
             {historial.length > 0 && (
                      <section className="bg-white border border-amber-400 shadow-lg rounded-2xl p-4 snap-start">
                         {/* Contenedor del Título y Filtro de Fechas */}
-                        <div className="flex justify-between items-center mb-4">
+                        <div className="flex justify-between items-center">
                             <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800">Fluctuación</h2>
                             <div className="flex items-center gap-1 bg-white border-none rounded-full p-1">
                                 {dateFilters.map(filter => (
                                     <button 
                                         key={filter.key} 
                                         onClick={() => setActiveDateFilter(filter.key)} 
-                                        className={`px-3 py-1 font-size: 1.2rem font-semibold rounded-full transition-colors border-none ${activeDateFilter === filter.key ? 'focus:bg-amber-100 shadow-sm' : 'text-zinc-500 hover:text-zinc-600'}`}>
+                                        className={`px-3 py-1 font-['Patrick_Hand'] font-size: 1.2rem font-semibold rounded-full transition-colors border-none ${activeDateFilter === filter.key ? 'focus:bg-amber-100 shadow-sm' : 'text-zinc-500 hover:text-zinc-600'}`}>
                                         {filter.label}
                                     </button>
                                 ))}
@@ -175,26 +175,24 @@ export default function Tracking() {
                                 filter={activeDateFilter}
                                 visibility={aspectVisibility} // Pasamos la visibilidad como prop
                             />
+                        </div>    
                             {/* --- EL NUEVO FILTRO DE ASPECTOS, POSICIONADO AQUÍ --- */}
-                            <div className="flex justify-between">
-                            <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800"></h2>
-                            <div className="flex justify-between gap-1 bg-white-100 -mt-8">
+                            <div className="flex justify-end gap-4 bg-white border-none rounded-full p-1">
+
                                 {aspectFilters.map(filter => (
                                     <button
                                         key={filter.key}
                                         onClick={() => handleAspectClick(filter.key)}
                                         title={`Filtrar por ${filter.key}`}
-                                        className={`transition-all border-none rounded-full  ${aspectVisibility[filter.key] ? 'focus:bg-amber-100 shadow-sm' : 'opacity-40 hover:opacity-100'}`}
+                                        className={`transition-all border-none rounded-full  ${aspectVisibility[filter.key] ? 'focus:bg-amber-100 rounded-full shadow-sm' : 'opacity-40 hover:opacity-100'}`}
                                     >
-                                    <div className="w-6 h-6"><img src={filter.icon} alt={filter.key} /></div>
+                                    <div className="w-8 h-8"><img src={filter.icon} alt={filter.key} /></div>
                                     </button>
                                 ))}
-                                <button onClick={handleResetAspects} title="Mostrar todos" className="border-none  rounded-full">
+                                <button onClick={handleResetAspects} title="Mostrar todos" className="border-none rounded-full">
                                 <RotateCw size={16} className="text-red-500" />
                                 </button>
-                            </div>
                         </div>
-                    </div>
                      </section>
                 )}
             </div>

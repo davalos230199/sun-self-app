@@ -38,7 +38,7 @@ export default function Auth() {
                 const nextIndex = (cycleIndex + 1) % animationCycle.length;
                 setCycleIndex(nextIndex);
                 setCurrentAnimation(animationCycle[nextIndex].reveal);
-            }, 4000); // 4 segundos de loop
+            }, 7000); // 4 segundos de loop
         }
         // Limpiamos el temporizador al desmontar el componente o si cambia el estado
         return () => clearTimeout(timer);
@@ -52,8 +52,8 @@ export default function Auth() {
     };
 
     const panelStyles = "h-screen w-full snap-start flex flex-col justify-center items-center p-8 text-center relative bg-transparent";
-    const headerStyles = "text-4xl sm:text-5xl font-bold text-orange-600 mb-4 font-['Patrick_Hand']";
-    const paragraphStyles = "max-w-xl text-lg sm:text-xl text-zinc-700 leading-relaxed";
+    const headerStyles = "text-4xl sm:text-5xl uppercase font-semibold text-orange-600 mb-4 font-['Patrick_Hand']";
+    const paragraphStyles = "max-w-xl text-lg sm:text-xl text-zinc-700 leading-relaxed font-['Patrick_Hand']";
 
     return (
         <div className="bg-gradient-to-br from-amber-50 to-orange-100 font-sans h-screen w-full relative">
@@ -105,10 +105,10 @@ export default function Auth() {
 
                 <section className={panelStyles}>
                     <div className="flex flex-col items-center">
-                        <h1 className={headerStyles}>¿Tu mente viaja?</h1>
-                        <h2 className="text-3xl sm:text-4xl font-bold text-orange-500 mb-6">Anclala en tu presente.</h2>
+                        <h1 className={headerStyles}>Observa tu presente.</h1>
+                        <h2 className="text-3xl sm:text-4xl font-bold text-orange-500 mb-6">Construí tu futuro.</h2>
                         <p className={paragraphStyles}>
-                            Sun Self comienza con una simple pausa. Un ritual diario de auto-observación para que conectes con tu mente, emociones y cuerpo, y habites el único momento que realmente importa: <strong>el ahora</strong>.
+                            Sun Self es una herramienta de auto-observación diaria. Un micro-hábito simple para registrar tu estado mental, emocional y físico. Esta claridad es la base para construir <strong>hábitos que perduran</strong>.
                         </p>
                         <div className="absolute bottom-8 animate-bounce">
                             <ChevronDown className="w-8 h-8 text-orange-400" />
@@ -118,9 +118,9 @@ export default function Auth() {
 
                 <section className={panelStyles}>
                      <div className="flex flex-col items-center">
-                        <h2 className={headerStyles}>Analiza tu pasado para conocerte.</h2>
+                        <h2 className={headerStyles}>De datos a decisiones.</h2>
                         <p className={paragraphStyles}>
-                            Cada registro se convierte en el mapa de tu mundo interior. Observa tus patrones, entiende el clima de tu ser y transforma la información en <strong>autoconocimiento</strong>.
+                             Cada registro se convierte en data procesable. Identifica patrones, entiende tus fluctuaciones y usa esa información para tomar mejores decisiones. Convierte la introspección en <strong>estrategia personal</strong>.
                         </p>
                         <div className="absolute bottom-8 animate-bounce">
                             <ChevronDown className="w-8 h-8 text-orange-400" />
@@ -130,20 +130,20 @@ export default function Auth() {
 
                 <section className={panelStyles}>
                      <div className="flex flex-col items-center">
-                        <h2 className={headerStyles}>Planifica tu futuro con intención.</h2>
+                        <h2 className={headerStyles}>Define tu día. Domina tu progreso.</h2>
                         <p className={`${paragraphStyles} mb-12`}>
-                            Usa esa claridad para construir tu mañana. Define y persigue las metas que te definen, convirtiendo la consciencia de hoy en <strong>la realidad de mañana</strong>.
+                            Usa la claridad obtenida para establecer metas diarias alcanzables. Sun Self te ayuda a conectar tu estado actual con tus objetivos futuros, convirtiendo cada acción en un <strong>resultado medible</strong>.
                         </p>
                         <button
                             onClick={signInWithGoogle}
-                            className="bg-gradient-to-r from-orange-500 to-amber-400 text-white font-bold py-4 px-8 rounded-full text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-in-out flex items-center justify-center mx-auto"
+                            className="bg-gradient-to-r from-orange-500 to-amber-400 text-white font-bold py-4 font-['Patrick_Hand'] px-8 rounded-full text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-in-out flex items-center justify-center mx-auto"
                         >
                             <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo" className="w-6 h-6 mr-3"/>
-                            Iniciar Mi Viaje con Google
+                            Dar el primer paso con Google
                         </button>
                      </div>
                      <footer className="absolute bottom-4 text-center text-zinc-500 text-sm">
-                        <p>&copy; {new Date().getFullYear()} Sun Self. Vuelve a habitarte.</p>
+                        <p>&copy; {new Date().getFullYear()} Sun Self. Micro-Hábito.</p>
                     </footer>
                 </section>
             </div>

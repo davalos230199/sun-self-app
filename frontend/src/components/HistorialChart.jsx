@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-
+//
 // --- 1. Importamos los SVGs estáticos ---
 import sunIcon from '../assets/icons/sun.svg';
 import cloudIcon from '../assets/icons/cloud.svg';
 import rainIcon from '../assets/icons/rain.svg';
 
-const COLORS = { mente: '#3b82f6', emocion: '#8b5cf6', cuerpo: '#10b981', grid: '#e5e7eb' };
+const COLORS = { mente: '#3b82f6', emocion: '#f65cd5ff', cuerpo: '#10b981', grid: '#e5e7eb' };
 
 export default function HistorialChart({ data, filter, visibility }) {
     

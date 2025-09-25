@@ -47,7 +47,7 @@ const NotaDiario = ({ entrada, onSelect, onDelete }) => {
                         className="p-1 -mr-1 -mt-1 italic text-zinc-400 hover:text-red-500 border-none transition-colors"
                         title="Eliminar nota"
                 >
-                    <Pin style={{ transform: 'rotate(45deg)' }} color='white' size={16} />
+                    <Pin style={{ transform: 'rotate(45deg)' }} color='red' size={16} />
                 </button>
             </div>
             <p className="text-zinc-800 text-xs italic lowercase line-clamp-5 pt-1">
