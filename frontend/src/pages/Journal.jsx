@@ -165,34 +165,45 @@ export default function Journal() {
         try {
             // Pasamos la prioridad al guardar
             const { data: nuevaEntrada } = await api.saveEntradaDiario({ 
-                registro_id: registroId, 
+                registro_id: registroDeHoy.id, 
                 texto: nuevoTexto,
                 prioridad: prioridad, // ¡Aquí se envía la prioridad!
             });
-            // Hacemos un 'fetch' de nuevo para obtener la lista ordenada
-            const { data } = await api.getDiarioByRegistroId(registroId);
-            setEntradas(prevEntradas => [...prevEntradas, nuevaEntrada]);
+
+            setTodasLasEntradas(prevEntradas => {
+                // Add new note and re-sort
+                const newArray = [...prevEntradas, nuevaEntrada];
+                const prioridadValor = { 'alta': 3, 'media': 2, 'baja': 1 };
+                return newArray.sort((a, b) => {
+                    const prioridadA = prioridadValor[a.prioridad] || 0;
+                    const prioridadB = prioridadValor[b.prioridad] || 0;
+                    if (prioridadB !== prioridadA) return prioridadB - prioridadA;
+                    return new Date(b.created_at) - new Date(a.created_at);
+                });
+            });
+
             setNuevoTexto('');
-            setPrioridad('baja'); // Reseteamos la prioridad
+            setPrioridad('baja');
 
         } catch (error) {
-        console.error("Error al guardar la nota:", error);
-        // Si algo saliera mal, aquí podríamos quitar la nota que agregamos "optimistamente".    
+            console.error("Error al guardar la nota:", error);
         } finally {
             setIsSaving(false);
         }
     };
 
-    const handleDelete = async (entradaId) => {
-        try {
-            await api.deleteEntradaDiario(entradaId);
-            // Actualizamos el estado para remover la nota de la vista instantáneamente
-            setEntradas(prev => prev.filter(e => e.id !== entradaId));
-        } catch (error) {
-            console.error("Error al eliminar la nota:", error);
-            // Aquí podrías mostrar una notificación de error al usuario
-        }
-    };
+const handleDelete = async (entradaId) => {
+    try {
+        await api.deleteEntradaDiario(entradaId);
+        
+        // --- LA CORRECCIÓN ---
+        // Actualizamos 'todasLasEntradas', no el antiguo 'entradas'.
+        setTodasLasEntradas(prev => prev.filter(e => e.id !== entradaId));
+
+    } catch (error) {
+        console.error("Error al eliminar la nota:", error);
+    }
+};
     
     const metaPrincipal = registroDeHoy?.meta_principal_id 
     ? metas.find(m => m.id === registroDeHoy.meta_principal_id) 
