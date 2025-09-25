@@ -17,7 +17,7 @@ const NotaDiario = ({ entrada, onSelect, onDelete }) => {
     const prioridadColores = {
         alta: 'bg-red-200/70 border-red-400',
         media: 'bg-yellow-200/70 border-yellow-400',
-        baja: 'bg-amber-100/70 border-amber-300',
+        baja: 'bg-green-100/70 border-green-300',
     };
     
     // Si la prioridad es null o no existe, usará el color de 'baja'
@@ -83,7 +83,7 @@ const NotaExpandida = ({ entrada, onDeselect }) => {
     const prioridadColores = {
         alta: 'bg-red-200/70 border-red-400',
         media: 'bg-yellow-200/70 border-yellow-400',
-        baja: 'bg-amber-100/70 border-amber-300',
+        baja: 'bg-green-100/70 border-green-300',
     };
     
     // Si la prioridad es null, usará el color de 'baja' por defecto.
@@ -140,19 +140,47 @@ export default function Journal() {
     }, [filtroTiempo]);
 
     const entradasFiltradas = useMemo(() => {
-        const hoy = new Date();
-        const inicioHoy = new Date(hoy.setHours(0, 0, 0, 0));
-        const inicioSemana = new Date(hoy.setDate(hoy.getDate() - 7));
+        // ... (la lógica del switch para filtrar por tiempo no cambia)
 
-        switch (filtroTiempo) {
-            case 'semana':
-                return todasLasEntradas.filter(e => new Date(e.created_at) >= inicioSemana);
-            case 'mes':
-                return todasLasEntradas; // Ya tenemos el mes completo
-            case 'hoy':
-            default:
-                return todasLasEntradas.filter(e => new Date(e.created_at) >= inicioHoy);
-        }
+        // Aplicamos el filtro de tiempo primero para obtener la lista base
+        const filtradasPorTiempo = (() => {
+            const hoy = new Date();
+            const inicioHoy = new Date(new Date().setHours(0, 0, 0, 0));
+            
+            // Creamos una nueva fecha para no mutar 'hoy'
+            const fechaSemana = new Date();
+            const inicioSemana = new Date(fechaSemana.setDate(fechaSemana.getDate() - 7));
+
+            switch (filtroTiempo) {
+                case 'semana':
+                    return todasLasEntradas.filter(e => new Date(e.created_at) >= inicioSemana);
+                case 'mes':
+                    return todasLasEntradas;
+                case 'hoy':
+                default:
+                    return todasLasEntradas.filter(e => new Date(e.created_at) >= inicioHoy);
+            }
+        })();
+
+        // --- AQUÍ ESTÁ LA NUEVA LÓGICA DE ORDENAMIENTO JERÁRQUICO ---
+        const prioridadValor = { 'alta': 3, 'media': 2, 'baja': 1 };
+
+        return filtradasPorTiempo.sort((a, b) => {
+            // 1. Comparamos las fechas (sin la hora)
+            const fechaA = new Date(a.created_at).toDateString();
+            const fechaB = new Date(b.created_at).toDateString();
+
+            if (fechaA !== fechaB) {
+                // Si son de días diferentes, ordena por fecha (el más nuevo primero)
+                return new Date(b.created_at) - new Date(a.created_at);
+            }
+            
+            // 2. Si son del MISMO día, ordena por prioridad
+            const prioridadA = prioridadValor[a.prioridad] || 0;
+            const prioridadB = prioridadValor[b.prioridad] || 0;
+            return prioridadB - prioridadA;
+        });
+
     }, [todasLasEntradas, filtroTiempo]);
 
     const handleSave = async () => {

@@ -1,11 +1,18 @@
 // frontend/src/pages/MetasPage.jsx (Refactorizado)
 //Mantene
 import React, { useState } from 'react';
-import { useDia } from '../contexts/DiaContext';
-import api from '../services/api';
-import LoadingSpinner from '../components/LoadingSpinner';
-import { Check, Trash2, Plus, TrendingUp, Pencil, X, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Check, Trash2, Plus, TrendingUp, Pencil, X, Clock } from 'lucide-react';
+import TimePicker from 'react-time-picker';
+import 'react-time-picker/dist/TimePicker.css';
+import 'react-clock/dist/Clock.css';
+import '../styles/timepicker-override.css';
+
+import api from '../services/api';
+import { useDia } from '../contexts/DiaContext';
+import LoadingSpinner from '../components/LoadingSpinner';
+
+
 
 // --- Sub-componente: MetaPrincipal (Sin cambios, ya estaba bien) ---
 const MetaPrincipal = ({ meta }) => {
@@ -43,7 +50,7 @@ const MetaItem = ({ meta, onToggle, onDelete, onEdit, isExpanded, onExpand, isEd
         >        
         {/* Si está en modo edición, muestra el formulario */}
         {isEditing ? (
-                <div className="w-full flex items-center">
+                <div className="w-full flex items-center justify-between">
                     <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl bg-amber-500`}></div>
                     <button
                     onClick={(e) => {
@@ -110,9 +117,16 @@ const MetaItem = ({ meta, onToggle, onDelete, onEdit, isExpanded, onExpand, isEd
 
 // --- Sub-componente: Formulario para agregar metas (NUEVO DISEÑO) ---
 const FormularioNuevaMeta = ({ onAdd }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
     const [descripcion, setDescripcion] = useState('');
     const [hora, setHora] = useState('');
+    const prefillTime = () => {
+        if (!hora) { 
+            const ahora = new Date();
+            ahora.setMinutes(ahora.getMinutes() + 15);
+            const horaSugerida = ahora.toTimeString().substring(0, 5);
+            setHora(horaSugerida);
+        }
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -120,49 +134,42 @@ const FormularioNuevaMeta = ({ onAdd }) => {
         onAdd(descripcion, hora || null);
         setDescripcion('');
         setHora('');
-        setIsExpanded(false);
     };
-
-    if (!isExpanded) {
-        return (
-            <button
-                onClick={() => setIsExpanded(true)}
-                className="w-full border-2 italic text-left p-4 rounded-xl bg-green-100 border-green-400 hover:bg-green-200 transition-colors text-zinc-600 flex items-center gap-2"
-            >
-                <Plus size={18} />
-                Añadir nueva meta...
-            </button>
-        );
-    }
 
     return (
         <motion.form 
             layout
-            initial={{ opacity: 0.5, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
             onSubmit={handleSubmit} 
-            className="p-2 bg-green-100 border-2 border-green-400 rounded-xl"
+            className="p-2 bg-green-100 border-2 border-green-400 rounded-xl flex items-center gap-4"
         >
             <input
                 type="text"
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
-                placeholder="Describe tu nueva meta..."
-                className="w-full italic p-2 bg-amber-100 border border-amber-300 rounded-lg focus:ring-2 focus:ring-green-400 outline-none"
+                onFocus={prefillTime}
+                placeholder="En 15 arranco.."
+                className="flex-grow italic w-full font-['Patrick_Hand'] text-lg p-2 bg-transparent border-none focus:ring-0 outline-none"
                 autoFocus
             />
-            <div className="flex mt-2 gap-8">
-                <input
-                    type="time"
+            <div className="flex-shrink-0">
+                <TimePicker
+                    onChange={setHora}
                     value={hora}
-                    onChange={(e) => setHora(e.target.value)}
-                    className="w-1/2 bg-amber-100 border border-amber-400 rounded-lg focus:ring-2 focus:ring-green-400 outline-none"
+                    // 3. Estilo más compacto y sin bordes para el selector de hora
+                    className="w-24 bg-amber-50 font-['Patrick_Hand'] rounded-lg text-lg"
+                    disableClock={true}
+                    clearIcon={null}
+                    format="HH:mm"
                 />
-                <button type="submit" className="p-3 text-red rounded-lg">Agregar</button>
-                <button type="button" onClick={() => setIsExpanded(false)} className="p-2 text-red-500 rounded-lg border-none hover:bg-zinc-300 transition-colors">
-                    <X size={18} />
-                </button>
             </div>
+            {/* 4. Botón de envío más prominente */}
+            <button 
+                type="submit" 
+                className="flex-shrink-0 p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                disabled={!descripcion.trim()}
+            >
+                <Plus size={24} />
+            </button>
         </motion.form>
     );
 };
