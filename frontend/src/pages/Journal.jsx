@@ -222,14 +222,14 @@ const handleDelete = async (entradaId) => {
 
                 {/* --- NUEVO SELECTOR DE FILTRO DE TIEMPO --- */}
                 <div className="flex flex-col items-center mb-4">
-                    <div className="flex items-center -mb-4 mt-2 gap-2 text-center text-zinc-600">
+                    <div className="flex items-center gap-2 text-center text-zinc-600">
                         <h2 className="font-['Patrick_Hand'] text-xl italic font-bold">{metaPrincipal ? metaPrincipal.descripcion : 'Sin meta principal hoy'}</h2>
                         <TrendingUp size={24} />
                     </div>
                     <div className="flex items-center gap-1 rounded-full p-1 shadow-sm">
                         {filtros.map(f => (
                             <button key={f.key} onClick={() => setFiltroTiempo(f.key)}
-                                className={`px-3 py-1 text-sm font-semibold rounded-full border-none transition-colors ${filtroTiempo === f.key ? 'bg-slate-800 text-white' : 'text-zinc-500'}`}
+                                className={`px-4 font-['Patrick_Hand'] py-1 text-sm font-semibold rounded-full border-none transition-colors ${filtroTiempo === f.key ? 'bg-slate-800 text-white' : 'text-zinc-500'}`}
                             >{f.label}</button>
                         ))}
                     </div>

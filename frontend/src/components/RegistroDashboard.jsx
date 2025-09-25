@@ -41,7 +41,7 @@ export const MetaPrincipalWidget = ({ meta, metasDelDia }) => {
 
     if (!meta) {
         return (
-            <div className="bg-green-50 border border-amber-400 rounded-2xl p-5 text-center justify-center">
+            <div className="bg-green-50 border border-green-400 rounded-2xl p-5 text-center justify-center">
                 <h3 className="font-['Patrick_Hand'] text-xl text-amber-800">No definiste una meta para hoy.</h3>
                 <p className="text-zinc-500 text-sm mt-1">Puedes añadir metas secundarias desde la sección Metas.</p>
             </div>
@@ -50,7 +50,7 @@ export const MetaPrincipalWidget = ({ meta, metasDelDia }) => {
 
     return (
         <Link to="/metas" className="no-underline text-inherit block">
-            <div className="bg-green-100 border border-amber-400 rounded-2xl p-3 text-center shadow-lg space-y-1">
+            <div className="bg-green-100 border border-green-400 rounded-2xl p-3 text-center shadow-lg space-y-1">
                 <h3 className="text-2xl uppercase text-green-900 break-words mt-2 -mb-1">{meta.descripcion}</h3>
                 <div className="flex justify-center items-center gap-2">
                     <h2 className="font-['Patrick_Hand'] text-lg text-amber-800 -mb-1">Tu Meta de Hoy</h2>

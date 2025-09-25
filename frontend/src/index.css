@@ -22,18 +22,6 @@
 }
 
 /* CLAVE: Forzamos a que la estructura base no tenga scroll */
-html, body {
-  height: 100%;
-  overflow: hidden;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: var(--font-cuerpo);
-  background-color: #f4f4f5; /* Un fondo general suave */
-  color: var(--color-lapiz);
-}
 
 h2 {
   font-family: var(--font-titulos);
@@ -48,48 +36,6 @@ h3 {
   font-size: 1.8rem;
   margin-top: 0;
   margin-bottom: 15px;
-}
-
-/* Estilos base para elementos de formulario */
-button {
-  font-family: var(--font-titulos);
-  font-size: 17px;
-  padding: 10px 20px;
-  border: 1px solid var(--color-lapiz);
-  border-radius: 5px;
-  background-color: transparent;
-  color: var(--color-lapiz);
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  margin-top: 10px;
-}
-
-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-button.primary, button[type="submit"] {
-  background-color: var(--color-sol-acento);
-  border-color: var(--color-sol-acento);
-  color: var(--color-blanco-puro);
-}
-
-input, textarea {
-  font-family: var(--font-cuerpo);
-  font-size: 16px;
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  border: 1px solid var(--color-borde-suave);
-  border-radius: 5px;
-  background-color: #fcfcfc;
-  box-sizing: border-box;
-}
-
-input:focus, textarea:focus {
-  outline: 1px solid var(--color-sol-acento);
-  box-shadow: 0 0 5px rgba(243, 156, 18, 0.5);
 }
 
 @layer utilities {

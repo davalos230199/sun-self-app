@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const MetaPrincipal = ({ meta }) => {
     if (!meta) return null;
     return (
-            <div className="bg-green-100 border border-amber-400 rounded-2xl p-3 text-center shadow-lg space-y-1">
+            <div className="bg-green-100 border border-green-400 rounded-2xl p-3 text-center shadow-lg space-y-1">
                 <h3 className="text-2xl uppercase text-green-900 break-words mt-2 -mb-1">{meta.descripcion}</h3>
                 <div className="flex justify-center items-center gap-2">
                     <h2 className="font-['Patrick_Hand'] text-lg text-amber-800 -mb-1">Tu Meta de Hoy</h2>
@@ -127,10 +127,10 @@ const FormularioNuevaMeta = ({ onAdd }) => {
         return (
             <button
                 onClick={() => setIsExpanded(true)}
-                className="w-full text-left p-4 rounded-xl bg-zinc-100 hover:bg-zinc-200 transition-colors text-zinc-600 flex items-center gap-2"
+                className="w-full border-2 italic text-left p-4 rounded-xl bg-green-100 border-green-400 hover:bg-green-200 transition-colors text-zinc-600 flex items-center gap-2"
             >
                 <Plus size={18} />
-                Añadir un nuevo paso...
+                Añadir nueva meta...
             </button>
         );
     }
@@ -141,25 +141,25 @@ const FormularioNuevaMeta = ({ onAdd }) => {
             initial={{ opacity: 0.5, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             onSubmit={handleSubmit} 
-            className="p-4 bg-zinc-100 rounded-xl space-y-3"
+            className="p-2 bg-green-100 border-2 border-green-400 rounded-xl"
         >
             <input
                 type="text"
                 value={descripcion}
                 onChange={(e) => setDescripcion(e.target.value)}
-                placeholder="Describe tu nuevo paso..."
-                className="w-full p-3 bg-white border border-zinc-300 rounded-lg focus:ring-2 focus:ring-amber-400 outline-none"
+                placeholder="Describe tu nueva meta..."
+                className="w-full italic p-2 bg-amber-100 border border-amber-300 rounded-lg focus:ring-2 focus:ring-green-400 outline-none"
                 autoFocus
             />
-            <div className="flex gap-2">
+            <div className="flex mt-2 gap-8">
                 <input
                     type="time"
                     value={hora}
                     onChange={(e) => setHora(e.target.value)}
-                    className="p-3 w-1/2 bg-white border border-zinc-300 rounded-lg focus:ring-2 focus:ring-amber-400 outline-none"
+                    className="w-1/2 bg-amber-100 border border-amber-400 rounded-lg focus:ring-2 focus:ring-green-400 outline-none"
                 />
-                <button type="submit" className="flex-grow p-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors">Agregar</button>
-                <button type="button" onClick={() => setIsExpanded(false)} className="p-3 bg-zinc-200 text-zinc-700 rounded-lg hover:bg-zinc-300 transition-colors">
+                <button type="submit" className="p-3 text-red rounded-lg">Agregar</button>
+                <button type="button" onClick={() => setIsExpanded(false)} className="p-2 text-red-500 rounded-lg border-none hover:bg-zinc-300 transition-colors">
                     <X size={18} />
                 </button>
             </div>
@@ -234,7 +234,7 @@ export default function MetasPage() {
         // Actualización optimista
         setMetas(prev => prev.map(m => m.id === id ? { ...m, descripcion: editingText } : m));
         handleCancelEdit(); // Sale del modo edición inmediatamente
-
+    
         try {
             await api.updateMeta(id, { descripcion: editingText });
         } catch (error) {
@@ -242,6 +242,19 @@ export default function MetasPage() {
             setMetas(metasOriginales); // Revertir en caso de error
         }
     };
+
+    const metasOrdenadas = [...metasSecundarias].sort((a, b) => {
+        // Si 'a' no tiene hora y 'b' sí, 'b' va primero.
+        if (!a.hora_objetivo && b.hora_objetivo) return 1;
+        // Si 'a' tiene hora y 'b' no, 'a' va primero.
+        if (a.hora_objetivo && !b.hora_objetivo) return -1;
+        // Si ambas tienen hora, las comparamos como texto.
+        if (a.hora_objetivo && b.hora_objetivo) {
+            return a.hora_objetivo.localeCompare(b.hora_objetivo);
+        }
+        // Si ninguna tiene hora, mantenemos su orden original.
+        return 0;
+    });
 
     if (isLoading) return <LoadingSpinner message="Cargando tus metas..." />;
 
@@ -253,7 +266,7 @@ export default function MetasPage() {
             
             <div className="flex-grow overflow-y-auto space-y-3 pr-2 -mr-2 pb-4">
                 <AnimatePresence>
-                    {metasSecundarias.map(meta => (
+                    {metasOrdenadas.map(meta => (
                         <MetaItem 
                             key={meta.id} 
                             meta={meta} 
