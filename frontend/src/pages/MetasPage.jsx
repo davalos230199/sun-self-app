@@ -32,85 +32,74 @@ const MetaPrincipal = ({ meta }) => {
 };
 
 // --- Sub-componente: MetaItem (NUEVO DISEÑO) ---
-const MetaItem = ({ meta, onToggle, onDelete, onEdit, isExpanded, onExpand, isEditing, editingText, setEditingText, onSave, onCancel }) => {
+const MetaItem = ({ meta, onToggle, onDelete, onEdit, isExpanded, onExpand, isEditing, editingHora, setEditingHora, onSave, onCancel }) => {
 
-    const handleActionClick = (e) => {
-        e.stopPropagation(); // Evita que el evento 'onExpand' del div padre se dispare
-    };
+    const handleActionClick = (e) => { e.stopPropagation(); };
 
     return (
         <motion.div
-            layout="position" // Mantenemos layout para animar reordenamientos
-            onClick={onExpand} // 1. El evento principal ahora es onClick
-            className="relative flex items-center p-4 rounded-xl shadow-md transition-all duration-300 cursor-pointer"
-            style={{
-                backgroundColor: meta.completada ? '#fef3c7' : '#fef3c7',
-                opacity: meta.completada ? 0.7 : 1,
-            }}
-        >        
-        {/* Si está en modo edición, muestra el formulario */}
-        {isEditing ? (
-                <div className="w-full flex items-center justify-between">
-                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl bg-amber-500`}></div>
-                    <button
-                    onClick={(e) => {
-                    handleActionClick(e);
-                    onToggle(meta.id, !meta.completada);
-                    }}
-                    className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-300 transform hover:scale-110 ${meta.completada ? 'bg-green-500 border-green-600' : 'border-zinc-300 hover:border-amber-500'}`}
-                    ></button>
-                    <input
-                        type="text"
-                        value={editingText}
-                        onChange={(e) => setEditingText(e.target.value)}
-                        className="font-['Patrick_Hand'] font-semibold ml-4 mt-2 text-s bg-transparent border-none focus:outline-none focus:shadow-none focus:ring-0"
-                        autoFocus
-                        onKeyDown={(e) => e.key === 'Enter' && onSave(meta.id)}
-                    />
-                    <button onClick={() => onSave(meta.id)} className="p-2 text-green-500 border-none hover:text-green-700"><Check size={18} /></button>
-                    <button onClick={onCancel} className="p-2 text-red-400 border-none hover:text-red-500"><X size={18} /></button>
-                </div>
-            ) : (
-        <>
+            layout="position"
+            onClick={() => !isEditing && onExpand()} // Solo expande si NO está en modo edición
+            className={`relative flex items-center p-4 rounded-xl shadow-md transition-all duration-300 cursor-pointer ${
+                isEditing ? 'bg-amber-100' : 'bg-[#fef3c7]'
+            }`}
+            style={{ opacity: meta.completada ? 0.7 : 1 }}
+        >
             {/* Barra de estado vertical */}
-            <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${meta.completada ? 'bg-green-500' : 'bg-amber-500'}`}></div>
+            <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${meta.completada ? 'bg-green-500' : (isEditing ? 'bg-orange-500' : 'bg-amber-500')}`}></div>
             
             <button
-                onClick={(e) => {
-                    handleActionClick(e);
-                    onToggle(meta.id, !meta.completada);
-                }}
-                className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-300 transform hover:scale-110 ${meta.completada ? 'bg-green-500 border-green-600' : 'border-zinc-300 hover:border-amber-500'}`}
+                onClick={(e) => { handleActionClick(e); onToggle(meta.id, !meta.completada); }}
+                className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-300 transform hover:scale-110 ${meta.completada ? 'bg-green-500 border-green-600' : 'bg-white border-zinc-300 hover:border-amber-500'}`}
             >
                 {meta.completada && <Check size={18} className="text-white" />}
             </button>
 
-            <div className="flex-grow ml-4">
-                <p className={`font-['Patrick_Hand'] font-semibold text-s ${meta.completada ? 'line-through italic text-zinc-500' : 'text-zinc-800'}`}>{meta.descripcion}</p>
-                {meta.hora_objetivo && (
-                    <div className="flex items-center italic gap-1 text-sm text-zinc-400">
-                        <Clock color='orange' size={12} />
-                        <span>{meta.hora_objetivo.substring(0, 5)}hs</span>
-                    </div>
+            <div className="flex-grow ml-4 flex justify-between items-center">
+                {/* --- LÓGICA DE VISTA / EDICIÓN --- */}
+                {isEditing ? (
+                    // MODO EDICIÓN:
+                    <>
+                        <p className="font-['Patrick_Hand'] text-lg text-amber-800">{meta.descripcion}</p>
+                        <div className="flex items-center gap-2">
+                            <TimePicker
+                                onChange={setEditingHora}
+                                value={editingHora}
+                                className="w-24 bg-white/70 rounded-lg"
+                                disableClock={true}
+                                clearIcon={null}
+                                format="HH:mm"
+                            />
+                            <button onClick={(e) => { handleActionClick(e); onSave(meta.id); }} className="p-2 text-green-500 hover:text-green-700"><Check size={18} /></button>
+                            <button onClick={(e) => { handleActionClick(e); onCancel(); }} className="p-2 text-red-400 hover:text-red-500"><X size={18} /></button>
+                        </div>
+                    </>
+                ) : (
+                    // MODO VISTA:
+                    <>
+                        <div>
+                            <p className={`font-['Patrick_Hand'] text-lg ${meta.completada ? 'line-through italic text-amber-800' : 'text-amber-800'}`}>{meta.descripcion}</p>
+                            {meta.hora_objetivo && (
+                                <div className="flex items-center italic gap-1 text-xs text-zinc-400">
+                                    <Clock color='orange' size={12} />
+                                    <span>{meta.hora_objetivo.substring(0, 5)}hs</span>
+                                </div>
+                            )}
+                        </div>
+                        <AnimatePresence>
+                            {isExpanded && !meta.completada && (
+                                <motion.div
+                                    initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
+                                    className="flex items-center bg-[#fef3c7] rounded-full"
+                                >
+                                    <button onClick={(e) => { handleActionClick(e); onEdit(meta); }} className="ml-4 p-2 text-zinc-400 hover:text-amber-600"><Pencil color='orange' size={18} /></button>
+                                    <button onClick={(e) => { handleActionClick(e); onDelete(meta.id); }} className="ml-2 p-2 text-zinc-400 hover:text-red-600"><Trash2 color='red' size={18} /></button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </>
                 )}
             </div>
-
-            {/* 2. Los botones de acción ahora dependen de 'isExpanded' (controlado por el toque) */}
-            <AnimatePresence>
-                {isExpanded && !meta.completada && (
-                    <motion.div
-                        initial={{ opacity: 0, x: 10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 10 }}
-                        className="flex items-center bg-[#fef3c7] rounded-full" // Añadimos un fondo para que no se superponga texto
-                    >
-                        <button onClick={(e) => { handleActionClick(e); onEdit(meta); }} className="ml-4 p-2 text-zinc-400 border-none hover:text-amber-600 transition-colors"><Pencil size={18} /></button>
-                        <button onClick={(e) => { handleActionClick(e); onDelete(meta.id); }} className="ml-2 p-2 text-zinc-400 border-none hover:text-red-600 transition-colors"><Trash2 size={18} /></button>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </>
-        )}
         </motion.div>
     );
 };
@@ -182,6 +171,7 @@ export default function MetasPage() {
     const [expandedMetaId, setExpandedMetaId] = useState(null);
     const [editingMetaId, setEditingMetaId] = useState(null); 
     const [editingText, setEditingText] = useState(''); 
+    const [editingHora, setEditingHora] = useState('');
 
     const handleMetaExpand = (metaId) => {
     setExpandedMetaId(currentId => (currentId === metaId ? null : metaId));
@@ -221,32 +211,29 @@ export default function MetasPage() {
         }
     };
 
-        const handleStartEdit = (meta) => {
+    const handleStartEdit = (meta) => {
         setEditingMetaId(meta.id);
-        setEditingText(meta.descripcion);
-        setExpandedMetaId(null); // Opcional: cierra los otros botones para una UI más limpia
+        // Al empezar a editar, ponemos la hora actual de la meta en el estado
+        setEditingHora(meta.hora_objetivo ? meta.hora_objetivo.substring(0, 5) : '');
+        setExpandedMetaId(null); 
     };
 
     const handleCancelEdit = () => {
         setEditingMetaId(null);
-        setEditingText('');
+        setEditingHora(''); // Limpiamos la hora al cancelar
     };
 
     const handleSaveEdit = async (id) => {
-        if (!editingText.trim()) return; // No guardar si está vacío
-
-        const metaOriginal = metas.find(m => m.id === id);
+        // La actualización ahora enviará la nueva hora al backend
         const metasOriginales = [...metas];
+        setMetas(prev => prev.map(m => m.id === id ? { ...m, hora_objetivo: editingHora } : m));
+        handleCancelEdit();
 
-        // Actualización optimista
-        setMetas(prev => prev.map(m => m.id === id ? { ...m, descripcion: editingText } : m));
-        handleCancelEdit(); // Sale del modo edición inmediatamente
-    
         try {
-            await api.updateMeta(id, { descripcion: editingText });
+            await api.updateMeta(id, { hora_objetivo: editingHora || null });
         } catch (error) {
             console.error("Error al guardar la meta:", error);
-            setMetas(metasOriginales); // Revertir en caso de error
+            setMetas(metasOriginales);
         }
     };
 
@@ -283,8 +270,8 @@ export default function MetasPage() {
                             isExpanded={expandedMetaId === meta.id && editingMetaId !== meta.id}
                             onExpand={() => handleMetaExpand(meta.id)}
                             isEditing={editingMetaId === meta.id}
-                            editingText={editingText}
-                            setEditingText={setEditingText}
+                            editingHora={editingHora}
+                            setEditingHora={setEditingHora}
                             onSave={handleSaveEdit}
                             onCancel={handleCancelEdit}
                         />

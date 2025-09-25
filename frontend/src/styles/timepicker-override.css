@@ -19,3 +19,25 @@
 .react-time-picker__inputGroup__divider {
   color: #a1a1aa; /* Color de texto zinc-400 */
 }
+
+.react-time-picker__inputGroup {
+  /* Hacemos que ocupe toda la altura y centramos el contenido */
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+/* Estilo para los inputs de hora y minutos */
+.react-time-picker__inputGroup__input {
+  /* Reducimos el padding vertical para que sea menos alto */
+  padding-top: 0.1rem;
+  padding-bottom: 0.1rem;
+  /* Aseguramos que el texto esté centrado */
+  text-align: center;
+  font-size: 1rem; /* Mantenemos un tamaño de fuente legible */
+}
+
+/* Ajuste específico para el input de los minutos para que no se pegue al borde */
+.react-time-picker__inputGroup__input--minute {
+  padding-right: 0.25rem;
+}
