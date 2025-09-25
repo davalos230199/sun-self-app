@@ -33,7 +33,7 @@ export default function AppLayout() {
     const location = useLocation();
     const { registroDeHoy, isLoading } = useDia(); 
     const { title: contextTitle, setTitle: setContextTitle, showBackButton: contextShowBackButton, setShowBackButton: setContextShowBackButton } = useHeader();
-    const pathShouldHaveBackButton = ['/tracking', '/journal', '/filosofia', '/resumen'].some(path => location.pathname.startsWith(path));
+    const pathShouldHaveBackButton = ['/tracking', '/journal', '/metas', '/filosofia', '/resumen'].some(path => location.pathname.startsWith(path));
     const finalShowBackButton = pathShouldHaveBackButton && contextShowBackButton;
 
     React.useEffect(() => {

@@ -106,7 +106,7 @@ export default function Auth() {
                 <section className={panelStyles}>
                     <div className="flex flex-col items-center">
                         <h1 className={headerStyles}>Observa tu presente.</h1>
-                        <h2 className="text-3xl sm:text-4xl font-bold text-orange-500 mb-6">Construí tu futuro.</h2>
+                        <h2 className="text-3xl sm:text-4xl font-bold text-orange-500 mb-6">Construye tu futuro.</h2>
                         <p className={paragraphStyles}>
                             Sun Self es una herramienta de auto-observación diaria. Un micro-hábito simple para registrar tu estado mental, emocional y físico. Esta claridad es la base para construir <strong>hábitos que perduran</strong>.
                         </p>

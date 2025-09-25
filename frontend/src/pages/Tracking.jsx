@@ -77,8 +77,6 @@ export default function Tracking() {
     useEffect(() => {
         const fetchHistorial = async () => {
             try {
-                setIsLoading(true);
-                // Usamos la nueva ruta del API
                 const response = await api.getHistorialRegistros(); 
                 setHistorial(response.data || []);
             } catch (err) {
