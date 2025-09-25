@@ -36,7 +36,7 @@ const getRegistrosByDate= (date) => apiClient.get(`/registros/by-date/${date}`);
 const getResumenSemanal= () => apiClient.get('/registros/historial/resumen-semanal');
 
 // -- DIARIO (antes Hoja de Atrás) --
-const getDiarioByRegistroId = (registroId) => apiClient.get(`/diario/${registroId}`);
+const getDiario = (periodo = 'hoy') => apiClient.get(`/diario?periodo=${periodo}`);
 const saveEntradaDiario = (payload) => apiClient.post('/diario', payload);
 const deleteEntradaDiario= (id) => apiClient.delete(`/diario/${id}`);
 
@@ -68,7 +68,7 @@ const api = {
   getRegistrosByDate,
   getResumenSemanal,
   
-  getDiarioByRegistroId,
+  getDiario,
   saveEntradaDiario,
   deleteEntradaDiario,
   

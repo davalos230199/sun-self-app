@@ -6,35 +6,36 @@ const authMiddleware = require('../middleware/auth');
 router.use(authMiddleware);
 
 // GET /:registroId -> Trae todas las entradas del diario para un registro específico
-router.get('/:registroId', async (req, res) => {
+router.get('/', async (req, res) => {
     try {
-        const { registroId } = req.params;
         const { id: profileId } = req.user;
+        let fechaInicio = new Date();
+        fechaInicio.setMonth(fechaInicio.getMonth() - 1); // Traemos el último mes por defecto
 
-        // 1. Traemos los datos SIN ordenar por prioridad desde Supabase
         const { data, error } = await req.supabase
             .from('diario')
             .select('*')
             .eq('profile_id', profileId)
-            .eq('registro_id', registroId)
-            .order('created_at', { ascending: true }); // Solo ordenamos por fecha inicialmente
+            .gte('created_at', fechaInicio.toISOString());
 
         if (error) throw error;
-
-        // 2. Creamos un mapa de valor para las prioridades
+        
+        // La lógica de ordenamiento en JS sigue siendo perfecta
         const prioridadValor = { 'alta': 3, 'media': 2, 'baja': 1 };
-
-        // 3. Ordenamos el array en nuestro código JavaScript
         const datosOrdenados = (data || []).sort((a, b) => {
-            // Asignamos 0 si la prioridad es nula o no existe
-            const prioridadA = prioridadValor[a.prioridad] || 0;
-            const prioridadB = prioridadValor[b.prioridad] || 0;
-            // Comparamos: el que tenga mayor valor de prioridad, va primero.
-            return prioridadB - prioridadA;
+        const prioridadA = prioridadValor[a.prioridad] || 0;
+        const prioridadB = prioridadValor[b.prioridad] || 0;
+            if (prioridadB !== prioridadA) {
+                return prioridadB - prioridadA; // Ordena por prioridad primero
+            }
+            // Si la prioridad es la misma, ordena por fecha (más nuevo primero)
+            return new Date(b.created_at) - new Date(a.created_at);
         });
 
         res.status(200).json(datosOrdenados);
+
     } catch (err) {
+        console.error("Error en GET /diario:", err.message);
         res.status(500).json({ error: 'Error al obtener las entradas del diario.' });
     }
 });

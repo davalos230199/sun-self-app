@@ -145,7 +145,7 @@ export const EstadoWidget = ({ registro, onEdit, historial }) => {
                 <div className="w-24 h-24 mx-auto -my-2"><Lottie animationData={registro.estado_general === 'soleado' ? sunLoopAnimation : registro.estado_general === 'lluvioso' ? rainLoopAnimation : cloudLoopAnimation} loop={true} /></div>
                 <h3 className="font-['Patrick_Hand'] text-xl text-amber-800 -mb-1">Hoy</h3>
                 <p className="flex-grow text-zinc-700 font-['Patrick_Hand']">"{registro.frase_sunny || '...'}"</p>
-                <div className="space-y-2 border-t border-dashed border-amber-300 pt-3 text-left">
+                <div className="w-full border-t border-dashed border-amber-300 pt-3 text-left">
                 <ComentarioItem anim={brainLoopAnimation} text={registro.mente_comentario} />
                 <ComentarioItem anim={emotionLoopAnimation} text={registro.emocion_comentario} />
                 <ComentarioItem anim={bodyLoopAnimation} text={registro.cuerpo_comentario} />
