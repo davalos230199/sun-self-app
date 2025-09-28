@@ -145,7 +145,7 @@ const FormularioNuevaMeta = ({ onAdd }) => {
         <motion.form 
             layout
             onSubmit={handleSubmit} 
-            className="p-2 bg-green-100 border-2 border-green-400 rounded-xl flex items-center gap-4"
+            className="p-2 bg-green-50 rounded-xl flex items-center gap-4"
         >
             <input
                 type="text"
@@ -161,7 +161,7 @@ const FormularioNuevaMeta = ({ onAdd }) => {
                     onChange={setHora}
                     value={hora}
                     // 3. Estilo más compacto y sin bordes para el selector de hora
-                    className="w-24 bg-amber-50 font-['Patrick_Hand'] rounded-lg text-lg"
+                    className="w-24 bg-zinc-50 font-['Patrick_Hand'] rounded-lg text-lg"
                     disableClock={true}
                     clearIcon={null}
                     format="HH:mm"
