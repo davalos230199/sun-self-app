@@ -35,30 +35,38 @@ const MetaPrincipal = ({ meta }) => {
 const MetaItem = ({ meta, onToggle, onEdit, isExpanded, onExpand, isEditing, editingHora, setEditingHora, onSave, onCancel }) => {
 
     const handleActionClick = (e) => { e.stopPropagation(); };
-    // Lógica de colores simplificada
-    const barraColor = meta.completada === true ? 'bg-green-500' 
-                     : meta.completada === false ? 'bg-red-500' 
+
+    // Lógica de colores
+    const isCompleted = meta.completada === true;
+    const isNotCompleted = meta.completada === false;
+    const isPending = !isCompleted && !isNotCompleted;
+
+    const bgColor = isCompleted ? 'bg-green-100' 
+                    : isNotCompleted ? 'bg-red-100' 
+                    : (isEditing ? 'bg-amber-100' : 'bg-amber-50');
+
+    const barraColor = isCompleted ? 'bg-green-500' 
+                     : isNotCompleted ? 'bg-red-500' 
                      : (isEditing ? 'bg-orange-500' : 'bg-amber-500');
 
     return (
         <motion.div
             layout="position"
             onClick={() => !isEditing && onExpand()} // Solo expande si NO está en modo edición
-            className={`relative flex items-center p-4 rounded-xl shadow-md transition-all duration-300 cursor-pointer ${
-            isEditing ? 'bg-amber-100' : 'bg-[#fef3c7]'
-            }`}
-            style={{ opacity: meta.completada ? 0.7 : 1 }}
+            className={`relative flex items-center p-4 rounded-xl shadow-md transition-all duration-300 cursor-pointer ${bgColor}`}
+            style={{ opacity: isPending ? 1 : 0.8 }}
         >
             {/* El Checkbox ahora es un botón que se deshabilita */}
+            <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${barraColor}`}></div>
             <button
                 onClick={(e) => { 
                     handleActionClick(e); 
                     if (!meta.completada) onToggle(meta.id, true);
                 }}
                 // Se deshabilita si ya está completada o si no está completada (marcada en rojo)
-                disabled={meta.completada !== null}
-                className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${meta.completada ? 'bg-green-500 border-green-600' : 'bg-white border-zinc-300'} 
-                ${meta.completada === null ? 'hover:border-amber-500 cursor-pointer' : 'cursor-default'}`}
+                disabled={isCompleted}
+                className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${isCompleted ? 'bg-green-500 border-green-600' : 'bg-white border-zinc-300'} 
+                ${!isCompleted ? 'hover:border-amber-500 cursor-pointer' : 'cursor-default'}`}
             >
                 {meta.completada === true && <Check size={18} className="text-white" />}
                 {meta.completada === false && <X size={18} className="text-red-500" />}
@@ -235,13 +243,29 @@ export default function MetasPage() {
     };
 
     const handleSaveEdit = async (id) => {
-        // La actualización ahora enviará la nueva hora al backend
+        // La validación de 'editingText' ha sido eliminada.
+        // Ahora la función se enfoca solo en la 'editingHora'.
+
         const metasOriginales = [...metas];
-        setMetas(prev => prev.map(m => m.id === id ? { ...m, hora_objetivo: editingHora } : m));
+
+        setMetas(prev => prev.map(m => m.id === id ? { 
+            ...m, 
+            hora_objetivo: editingHora || null,
+            // Si la meta estaba 'false', al editarla vuelve a 'null' (pendiente)
+            completada: m.completada === false ? null : m.completada 
+        } : m));
+        
         handleCancelEdit();
 
         try {
-            await api.updateMeta(id, { hora_objetivo: editingHora || null });
+            // Buscamos la meta que estamos actualizando para chequear su estado original
+            const metaOriginal = metasOriginales.find(m => m.id === id);
+
+            await api.updateMeta(id, { 
+                hora_objetivo: editingHora || null,
+                // Le decimos a la BD que también ponga 'completada' en null si la meta estaba en 'false'
+                completada: metaOriginal?.completada === false ? null : metaOriginal?.completada
+            });
         } catch (error) {
             console.error("Error al guardar la meta:", error);
             setMetas(metasOriginales);
