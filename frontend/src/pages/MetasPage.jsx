@@ -25,7 +25,7 @@ const MetaPrincipal = ({ meta }) => {
                     <TrendingUp className="text-amber-800" size={24} />
                 </div>
                 <p className="text-xs font-semibold text-amber-800 italic bg-white/50 rounded-full -mt-2 inline-block">
-                    Añade pequeñas metas para tu dia!
+                    Añade pequeños logros para avanzar en tu día!
                 </p>
             </div>
     );
@@ -107,7 +107,7 @@ const MetaItem = ({ meta, onToggle, onEdit, isExpanded, onExpand, isEditing, edi
                             {isExpanded && !meta.completada && (
                                 <motion.div
                                     initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
-                                    className="flex items-center bg-[#fef3c7] rounded-full"
+                                    className="flex items-center rounded-full"
                                 >
                                     <button onClick={(e) => { handleActionClick(e); onEdit(meta); }}><Pencil color='orange' size={18}/></button>
                                 </motion.div>
