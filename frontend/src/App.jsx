@@ -19,6 +19,7 @@ import Settings from './pages/Settings';
 import Sunny from './pages/Sunny';
 import Tracking from './pages/Tracking';
 import MetasPage from './pages/MetasPage';
+import Progreso from './pages/Progreso';
 
 
 const router = createBrowserRouter([
@@ -45,7 +46,8 @@ const router = createBrowserRouter([
             // Las rutas hijas heredan la protección y el layout.
         children: [
             { path: 'home', element: <Home /> },
-            { path: 'tracking', element: <TrackingProvider><Tracking /></TrackingProvider> }, 
+            { path: 'tracking', element: <TrackingProvider><Tracking /></TrackingProvider> },
+            { path: 'progreso', element: <Progreso /> },
             { path: 'sunny', element: <Sunny /> },
             { path: 'settings', element: <Settings /> },
             { path: 'journal/:id', element: <Journal /> },

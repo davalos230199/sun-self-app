@@ -28,8 +28,8 @@ export default function Navbar() {
         <CalendarCheck size={28} /> 
         <span className="text-xs font-semibold">Metas</span>
       </NavLink>
-      <NavLink to="/sunny" className={({isActive}) => `${baseStyle} ${isActive ? 'text-amber-500' : 'text-zinc-400 hover:text-zinc-700'}`}>
-        <Sun size={35} />
+            <NavLink to="/progreso" className={({isActive}) => `${baseStyle} ${isActive ? 'text-amber-500' : 'text-zinc-400 hover:text-zinc-700'}`}>
+                <Sun size={34} /> {/* O el ícono que elijas */}
       </NavLink>
       <NavLink to="/muro" className={({isActive}) => `${baseStyle} ${isActive ? 'text-amber-500' : 'text-zinc-400 hover:text-zinc-700'}`}>
         <Users size={28} />
