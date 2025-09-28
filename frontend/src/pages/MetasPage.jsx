@@ -32,27 +32,36 @@ const MetaPrincipal = ({ meta }) => {
 };
 
 // --- Sub-componente: MetaItem (NUEVO DISEÑO) ---
-const MetaItem = ({ meta, onToggle, onDelete, onEdit, isExpanded, onExpand, isEditing, editingHora, setEditingHora, onSave, onCancel }) => {
+const MetaItem = ({ meta, onToggle, onEdit, isExpanded, onExpand, isEditing, editingHora, setEditingHora, onSave, onCancel }) => {
 
     const handleActionClick = (e) => { e.stopPropagation(); };
+    // Lógica de colores simplificada
+    const barraColor = meta.completada === true ? 'bg-green-500' 
+                     : meta.completada === false ? 'bg-red-500' 
+                     : (isEditing ? 'bg-orange-500' : 'bg-amber-500');
 
     return (
         <motion.div
             layout="position"
             onClick={() => !isEditing && onExpand()} // Solo expande si NO está en modo edición
             className={`relative flex items-center p-4 rounded-xl shadow-md transition-all duration-300 cursor-pointer ${
-                isEditing ? 'bg-amber-100' : 'bg-[#fef3c7]'
+            isEditing ? 'bg-amber-100' : 'bg-[#fef3c7]'
             }`}
             style={{ opacity: meta.completada ? 0.7 : 1 }}
         >
-            {/* Barra de estado vertical */}
-            <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${meta.completada ? 'bg-green-500' : (isEditing ? 'bg-orange-500' : 'bg-amber-500')}`}></div>
-            
+            {/* El Checkbox ahora es un botón que se deshabilita */}
             <button
-                onClick={(e) => { handleActionClick(e); onToggle(meta.id, !meta.completada); }}
-                className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-300 transform hover:scale-110 ${meta.completada ? 'bg-green-500 border-green-600' : 'bg-white border-zinc-300 hover:border-amber-500'}`}
+                onClick={(e) => { 
+                    handleActionClick(e); 
+                    if (!meta.completada) onToggle(meta.id, true);
+                }}
+                // Se deshabilita si ya está completada o si no está completada (marcada en rojo)
+                disabled={meta.completada !== null}
+                className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${meta.completada ? 'bg-green-500 border-green-600' : 'bg-white border-zinc-300'} 
+                ${meta.completada === null ? 'hover:border-amber-500 cursor-pointer' : 'cursor-default'}`}
             >
-                {meta.completada && <Check size={18} className="text-white" />}
+                {meta.completada === true && <Check size={18} className="text-white" />}
+                {meta.completada === false && <X size={18} className="text-red-500" />}
             </button>
 
             <div className="flex-grow ml-4 flex justify-between items-center">
@@ -92,8 +101,7 @@ const MetaItem = ({ meta, onToggle, onDelete, onEdit, isExpanded, onExpand, isEd
                                     initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
                                     className="flex items-center bg-[#fef3c7] rounded-full"
                                 >
-                                    <button onClick={(e) => { handleActionClick(e); onEdit(meta); }} className="ml-4 p-2 text-zinc-400 hover:text-amber-600"><Pencil color='orange' size={18} /></button>
-                                    <button onClick={(e) => { handleActionClick(e); onDelete(meta.id); }} className="ml-2 p-2 text-zinc-400 hover:text-red-600"><Trash2 color='red' size={18} /></button>
+                                    <button onClick={(e) => { handleActionClick(e); onEdit(meta); }}><Pencil color='orange' size={18}/></button>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -170,12 +178,12 @@ export default function MetasPage() {
     const { registroDeHoy, metas, setMetas, isLoading } = useDia();
     const [expandedMetaId, setExpandedMetaId] = useState(null);
     const [editingMetaId, setEditingMetaId] = useState(null); 
-    const [editingText, setEditingText] = useState(''); 
     const [editingHora, setEditingHora] = useState('');
 
     const handleMetaExpand = (metaId) => {
     setExpandedMetaId(currentId => (currentId === metaId ? null : metaId));
     };
+
     const metaPrincipal = registroDeHoy?.meta_principal_id ? metas.find(m => m.id === registroDeHoy.meta_principal_id) : null;
     const metasSecundarias = metas.filter(m => m.id !== registroDeHoy?.meta_principal_id);
 
@@ -191,23 +199,26 @@ export default function MetasPage() {
         }
     };
 
-    const handleToggleMeta = async (id, completada) => {
-        const originalMetas = [...metas];
-        setMetas(prev => prev.map(m => m.id === id ? { ...m, completada } : m));
+    const handleSetEstadoMeta = async (id, nuevoEstado) => {
+        const metasOriginales = [...metas];
+        setMetas(prev => prev.map(m => m.id === id ? { ...m, completada: nuevoEstado } : m));
         try {
-            await api.updateMeta(id, { completada });
+            await api.updateMeta(id, { completada: nuevoEstado });
         } catch (error) {
-            setMetas(originalMetas); // Revertir
+            setMetas(metasOriginales); // Revertir en caso de error
         }
     };
 
-    const handleDeleteMeta = async (id) => {
+        const handleToggleMeta = async (id, completada) => {
+        // Solo actuamos si se está marcando como completada
+        if (!completada) return; 
+
         const originalMetas = [...metas];
-        setMetas(prev => prev.filter(m => m.id !== id));
+        setMetas(prev => prev.map(m => m.id === id ? { ...m, completada: true } : m));
         try {
-            await api.deleteMeta(id);
+            await api.updateMeta(id, { completada: true });
         } catch (error) {
-            setMetas(originalMetas); // Revertir
+            setMetas(originalMetas);
         }
     };
 
@@ -264,8 +275,8 @@ export default function MetasPage() {
                         <MetaItem 
                             key={meta.id} 
                             meta={meta} 
-                            onToggle={handleToggleMeta} 
-                            onDelete={handleDeleteMeta}
+                            onSetEstado={handleSetEstadoMeta} 
+                            onToggle={handleToggleMeta}
                             onEdit={handleStartEdit} 
                             isExpanded={expandedMetaId === meta.id && editingMetaId !== meta.id}
                             onExpand={() => handleMetaExpand(meta.id)}
