@@ -1,7 +1,7 @@
 // src/components/Navbar.jsx
 
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, ClipboardList, Sun, Users, Settings } from 'lucide-react';
+import { Home, CalendarCheck, Sun, Users, Settings } from 'lucide-react';
 
 export default function Navbar() {
   const location = useLocation();
@@ -25,12 +25,11 @@ export default function Navbar() {
       </NavLink>
 
       <NavLink to="/metas" className={({isActive}) => `${baseStyle} ${isActive ? 'text-amber-500' : 'text-zinc-400 hover:text-zinc-700'}`}>
-        <ClipboardList size={28} /> 
+        <CalendarCheck size={28} /> 
         <span className="text-xs font-semibold">Metas</span>
       </NavLink>
       <NavLink to="/sunny" className={({isActive}) => `${baseStyle} ${isActive ? 'text-amber-500' : 'text-zinc-400 hover:text-zinc-700'}`}>
-        <Sun size={28} />
-        <span className="text-xs font-semibold">Sunny</span>
+        <Sun size={35} />
       </NavLink>
       <NavLink to="/muro" className={({isActive}) => `${baseStyle} ${isActive ? 'text-amber-500' : 'text-zinc-400 hover:text-zinc-700'}`}>
         <Users size={28} />
