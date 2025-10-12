@@ -21,9 +21,9 @@ Reglas de interacción:
 const construirPromptDeRegistro = (registro) => {
     return `
         Basado en el siguiente estado del usuario que acaba de completar su registro diario:
-        - Mente: ${registro.mente_comentario}
-        - Emoción: ${registro.emocion_comentario}
-        - Cuerpo: ${registro.cuerpo_comentario}
+        - Mente: ${registro.mente_comentario}, ${registro.mente_estado}
+        - Emoción: ${registro.emocion_comentario}, ${registro.emocion_estado}
+        - Cuerpo: ${registro.cuerpo_comentario}, ${registro.cuerpo_estado}
         - Meta del Día: ${registro.meta_descripcion || "No definida"}
 
         Genera una única frase corta y reflexiva (máximo 25 palabras) que actúe como un espejo de su estado, usando tu personalidad de guía compasivo. Esta frase será lo primero que vea en su dashboard. No incluyas comillas en tu respuesta.
