@@ -3,9 +3,82 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { PenSquare, X, TrendingUp, Pin } from 'lucide-react'; 
+import { PenSquare, X, TrendingUp, Pin, Copy, Check } from 'lucide-react'; 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDia } from '../contexts/DiaContext';
+
+// 🆕 COMPONENTE NUEVO: Post-it de Solo Lectura con Botón de Copiar
+const NotaDiarioReadOnly = ({ entrada }) => {
+    // 1. Estado para mostrar feedback visual cuando se copia
+    const [copiado, setCopiado] = useState(false);
+    
+    // 2. Rotación aleatoria (igual que en Journal)
+    const [rotacion] = useState(() => Math.random() * (4 - -4) + -4);
+    
+    // 3. Colores según prioridad (igual que en Journal)
+    const prioridadColores = {
+        alta: 'bg-red-200/70 border-red-400',
+        media: 'bg-yellow-200/70 border-yellow-400',
+        baja: 'bg-green-100/70 border-green-300',
+    };
+    const colorClase = prioridadColores[entrada.prioridad] || prioridadColores.baja;
+    
+    // 4. Formateo de fecha y hora (igual que en Journal)
+    const fecha = new Date(entrada.created_at);
+    const horaFormateada = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    const fechaFormateada = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' });
+    
+    // 5. Función para copiar el texto al portapapeles
+    const copiarTexto = async (e) => {
+        e.stopPropagation(); // Evita que se propague el click
+        
+        try {
+            await navigator.clipboard.writeText(entrada.texto);
+            setCopiado(true); // Mostramos el check verde
+            
+            // Después de 2 segundos, volvemos al icono de copiar
+            setTimeout(() => setCopiado(false), 2000);
+        } catch (error) {
+            console.error('Error al copiar:', error);
+        }
+    };
+    
+    return (
+        <motion.div
+            layout
+            initial={{ opacity: 0, scale: 2, y: 50 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 900, damping: 50 }}
+            className={`h-40 rounded-md p-3 shadow-md flex flex-col ${colorClase}`}
+            style={{ rotate: `${rotacion}deg` }}
+        >
+            {/* Header: Fecha/Hora + Botón de Copiar */}
+            <div className="flex justify-between items-start">
+                <p className="text-[9px] font-semibold text-zinc-500 italic">
+                    {fechaFormateada} - {horaFormateada}hs
+                </p>
+                
+                {/* Botón de copiar (reemplaza al pin de borrar) */}
+                <button 
+                    onClick={copiarTexto}
+                    className="p-1 -mr-1 -mt-1 text-zinc-400 hover:text-blue-500 border-none transition-colors"
+                    title="Copiar texto"
+                >
+                    {copiado ? (
+                        <Check size={16} className="text-green-500" />
+                    ) : (
+                        <Copy size={16} />
+                    )}
+                </button>
+            </div>
+            
+            {/* Contenido del post-it */}
+            <p className="text-zinc-800 text-xs italic lowercase line-clamp-5 pt-1">
+                {entrada.texto}
+            </p>
+        </motion.div>
+    );
+};
 
 const NotaDiario = ({ entrada, onSelect, onDelete }) => {
     const rotacion = useState(() => Math.random() * (4 - -4) + -4)[0];
@@ -140,7 +213,6 @@ export default function Journal() {
     }, [filtroTiempo]);
 
     const entradasFiltradas = useMemo(() => {
-        // ... (la lógica del switch para filtrar por tiempo no cambia)
 
         // Aplicamos el filtro de tiempo primero para obtener la lista base
         const filtradasPorTiempo = (() => {

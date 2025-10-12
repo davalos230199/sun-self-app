@@ -40,6 +40,46 @@ router.get('/', async (req, res) => {
     }
 });
 
+// --- NUEVA RECETA: Traer post-its de UN registro específico ---
+// GET /diario/registro/:registroId
+router.get('/registro/:registroId', async (req, res) => {
+    try {
+        const { id: profileId } = req.user; // El chef verifica que el cliente sea el dueño de la mesa
+        const { registroId } = req.params; // El mesero le pasa el número de mesa (registroId)
+
+        // 1. Vamos a la base de datos (la despensa) a buscar los ingredientes
+        const { data, error } = await req.supabase
+            .from('diario') // La tabla donde guardamos los post-its
+            .select('*') // Traemos todos los datos de cada post-it
+            .eq('profile_id', profileId) // Solo los del cliente (seguridad)
+            .eq('registro_id', registroId); // Solo los de ese día/registro específico
+
+        if (error) throw error;
+
+        // 2. Ordenamos los post-its antes de servirlos (igual que en el GET / original)
+        const prioridadValor = { 'alta': 3, 'media': 2, 'baja': 1 };
+        const datosOrdenados = (data || []).sort((a, b) => {
+            const prioridadA = prioridadValor[a.prioridad] || 0;
+            const prioridadB = prioridadValor[b.prioridad] || 0;
+            
+            if (prioridadB !== prioridadA) {
+                // Primero por prioridad (alta → media → baja)
+                return prioridadB - prioridadA;
+            }
+            
+            // Si tienen la misma prioridad, por fecha (más nuevo primero)
+            return new Date(b.created_at) - new Date(a.created_at);
+        });
+
+        // 3. Servimos el plato al mesero (response)
+        res.status(200).json(datosOrdenados);
+
+    } catch (err) {
+        console.error("Error en GET /diario/registro/:registroId:", err.message);
+        res.status(500).json({ error: 'Error al obtener las entradas del diario de ese día.' });
+    }
+});
+
 // POST / -> Crea una nueva entrada en el diario
 router.post('/', async (req, res) => {
     try {
