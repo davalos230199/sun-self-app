@@ -2,10 +2,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../services/api';
-import LoadingSpinner from '../components/LoadingSpinner';
 import { PenSquare, X, TrendingUp, Pin, Copy, Check } from 'lucide-react'; 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDia } from '../contexts/DiaContext';
+import NotaExpandida from '../components/NotaExpandida';
 
 // 🆕 COMPONENTE NUEVO: Post-it de Solo Lectura con Botón de Copiar
 const NotaDiarioReadOnly = ({ entrada }) => {
@@ -151,45 +151,6 @@ const SelectorPrioridad = ({ prioridad, setPrioridad }) => {
     );
 };
 
-const NotaExpandida = ({ entrada, onDeselect }) => {
-    // 1. Añadimos la misma lógica de mapeo de colores que tiene NotaDiario.
-    const prioridadColores = {
-        alta: 'bg-red-200/70 border-red-400',
-        media: 'bg-yellow-200/70 border-yellow-400',
-        baja: 'bg-green-100/70 border-green-300',
-    };
-    
-    // Si la prioridad es null, usará el color de 'baja' por defecto.
-    const colorClase = prioridadColores[entrada.prioridad] || prioridadColores.baja;
-
-    return (
-        <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-            onClick={onDeselect}
-        >
-            <motion.div
-                layoutId={`nota-${entrada.id}`}
-                onClick={(e) => e.stopPropagation()}
-                // 2. Reemplazamos el color fijo 'bg-[#FFF8E1]' por nuestra variable dinámica 'colorClase'.
-                className={`w-full max-w-lg rounded-xl p-6 shadow-2xl ${colorClase}`}
-            >
-                <div className="flex justify-between items-center mb-4">
-                    <p className="font-semibold text-zinc-500 italic">
-                        {new Date(entrada.created_at).toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' })}
-                    </p>
-                    <button onClick={onDeselect} className="p-1 rounded-full bg-transparent border-none hover:bg-zinc-200/50">
-                        <X size={20} className="text-zinc-600"/>
-                    </button>
-                </div>
-                <p className="text-zinc-800 whitespace-pre-wrap max-h-[60vh] overflow-y-auto italic font-['Patrick_Hand'] text-lg">
-                    {entrada.texto}
-                </p>
-            </motion.div>
-        </motion.div>
-    );
-};
-
 export default function Journal() {
     const [todasLasEntradas, setTodasLasEntradas] = useState([]); // Almacenará el mes completo
     const { registroDeHoy, metas } = useDia(); 
@@ -329,7 +290,6 @@ const handleDelete = async (entradaId) => {
     const metaPrincipal = registroDeHoy?.meta_principal_id 
     ? metas.find(m => m.id === registroDeHoy.meta_principal_id) 
     : null;
-    if (isLoading) return <LoadingSpinner message="Organizado tu espacio..." />;
     
     const filtros = [
         { key: 'hoy', label: 'Hoy' },

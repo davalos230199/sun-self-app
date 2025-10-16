@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Lottie from 'lottie-react';
-import { Copy, Check, TrendingUp } from 'lucide-react'; // Agregamos Copy y Check
+import { Copy, Check, TrendingUp, X } from 'lucide-react'; // Agregamos Copy y Check
 import api from '../services/api';
 import LoadingSpinner from './LoadingSpinner';
+import NotaExpandida from '../components/NotaExpandida';
 
 // Animaciones existentes
 import sunLoopAnimation from '../assets/animations/sun-loop.json';
@@ -81,6 +82,7 @@ export default function SingleRegistroView({ registro }) {
     // 🆕 Estados para los post-its
     const [postIts, setPostIts] = useState([]);
     const [isLoadingPostIts, setIsLoadingPostIts] = useState(true);
+    const [notaSeleccionada, setNotaSeleccionada] = useState(null);
 
     // 🆕 Efecto para cargar los post-its de este registro
     useEffect(() => {
@@ -206,7 +208,9 @@ export default function SingleRegistroView({ registro }) {
                     <div className="grid grid-cols-3 md:grid-cols-3 gap-4">
                         <AnimatePresence>
                             {postIts.map(entrada => (
-                                <NotaDiarioReadOnly key={entrada.id} entrada={entrada} />
+                                <div key={entrada.id} onClick={() => setNotaSeleccionada(entrada)}>
+                                <NotaDiarioReadOnly entrada={entrada} />
+                                </div>
                             ))}
                         </AnimatePresence>
                     </div>
@@ -218,6 +222,15 @@ export default function SingleRegistroView({ registro }) {
                     </p>
                 </div>
             )}
+            {/* 🆕 AÑADIMOS EL RENDERIZADO DE LA NOTA EXPANDIDA */}
+            <AnimatePresence>
+                {notaSeleccionada && (
+                    <NotaExpandida
+                        entrada={notaSeleccionada}
+                        onDeselect={() => setNotaSeleccionada(null)}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
-}
+};
