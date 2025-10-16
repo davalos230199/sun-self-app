@@ -193,12 +193,31 @@ const NotaExpandida = ({ entrada, onDeselect }) => {
 export default function Journal() {
     const [todasLasEntradas, setTodasLasEntradas] = useState([]); // Almacenará el mes completo
     const { registroDeHoy, metas } = useDia(); 
-    const [nuevoTexto, setNuevoTexto] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [notaSeleccionada, setNotaSeleccionada] = useState(null);
     const [prioridad, setPrioridad] = useState('baja');
     const [filtroTiempo, setFiltroTiempo] = useState('hoy');
+    // Creamos una clave única para el borrador del día actual. Si no hay registro, no guardamos nada.
+    const draftStorageKey = registroDeHoy ? `journal_draft_${registroDeHoy.id}` : null;
+    // El estado 'nuevoTexto' ahora lee primero del localStorage. Si hay un borrador guardado, lo carga.
+    const [nuevoTexto, setNuevoTexto] = useState(() => {
+        if (!draftStorageKey) return '';
+        return localStorage.getItem(draftStorageKey) || '';
+    });
+
+    // Este useEffect se ejecuta cada vez que 'nuevoTexto' cambia.
+    useEffect(() => {
+        if (!draftStorageKey) return; // Si no hay clave, no hacemos nada.
+
+        // Usamos un timer para no escribir en el disco en cada pulsación.
+        const timerId = setTimeout(() => {
+            localStorage.setItem(draftStorageKey, nuevoTexto);
+        }, 500); // Guarda 0.5s después de que el usuario deja de teclear.
+
+        // Limpieza: si el componente se desmonta, limpiamos el timer.
+        return () => clearTimeout(timerId);
+    }, [nuevoTexto, draftStorageKey]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -213,9 +232,8 @@ export default function Journal() {
     }, [filtroTiempo]);
 
     const entradasFiltradas = useMemo(() => {
-
         // Aplicamos el filtro de tiempo primero para obtener la lista base
-        const filtradasPorTiempo = (() => {
+            const filtradasPorTiempo = (() => {
             const hoy = new Date();
             const inicioHoy = new Date(new Date().setHours(0, 0, 0, 0));
             
@@ -284,6 +302,9 @@ export default function Journal() {
 
             setNuevoTexto('');
             setPrioridad('baja');
+            if (draftStorageKey) {
+                localStorage.removeItem(draftStorageKey);
+            }
 
         } catch (error) {
             console.error("Error al guardar la nota:", error);
