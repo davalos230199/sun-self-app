@@ -2,10 +2,11 @@
 
 import { NavLink, useLocation } from 'react-router-dom';
 import { Home, CalendarCheck, Sun, Users, Settings } from 'lucide-react';
+import { useDia } from '../../contexts/DiaContext';
 
 export default function Navbar() {
   const location = useLocation();
-
+  const { theme } = useDia();
   const homeRelatedPaths = ['/home', '/tracking'];
   const isHomeActive = homeRelatedPaths.includes(location.pathname) || 
                        location.pathname.startsWith('/journal') || 
@@ -14,11 +15,11 @@ export default function Navbar() {
   const baseStyle = "flex flex-col items-center justify-center gap-1 w-full h-full transition-colors duration-200";
 
   return (
-    <nav className="flex-shrink-0 w-full h-20 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.06)] border-t border-zinc-200 flex justify-around items-stretch px-2">
+    <nav className="flex-shrink-0 w-full h-20 bg-amber-100 shadow-[0_-2px_10px_rgba(0,0,0,0.06)] border-t border-zinc-200 flex justify-around items-stretch px-2">
       
       <NavLink 
         to="/home" 
-        className={`${baseStyle} ${isHomeActive ? 'text-amber-500' : 'text-zinc-400 hover:text-zinc-700'}`}
+        className={`${baseStyle} ${isHomeActive ? theme.activeIcon : 'text-zinc-400 hover:text-zinc-700'}`}
       >
         <Home size={28} />
         <span className="text-xs font-semibold">Home</span>

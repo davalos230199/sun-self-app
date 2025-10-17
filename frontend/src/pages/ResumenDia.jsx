@@ -67,7 +67,7 @@ export default function ResumenDia() {
                 const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString('es-ES', {
                     day: '2-digit', month: '2-digit', year: 'numeric'
                 });
-                setTitle(`Resumen del ${formattedDate}`); // ¡Aquí sucede la magia!
+                setTitle(`${formattedDate}`); // ¡Aquí sucede la magia!
             } catch (err) {
                 console.error("Error cargando registros del día:", err);
                 setError("No se pudo cargar este recuerdo.");

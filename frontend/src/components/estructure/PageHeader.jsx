@@ -1,6 +1,7 @@
 // frontend/src/components/PageHeader.jsx
 
 import { useAuth } from '../../contexts/AuthContext';
+import { useDia } from '../../contexts/DiaContext';
 import BotonAtras from '../common/BotonAtras';
 import { motion, AnimatePresence } from 'framer-motion';
 import Lottie from 'lottie-react'; // 1. Importamos Lottie
@@ -43,10 +44,10 @@ const getFormattedDate = () => {
 
 export default function PageHeader({ title, registroDeHoy, showBackButton }) {
     const { user } = useAuth();
-    // 2. Ya no necesitamos la función determinarClima ni la variable climaEmoji
+    const { theme } = useDia();
 
     return (
-        <header className="bg-amber-50 border border-amber-400 rounded-lg shadow-md p-4 w-full flex-shrink-0">
+        <header className={`${theme.headerBg} ${theme.headerBorder} rounded-lg shadow-md p-4 w-full flex-shrink-0`}>
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-4 flex-1">
                     <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800">

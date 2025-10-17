@@ -4,7 +4,6 @@ import { useDia } from '../../contexts/DiaContext';
 import { useHeader } from '../../contexts/HeaderContext';
 import PageHeader from './PageHeader';
 import Navbar from './Navbar';
-import LoadingSpinner from '../LoadingSpinner';
 
 const getPageTitle = (pathname, tieneRegistro) => {
     switch (true) { // Usamos 'true' para poder evaluar condiciones con startsWith
@@ -31,7 +30,7 @@ const getPageTitle = (pathname, tieneRegistro) => {
 
 export default function AppLayout() {
     const location = useLocation();
-    const { registroDeHoy, isLoading } = useDia(); 
+    const { registroDeHoy, isLoading, theme } = useDia(); 
     const { title: contextTitle, setTitle: setContextTitle, showBackButton: contextShowBackButton, setShowBackButton: setContextShowBackButton } = useHeader();
     const pathShouldHaveBackButton = ['/tracking', '/journal', '/metas', '/filosofia', '/resumen'].some(path => location.pathname.startsWith(path));
     const finalShowBackButton = pathShouldHaveBackButton && contextShowBackButton;
@@ -47,24 +46,16 @@ export default function AppLayout() {
 
     return (
         <div className="h-[100dvh] w-screen bg-blue-300 p-2 pb-4sm:p-4">
-        <div className="h-full w-full max-w-lg mx-auto bg-amber-50 shadow-lg rounded-2xl flex flex-col overflow-hidden">
+        <div className={`h-full w-full max-w-lg mx-auto ${theme.bg} shadow-lg rounded-2xl flex flex-col overflow-hidden`}>
             <div className="p-2 sm:p-4 pb-0">
-                <PageHeader
+            <PageHeader
                     title={finalTitle}
                     registroDeHoy={registroDeHoy}
                     showBackButton={finalShowBackButton}
                 />
             </div>
-            
             <main className="flex-1 overflow-y-auto p-2 sm:p-4 pt-4 flex flex-col">
-                {isLoading ? (
-                    <LoadingSpinner 
-                        message="Preparando tu día..." 
-                        estadoGeneral={registroDeHoy?.estado_general} 
-                    />
-                ) : (
-                    <Outlet />
-                )}
+            <Outlet />
             </main>
             <Navbar />
         </div>

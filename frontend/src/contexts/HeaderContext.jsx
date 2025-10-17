@@ -6,7 +6,7 @@ const HeaderContext = createContext();
 export const HeaderProvider = ({ children }) => {
     const [pageTitle, setPageTitle] = useState(null);
     const [showBackButton, setShowBackButton] = useState(true);
-     const [onBackAction, setOnBackAction] = useState(null); 
+    const [onBackAction, setOnBackAction] = useState(null); 
 
     const value = {
         title: pageTitle,

@@ -139,21 +139,23 @@ export default function SingleRegistroView({ registro }) {
         // 🆕 Aplicamos el gradiente al contenedor principal
         <div className={`h-full overflow-y-auto space-y-6 p-4 ${gradienteClima} animate-fade-in`}>
             
-            {/* ========== SECCIÓN 1: META DEL DÍA ========== */}
-            {registro.meta_principal_id && (
-                <div className="bg-green-100 border border-green-400 rounded-2xl p-4 text-center shadow-lg">
+            {/* ========== SECCIÓN 1: META DEL DÍA (CORREGIDA) ========== */}
+            {/* Ahora buscamos el objeto 'metas' que viene dentro de 'registro' */}
+            {registro.metas && (
+                <div className="bg-green-100 border border-green-400 rounded-2xl p-3 text-center shadow-lg space-y-1">
+                        <h3 className="text-2xl uppercase text-green-900 break-words mt-2 -mb-1">
+                        {registro.metas.descripcion || 'Meta sin descripción'}
+                        </h3>
                     <div className="flex justify-center items-center gap-2 mb-2">
-                        <h2 className="font-['Patrick_Hand'] text-lg text-amber-800">Meta del Día</h2>
-                        <TrendingUp className="text-amber-800" size={24} />
+                        <h2 className="font-['Patrick_Hand'] text-lg text-amber-800">Meta del {new Date(registro.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' })}</h2>
                     </div>
-                    <p className="text-xl uppercase text-green-900 font-semibold">
-                        {registro.meta_descripcion || 'Meta sin descripción'}
-                    </p>
                 </div>
             )}
-
             {/* ========== SECCIÓN 2: ESTADO GENERAL + FRASE ========== */}
             <div className="bg-white/80 backdrop-blur-sm border border-amber-400 rounded-2xl p-6 text-center shadow-lg">
+                <p className="text-s text-zinc-500 italic mt-4 font-semibold">
+                    Registrado a las {new Date(registro.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}hs
+                </p>
                 <div className="w-32 h-32 mx-auto">
                     <Lottie animationData={animacionClima} loop={true} />
                 </div>
