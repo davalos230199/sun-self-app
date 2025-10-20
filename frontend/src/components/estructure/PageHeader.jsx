@@ -41,7 +41,7 @@ export default function PageHeader() {
     const { registroDeHoy, theme } = useDia();
 
     // Determinamos la frase (con un fallback)
-    const fraseSunny = registroDeHoy?.frase_sunny || "Que tengas un gran día.";
+    const fraseSunny = "Que tengas un gran día.";
 
     return (
         // Usamos el tema dinámico
@@ -67,7 +67,16 @@ export default function PageHeader() {
             <p className="text-sm font-semibold text-zinc-400">
                 {getFormattedDate()}
             </p>
-        </div>    
+        </div>
+
+        {/* Fila Inferior: Línea de puntos y Frase */}
+        {/* mt-2 crea espacio, border-t es la línea, pt-2 es el padding post-línea */}
+        <div className="w-full mt-2 pt-2 border-t border-dashed border-amber-300">
+            <p className="italic text-xs text-zinc-500 font-semibold text-center">
+                {fraseSunny || '...'}
+            </p>
+        </div>
+        
     </div>
 </div>      
     );
