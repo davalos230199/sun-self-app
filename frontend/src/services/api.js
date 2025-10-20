@@ -53,8 +53,6 @@ const deleteMeta = (id) => apiClient.delete(`/metas/${id}`);
 const generarFraseInteligente = (payload) => apiClient.post('/sunny/generar-frase', payload);
 const postToSunny = (payload) => { return apiClient.post('/sunny', payload); };
 
-const getMuroEstados = () => { return apiClient.get('/muro/estados'); };
-
 const getChartData = (filter) => {return apiClient.get(`/registros/chart-data?filter=${filter}`);};
 const getRegistroPorFecha = (fecha) => apiClient.get(`/registros/fecha/${fecha}`);
 
@@ -77,7 +75,7 @@ const api = {
   
   generarFraseInteligente,
   postToSunny,
-  getMuroEstados,
+
   getChartData,
   getRegistroPorFecha,
   

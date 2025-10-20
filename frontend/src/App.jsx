@@ -13,7 +13,6 @@ import Auth from './pages/Auth';
 import Filosofia from './pages/Filosofia';
 import Home from './pages/Home';
 import Journal from './pages/Journal';
-import MuroDeSoles from './pages/MuroDeSoles';
 import ResumenDia from './pages/ResumenDia';
 import Settings from './pages/Settings';
 import Sunny from './pages/Sunny';
@@ -51,7 +50,6 @@ const router = createBrowserRouter([
             { path: 'sunny', element: <Sunny /> },
             { path: 'settings', element: <Settings /> },
             { path: 'journal/:id', element: <Journal /> },
-            { path: 'muro', element: <MuroDeSoles /> },
             { path: 'metas', element: <MetasPage /> },
             { path: 'filosofia', element: <Filosofia /> },
             { path: 'resumen/:date', element: <ResumenDia /> },

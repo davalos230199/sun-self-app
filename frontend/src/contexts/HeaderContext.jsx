@@ -7,6 +7,7 @@ export const HeaderProvider = ({ children }) => {
     const [pageTitle, setPageTitle] = useState(null);
     const [showBackButton, setShowBackButton] = useState(true);
     const [onBackAction, setOnBackAction] = useState(null); 
+    const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 
     const value = {
         title: pageTitle,
@@ -15,6 +16,8 @@ export const HeaderProvider = ({ children }) => {
         setShowBackButton,
         onBackAction,
         setOnBackAction,
+        isHeaderVisible, 
+        setIsHeaderVisible
     };
 
     return (

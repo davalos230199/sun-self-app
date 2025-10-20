@@ -31,7 +31,7 @@ const getPageTitle = (pathname, tieneRegistro) => {
 export default function AppLayout() {
     const location = useLocation();
     const { registroDeHoy, isLoading, theme } = useDia(); 
-    const { title: contextTitle, setTitle: setContextTitle, showBackButton: contextShowBackButton, setShowBackButton: setContextShowBackButton } = useHeader();
+    const { isHeaderVisible, setIsHeaderVisible, title: contextTitle, setTitle: setContextTitle, showBackButton: contextShowBackButton, setShowBackButton: setContextShowBackButton } = useHeader();
     const pathShouldHaveBackButton = ['/tracking', '/journal', '/metas', '/filosofia', '/resumen'].some(path => location.pathname.startsWith(path));
     const finalShowBackButton = pathShouldHaveBackButton && contextShowBackButton;
 
@@ -39,7 +39,8 @@ export default function AppLayout() {
         // Al cambiar de ruta, reseteamos los estados del header
         setContextTitle(null);
         setContextShowBackButton(true); // Lo re-habilitamos por defecto
-    }, [location.pathname, setContextTitle, setContextShowBackButton]);
+        setIsHeaderVisible(true);
+    }, [location.pathname, setContextTitle, setContextShowBackButton, setIsHeaderVisible]);
 
     const finalTitle = contextTitle || getPageTitle(location.pathname, !!registroDeHoy);
 
@@ -47,6 +48,7 @@ export default function AppLayout() {
     return (
         <div className="h-[100dvh] w-screen bg-blue-300 p-2 pb-4sm:p-4">
         <div className={`h-full w-full max-w-lg mx-auto ${theme.bg} shadow-lg rounded-2xl flex flex-col overflow-hidden`}>
+            {isHeaderVisible && (
             <div className="p-2 sm:p-4 pb-0">
             <PageHeader
                     title={finalTitle}
@@ -54,6 +56,7 @@ export default function AppLayout() {
                     showBackButton={finalShowBackButton}
                 />
             </div>
+            )}
             <main className="flex-1 overflow-y-auto p-2 sm:p-4 pt-4 flex flex-col">
             <Outlet />
             </main>

@@ -1,7 +1,7 @@
 // src/components/Navbar.jsx
 
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, CalendarCheck, Sun, Users, Settings } from 'lucide-react';
+import { Home, CalendarCheck, Sun, BarChart3, Settings } from 'lucide-react';
 import { useDia } from '../../contexts/DiaContext';
 
 export default function Navbar() {
@@ -22,23 +22,19 @@ export default function Navbar() {
         className={`${baseStyle} ${isHomeActive ? theme.activeIcon : 'text-zinc-400 hover:text-zinc-700'}`}
       >
         <Home size={28} />
-        <span className="text-xs font-semibold">Home</span>
       </NavLink>
 
-      <NavLink to="/metas" className={({isActive}) => `${baseStyle} ${isActive ? 'text-amber-500' : 'text-zinc-400 hover:text-zinc-700'}`}>
+      <NavLink to="/metas" className={({isActive}) => `${baseStyle} ${isActive ? theme.activeIcon : 'text-zinc-400 hover:text-zinc-700'}`}>
         <CalendarCheck size={28} /> 
-        <span className="text-xs font-semibold">Metas</span>
       </NavLink>
-            <NavLink to="/progreso" className={({isActive}) => `${baseStyle} ${isActive ? 'text-amber-500' : 'text-zinc-400 hover:text-zinc-700'}`}>
+            <NavLink to="/progreso" className={({isActive}) => `${baseStyle} ${isActive ? theme.activeIcon : 'text-zinc-400 hover:text-zinc-700'}`}>
                 <Sun size={34} /> {/* O el ícono que elijas */}
       </NavLink>
-      <NavLink to="/muro" className={({isActive}) => `${baseStyle} ${isActive ? 'text-amber-500' : 'text-zinc-400 hover:text-zinc-700'}`}>
-        <Users size={28} />
-        <span className="text-xs font-semibold">Muro</span>
+      <NavLink to="/tracking" className={({isActive}) => `${baseStyle} ${isActive ? theme.activeIcon : 'text-zinc-400 hover:text-zinc-700'}`}>
+        <BarChart3 size={28} />
       </NavLink>
-      <NavLink to="/settings" className={({isActive}) => `${baseStyle} ${isActive ? 'text-amber-500' : 'text-zinc-400 hover:text-zinc-700'}`}>
+      <NavLink to="/settings" className={({isActive}) => `${baseStyle} ${isActive ? theme.activeIcon : 'text-zinc-400 hover:text-zinc-700'}`}>
         <Settings size={28} />
-        <span className="text-xs font-semibold">Ajustes</span>
       </NavLink>
     </nav>
   );
