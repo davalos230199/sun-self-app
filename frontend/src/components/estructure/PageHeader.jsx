@@ -18,10 +18,8 @@ const ClimaIconoAnimado = ({ estadoGeneral }) => {
     // Si no hay registro, o es nublado, muestra la nube.
     const animationData = animationMap[estadoGeneral] || cloudLoopAnimation;
 
-    return (
-        <div className="w-12 h-12 flex-shrink-0"> 
+    return ( 
             <Lottie animationData={animationData} loop={true} />
-        </div>
     );
 };
 
@@ -47,41 +45,30 @@ export default function PageHeader() {
 
     return (
         // Usamos el tema dinámico
-        <header className={`${theme.headerBg} ${theme.headerBorder} border rounded-lg shadow-md p-3 w-full flex-shrink-0`}>
-            
-            {/* Este es el nuevo layout de 3 columnas (Mobile-First):
-                [ICONO (fijo)] [TEXTO (flexible)] [FECHA (fijo)]
-            */}
-            <div className="flex justify-between items-center gap-2">
+<div className={`${theme.headerBg} ${theme.headerBorder} flex flex-row items-center space-x-4 p-4 bg-white rounded-xl shadow-lg`}>
+    
+    {/* --- Columna Izquierda: Icono (El "cuadrado") --- */}
+    {/* flex-shrink-0 evita que el icono se encoja */}
+    <div className="w-20 h-20 flex-shrink-0">
+        <ClimaIconoAnimado estadoGeneral={registroDeHoy?.estado_general} />
+    </div>
 
-                {/* IZQUIERDA: Icono del Clima */}
-                <ClimaIconoAnimado estadoGeneral={registroDeHoy?.estado_general} />
-
-                {/* CENTRO: Saludo y Frase (ocupa el espacio) */}
-                {/* min-w-0 es clave para que el flexbox respete el salto de línea */}
-                <div className="flex-1 text-left min-w-0 mx-2">
-                    <h2 className="font-['Patrick_Hand'] text-xl text-zinc-800 truncate">
-                        Hola, {user?.username || 'Viajero'}
-                    </h2>
-                    {/* FRASESUNNY:
-                        - text-xs (más chiquita)
-                        - No tiene 'truncate', por lo que saltará de línea si no entra.
-                    */}
-                    <p className="text-xs text-zinc-600 italic" title={fraseSunny}>
-                        "{fraseSunny}"
-                    </p>
-                </div>
-
-                {/* DERECHA: Fecha */}
-                <div className="flex-shrink-0 font-['Patrick_Hand'] text-base text-zinc-600">
-                    {getFormattedDate()}
-                </div>
-            </div>
-
-            {/* Se eliminó por completo la segunda fila que contenía
-                el {title} y el {BotonAtras}.
-                El PageHeader ahora es SOLO el panel de estado.
-            */}
-        </header>
+    {/* --- Columna Derecha: Contenido (El "resto") --- */}
+    {/* flex-1 toma todo el ancho restante */}
+    {/* flex-col apila la parte superior y la inferior verticalmente */}
+    <div className="flex flex-col flex-1">
+        
+        {/* Fila Superior: Saludo y Fecha */}
+        {/* flex y justify-between separa los elementos a los extremos */}
+        <div className="flex justify-between items-center w-full">
+            <h2 className="text-xl font-bold text-zinc-800">
+                Hola, {user?.username || 'Viajero'}
+            </h2>
+            <p className="text-sm font-semibold text-zinc-400">
+                {getFormattedDate()}
+            </p>
+        </div>    
+    </div>
+</div>      
     );
 }
