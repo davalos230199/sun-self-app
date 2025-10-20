@@ -162,7 +162,7 @@ export default function Tracking() {
     
     const handleDayClick = (date) => {
         const dateString = date.toISOString().split('T')[0];
-        navigate(`/resumen/${dateString}`);
+        navigate(`/app/resumen/${dateString}`);
     };
 
     const dateFilters = [{ key: 'dia', label: '1d' }, { key: 'semana', label: '7d' }, { key: 'quince', label: '15d' }, { key: 'todo', label: 'Max' }];

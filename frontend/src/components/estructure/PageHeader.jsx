@@ -1,37 +1,31 @@
-// frontend/src/components/PageHeader.jsx
-
+import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDia } from '../../contexts/DiaContext';
-import BotonAtras from '../common/BotonAtras';
-import { motion, AnimatePresence } from 'framer-motion';
-import Lottie from 'lottie-react'; // 1. Importamos Lottie
+import Lottie from 'lottie-react';
 
 // --- Importamos las animaciones que usaremos ---
 import sunLoopAnimation from '../../assets/animations/sun-loop.json';
 import cloudLoopAnimation from '../../assets/animations/cloud-loop.json';
 import rainLoopAnimation from '../../assets/animations/rain-loop.json';
 
-
-// --- Sub-componente para la animación ---
-// Creamos un pequeño componente para mantener la lógica de la animación encapsulada
+// --- Sub-componente para la animación (de tu código original) ---
 const ClimaIconoAnimado = ({ estadoGeneral }) => {
     const animationMap = {
         soleado: sunLoopAnimation,
         nublado: cloudLoopAnimation,
         lluvioso: rainLoopAnimation,
     };
-    // Leemos el estado. Si no existe, por defecto será nublado.
+    // Si no hay registro, o es nublado, muestra la nube.
     const animationData = animationMap[estadoGeneral] || cloudLoopAnimation;
 
     return (
-        // Ajustamos el tamaño para que encaje bien en el header
-        <div className="w-12 h-12"> 
+        <div className="w-12 h-12 flex-shrink-0"> 
             <Lottie animationData={animationData} loop={true} />
         </div>
     );
 };
 
-// --- La función de la fecha no cambia ---
+// --- La función de la fecha (de tu código original) ---
 const getFormattedDate = () => {
     const date = new Date();
     const day = String(date.getDate()).padStart(2, '0');
@@ -42,48 +36,52 @@ const getFormattedDate = () => {
 };
 
 
-export default function PageHeader({ title, registroDeHoy, showBackButton }) {
+// --- EL COMPONENTE PRINCIPAL (AHORA SIMPLIFICADO) ---
+export default function PageHeader() {
     const { user } = useAuth();
-    const { theme } = useDia();
+    // Traemos los datos y el tema directamente del contexto
+    const { registroDeHoy, theme } = useDia();
+
+    // Determinamos la frase (con un fallback)
+    const fraseSunny = registroDeHoy?.frase_sunny || "Que tengas un gran día.";
 
     return (
-        <header className={`${theme.headerBg} ${theme.headerBorder} rounded-lg shadow-md p-4 w-full flex-shrink-0`}>
-            <div className="flex justify-between items-center">
-                <div className="flex items-center gap-4 flex-1">
-                    <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800">
+        // Usamos el tema dinámico
+        <header className={`${theme.headerBg} ${theme.headerBorder} border rounded-lg shadow-md p-3 w-full flex-shrink-0`}>
+            
+            {/* Este es el nuevo layout de 3 columnas (Mobile-First):
+                [ICONO (fijo)] [TEXTO (flexible)] [FECHA (fijo)]
+            */}
+            <div className="flex justify-between items-center gap-2">
+
+                {/* IZQUIERDA: Icono del Clima */}
+                <ClimaIconoAnimado estadoGeneral={registroDeHoy?.estado_general} />
+
+                {/* CENTRO: Saludo y Frase (ocupa el espacio) */}
+                {/* min-w-0 es clave para que el flexbox respete el salto de línea */}
+                <div className="flex-1 text-left min-w-0 mx-2">
+                    <h2 className="font-['Patrick_Hand'] text-xl text-zinc-800 truncate">
                         Hola, {user?.username || 'Viajero'}
                     </h2>
+                    {/* FRASESUNNY:
+                        - text-xs (más chiquita)
+                        - No tiene 'truncate', por lo que saltará de línea si no entra.
+                    */}
+                    <p className="text-xs text-zinc-600 italic" title={fraseSunny}>
+                        "{fraseSunny}"
+                    </p>
                 </div>
 
-                {/* 3. Reemplazamos el div del emoji por nuestro nuevo componente animado */}
-                {registroDeHoy && registroDeHoy.estado_general && (
-                    <ClimaIconoAnimado estadoGeneral={registroDeHoy.estado_general} />
-                )}
-                
-                <div className="font-['Patrick_Hand'] text-xl text-zinc-600 flex-1 text-right">
+                {/* DERECHA: Fecha */}
+                <div className="flex-shrink-0 font-['Patrick_Hand'] text-base text-zinc-600">
                     {getFormattedDate()}
                 </div>
             </div>
 
-            {/* El resto del componente (título y botón de atrás) no necesita cambios */}
-            <div className="mt-3 pt-3 border-t border-dashed border-amber-400 relative flex justify-center items-center h-8">
-                <AnimatePresence>
-                    {showBackButton && (
-                        <motion.div
-                            className="absolute left-0"
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -10 }}
-                            transition={{ duration: 0.2 }}
-                        >
-                            <BotonAtras />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-                <p className="font-['Patrick_Hand'] text-xl text-zinc-700">
-                    {title}
-                </p>
-            </div>
+            {/* Se eliminó por completo la segunda fila que contenía
+                el {title} y el {BotonAtras}.
+                El PageHeader ahora es SOLO el panel de estado.
+            */}
         </header>
     );
 }

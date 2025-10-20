@@ -49,7 +49,7 @@ export const MetaPrincipalWidget = ({ meta, metasDelDia }) => {
     }
 
     return (
-        <Link to="/metas" className="no-underline text-inherit block">
+        <Link to="/app/metas" className="no-underline text-inherit block">
             <div className="bg-green-100 border border-green-400 rounded-2xl p-3 text-center shadow-lg space-y-1">
                 <h3 className="text-2xl uppercase text-green-900 break-words mt-2 -mb-1">{meta.descripcion}</h3>
                 <div className="flex justify-center items-center gap-2">
@@ -141,7 +141,7 @@ export const EstadoWidget = ({ registro, onEdit, historial }) => {
             <MiniHistorial historial={historial} /> 
             <MicroHabitoButton onClick={onEdit} /> 
 
-            <Link to="/tracking" className="no-underline text-inherit flex flex-col items-center justify-center flex-grow pt-10">
+            <Link to="/app/tracking" className="no-underline text-inherit flex flex-col items-center justify-center flex-grow pt-10">
                 <div className="w-24 h-24 mx-auto -my-2"><Lottie animationData={registro.estado_general === 'soleado' ? sunLoopAnimation : registro.estado_general === 'lluvioso' ? rainLoopAnimation : cloudLoopAnimation} loop={true} /></div>
                 <h3 className="font-['Patrick_Hand'] text-xl text-amber-800 -mb-1">Hoy</h3>
                 <p className="flex-grow text-zinc-700 font-['Patrick_Hand']">"{registro.frase_sunny || '...'}"</p>
@@ -161,7 +161,7 @@ export const EstadoWidget = ({ registro, onEdit, historial }) => {
 // --- NUEVOS WIDGETS PARA EL DASHBOARD ---
 
 export const DiarioWidget = ({ registroId }) => (
-    <Link to={`/journal/${registroId}`} className="no-underline text-inherit block h-full group">
+    <Link to={`/app/journal/${registroId}`} className="no-underline text-inherit block h-full group">
         {/* Usamos un color azul pizarra, elegante y sobrio */}
         <div className="h-full bg-slate-700 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-lg hover:bg-slate-600 transition-colors">
             <h3 className="font-['Patrick_Hand'] italic text-lg text-white">Tablero</h3>
