@@ -7,7 +7,7 @@ import { useDia } from '../../contexts/DiaContext';
 export default function Navbar() {
   const location = useLocation();
   const { theme } = useDia();
-  const homeRelatedPaths = ['/home', '/tracking'];
+  const homeRelatedPaths = ['/home'];
   const isHomeActive = homeRelatedPaths.includes(location.pathname) || 
                        location.pathname.startsWith('/journal') || 
                        location.pathname.startsWith('/resumen');
