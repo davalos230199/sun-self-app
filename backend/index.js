@@ -44,12 +44,13 @@ const diarioRoutes = require('./routes/diario');
 const sunnyRoutes = require('./routes/sunny');
 const metasRouter = require('./routes/metas');
 const muroRoutes = require('./routes/muro');
-
+const botRoutes = require('./routes/bot.js');
 
 
 app.use('/api/sunny', sunnyRoutes);
 app.use('/api/muro', muroRoutes);
 app.use('/api/metas', metasRouter);
+app.use('/api/bot', botRoutes);
 app.use('/api/registros', registrosRoutes);
 app.use('/api/diario', diarioRoutes);
 
