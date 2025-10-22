@@ -47,12 +47,13 @@ if (authHeader !== process.env.CRON_JOB_SECRET) {
   try {
     for (const item of KEYWORDS_POR_CATEGORIA) {
       const params = {
-        apiKey: NEWSAPI_KEY,
-        language: 'es',
-        domains: 'infobae.com,lanacion.com.ar,nytimes.com/es,cnnespanol.cnn.com,elpais.com,bbc.com/mundo', 
-        q: item.q,
-        sortBy: 'publishedAt'
-      };
+        apiKey: NEWSAPI_KEY,
+        language: 'es',
+        domains: 'infobae.com,nytimes.com/es,cnnespanol.cnn.com,elpais.com,bbc.com/mundo', 
+        q: item.q,
+        pageSize: 5, // <--- LÍNEA AÑADIDA
+        sortBy: 'publishedAt'
+      };
 
       const response = await axios.get(NEWS_API_URL, { params });
       const articles = response.data.articles;
@@ -74,9 +75,12 @@ if (authHeader !== process.env.CRON_JOB_SECRET) {
           categoria: item.categoria
         }));
 
-      const { error, count } = await supabase
-        .from('articulos_bienestar')
-        .insert(articulosParaInsertar, { onConflict: 'url_fuente' });
+const { error, count } = await supabase
+        .from('articulos_bienestar')
+        .insert(articulosParaInsertar, { 
+          onConflict: 'url_fuente',
+          count: 'exact' // <--- LÍNEA AÑADIDA
+        });
 
       if (error) {
         console.error(`Job Error (Supabase): ${error.message}`);
