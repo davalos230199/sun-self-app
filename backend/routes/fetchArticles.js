@@ -12,13 +12,13 @@ const supabase = createClient(
 );
 
 // El "Manantial"
-const NEWS_API_URL = 'https://newsapi.org/v2/top-headlines?';
+const NEWS_API_URL = 'https://newsapi.org/v2/everything';
 
 // Las categorías (las últimas que probamos)
 const KEYWORDS_POR_CATEGORIA = [
-  { categoria: 'Mente', q: '"salud mental" OR "ansiedad" OR "estres" OR "bienestar mental"' },
-  { categoria: 'Cuerpo', q: '"nutricion" OR "ejercicio" OR "calidad de sueño" OR "alimentacion"' },
-  { categoria: 'Emoción', q: '"inteligencia emocional" OR "empatia" OR "bienestar emocional"' }
+  { categoria: 'Mente', q: '"salud mental" OR ansiedad OR estres OR bienestar mental' },
+  { categoria: 'Cuerpo', q: 'nutricion OR ejercicio OR sedentarismo OR "calidad de sueño" OR alimentacion' },
+  { categoria: 'Emoción', q: '"inteligencia emocional" OR empatia OR "bienestar emocional"' }
 ];
 
 // POST /api/run-fetch-job
@@ -49,7 +49,7 @@ if (authHeader !== process.env.CRON_JOB_SECRET) {
 const params = {
         apiKey: NEWSAPI_KEY,
         language: 'es',
-        domains: 'infobae.com, clarin.com, lavoz.com.ar, pagina12.com.ar, tn.com.ar, elpais.com, bbc.com/mundo, cnn.com, eltiempo.com', 
+        domains: 'infobae.com,lanacion.com.ar,nytimes.com/es,cnnespanol.cnn.com,elpais.com,bbc.com/mundo', 
         q: item.q,
         sortBy: 'publishedAt',
         // --- AQUÍ ESTÁN LOS ARREGLOS ---
