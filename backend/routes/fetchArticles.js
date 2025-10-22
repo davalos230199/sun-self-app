@@ -12,13 +12,14 @@ const supabase = createClient(
 );
 
 // El "Manantial"
-const NEWS_API_URL = 'https://newsapi.org/v2/everything';
+const NEWS_API_URL = 'https://newsapi.org/v2/top-headlines?' +
+          'country=AR&';
 
 // Las categorías (las últimas que probamos)
 const KEYWORDS_POR_CATEGORIA = [
-  { categoria: 'Mente', q: '"salud mental" OR ansiedad OR estres OR bienestar mental' },
-  { categoria: 'Cuerpo', q: 'nutricion OR ejercicio OR sedentarismo OR "calidad de sueño" OR alimentacion' },
-  { categoria: 'Emoción', q: '"inteligencia emocional" OR empatia OR "bienestar emocional"' }
+  { categoria: 'Mente', q: '"salud mental" OR "ansiedad" OR "estres" OR "bienestar mental"' },
+  { categoria: 'Cuerpo', q: '"nutricion" OR "ejercicio" OR "calidad de sueño" OR "alimentacion"' },
+  { categoria: 'Emoción', q: '"inteligencia emocional" OR "empatia" OR "bienestar emocional"' }
 ];
 
 // POST /api/run-fetch-job
@@ -46,13 +47,16 @@ if (authHeader !== process.env.CRON_JOB_SECRET) {
 
   try {
     for (const item of KEYWORDS_POR_CATEGORIA) {
-      const params = {
+const params = {
         apiKey: NEWSAPI_KEY,
         language: 'es',
-        domains: 'infobae.com,nytimes.com/es,cnnespanol.cnn.com,elpais.com,bbc.com/mundo', 
+        domains: 'infobae.com, clarin.com, lavoz.com.ar, pagina12.com.ar, tn.com.ar, elpais.com, bbc.com/mundo, cnn.com, eltiempo.com', 
         q: item.q,
-        pageSize: 5, // <--- LÍNEA AÑADIDA
-        sortBy: 'publishedAt'
+        sortBy: 'publishedAt',
+        // --- AQUÍ ESTÁN LOS ARREGLOS ---
+        pageSize: 5,           // 1. Arreglo: Límite de 5 (el bug de los 100)
+        searchIn: 'title'      // 2. Arreglo: Tu idea (buscar solo en encabezados)
+        // --- FIN DE LOS ARREGLOS ---
       };
 
       const response = await axios.get(NEWS_API_URL, { params });
