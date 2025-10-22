@@ -13,7 +13,13 @@ const supabase = createClient(
 // Usamos el Tópico de Salud Global (que SÍ tiene RSS)
 // pero le pedimos las noticias de Argentina (gl=AR y ceid=AR)
 const GOOGLE_NEWS_RSS_URL = 'https://news.google.com/rss/topics/CAAqIQgKIhtDQkFTRGdvSUwyMHZNR3N3ZDNvU0VnSmplZ0Fv?hl=es-419&gl=US&ceid=US:es-419';
-const parser = new Parser();
+const parser = new Parser({
+  requestOptions: {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
+    }
+  }
+});
 
 // --- NUEVO: El "Filtro" de Categorías ---
 // Palabras clave para clasificar el agua pura que traemos
@@ -52,21 +58,11 @@ router.post('/run-fetch-job', async (req, res) => {
 try {
     // --- INICIO DE LA NUEVA LÓGICA ---
     console.log('Iniciando búsqueda de artículos (Job v2 - Google News RSS)...');
-    
-    // --- EL "DISFRAZ" (User-Agent) ---
-const options = {
-  requestOptions: { // <--- ESTA LÍNEA ES EL ARREGLO
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
-    }
-  }
-};
     // --- FIN DEL CAMBIO ---
-
     console.log(`Job v2: Intentando conectar con ${GOOGLE_NEWS_RSS_URL}`); // Log de depuración
     
     // Pasamos las 'options' a la petición
-    const feed = await parser.parseURL(GOOGLE_NEWS_RSS_URL, options);
+    const feed = await parser.parseURL(GOOGLE_NEWS_RSS_URL);
     
     console.log(`Job v2: Conexión exitosa. ${feed.items.length} artículos encontrados en el feed.`); // Log de depuración
 
