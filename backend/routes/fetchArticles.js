@@ -12,7 +12,7 @@ const supabase = createClient(
 
 // Usamos el Tópico de Salud Global (que SÍ tiene RSS)
 // pero le pedimos las noticias de Argentina (gl=AR y ceid=AR)
-const GOOGLE_NEWS_RSS_URL = 'https://news.google.com/rss/topics/CAAqIQgKIhtDQkFTRGdvSUwyMHZNR3N3ZDNvU0VnSmplZ0Fv?hl=es-419&gl=AR&ceid=AR:es-419';
+const GOOGLE_NEWS_RSS_URL = 'https://news.google.com/rss/topics/CAAqIQgKIhtDQkFTRGdvSUwyMHZNR3N3ZDNvU0VnSmplZ0Fv?hl=es-419&gl=AR&ceid=AR%3Aes-419';
 const parser = new Parser();
 
 // --- NUEVO: El "Filtro" de Categorías ---
