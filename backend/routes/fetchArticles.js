@@ -1,106 +1,109 @@
-// backend/routes/bot.js
-
+// backend/routes/fetchArticles.js
 const express = require('express');
-const axios = require('axios');
 const { createClient } = require('@supabase/supabase-js');
+const Parser = require('rss-parser'); // <--- NUEVA HERRAMIENTA
 const router = express.Router();
 
-// Creamos el cliente de Supabase (igual que en su 'middleware/auth.js')
+// Cliente de Supabase (sin cambios)
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY // ¡Clave! Usar la Service Key
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// El "Manantial"
-const NEWS_API_URL = 'https://newsapi.org/v2/everything';
+// El "Manantial" 2.0: Google News Salud (Latinoamérica)
+const GOOGLE_NEWS_RSS_URL = 'https://news.google.com/rss/topics/CAAqIQgKIhtDQkFTRGdvSUwyMHZNR3N3ZDNvU0VnSmplZ0Fv?hl=es-419&gl=US&ceid=US:es-419';
+const parser = new Parser();
 
-// Las categorías (las últimas que probamos)
-const KEYWORDS_POR_CATEGORIA = [
-  { categoria: 'Mente', q: '"salud mental" OR ansiedad OR estres OR bienestar mental' },
-  { categoria: 'Cuerpo', q: 'nutricion OR ejercicio OR sedentarismo OR "calidad de sueño" OR alimentacion' },
-  { categoria: 'Emoción', q: '"inteligencia emocional" OR empatia OR "bienestar emocional"' }
-];
+// --- NUEVO: El "Filtro" de Categorías ---
+// Palabras clave para clasificar el agua pura que traemos
+const KEYWORDS = {
+  Mente: /mental|cerebro|ansiedad|estrés|depresión|psicolog|medita|bienestar mental/,
+  Cuerpo: /ejercicio|nutrición|alimentación|sueño|físico|cuerpo|dieta|sedentarismo/,
+  Emoción: /emocional|emocion|empatía|sentimientos|relaciones|inteligencia emocional/
+};
 
-// POST /api/run-fetch-job
-// (Usamos POST para que sea más difícil de invocar por accidente)
+function categorizeArticle(title) {
+  const lowerTitle = title.toLowerCase();
+  if (KEYWORDS.Mente.test(lowerTitle)) return 'Mente';
+  if (KEYWORDS.Cuerpo.test(lowerTitle)) return 'Cuerpo';
+  if (KEYWORDS.Emoción.test(lowerTitle)) return 'Emoción';
+  return null; // Si no coincide, lo descartamos
+}
+
+// Función para extraer la imagen del contenido HTML (Google RSS)
+function extractImageUrl(content) {
+  const match = content.match(/<img src="([^"]+)"/);
+  return match ? match[1] : null;
+}
+// --- FIN DEL FILTRO ---
+
+
+// La ruta (sin cambios)
 router.post('/run-fetch-job', async (req, res) => {
-  // --- AÑADIMOS SEGURIDAD ---
-  // Verificamos un "bearer token" secreto para que solo el "Despertador" lo ejecute
-const authHeader = req.headers['authorization']; // Esto leerá "jobcito-de-noticias"
-
-if (authHeader !== process.env.CRON_JOB_SECRET) {
+  // Seguridad (sin cambios)
+  const authHeader = req.headers['authorization'];
+  if (authHeader !== process.env.CRON_JOB_SECRET) {
     console.warn('Intento de ejecución de Job SIN token secreto.');
     return res.status(401).json({ error: 'No autorizado' });
   }
 
-  // --- INICIO DE LA LÓGICA DEL BOT ---
-  console.log('Iniciando búsqueda de artículos (Job)...');
-  const NEWSAPI_KEY = process.env.NEWSAPI_KEY;
-
-  if (!NEWSAPI_KEY) {
-    console.error('CRON JOB ERROR: NEWSAPI_KEY no encontrada.');
-    return res.status(500).json({ error: 'NEWSAPI_KEY no configurada' });
-  }
-
-  let totalArticulosInsertados = 0;
+  // --- INICIO DE LA NUEVA LÓGICA ---
+  console.log('Iniciando búsqueda de artículos (Job v2 - Google News RSS)...');
+  let articulosParaInsertar = [];
 
   try {
-    for (const item of KEYWORDS_POR_CATEGORIA) {
-const params = {
-        apiKey: NEWSAPI_KEY,
-        language: 'es',
-        domains: 'infobae.com,lanacion.com.ar,nytimes.com/es,cnnespanol.cnn.com,elpais.com,bbc.com/mundo', 
-        q: item.q,
-        sortBy: 'publishedAt',
-        // --- AQUÍ ESTÁN LOS ARREGLOS ---
-        pageSize: 5,           // 1. Arreglo: Límite de 5 (el bug de los 100)
-        searchIn: 'title'      // 2. Arreglo: Tu idea (buscar solo en encabezados)
-        // --- FIN DE LOS ARREGLOS ---
-      };
+    const feed = await parser.parseURL(GOOGLE_NEWS_RSS_URL);
+    
+    for (const item of feed.items) {
+      const categoria = categorizeArticle(item.title);
 
-      const response = await axios.get(NEWS_API_URL, { params });
-      const articles = response.data.articles;
-
-      if (!articles || articles.length === 0) {
-        console.log(`Job: No se encontraron artículos para ${item.categoria}`);
+      // Si el artículo no coincide con nuestras categorías, lo ignoramos
+      if (!categoria) {
         continue;
       }
 
-      const articulosParaInsertar = articles
-        .filter(article => article.title && article.url && article.description)
-        .map(article => ({
-          titulo: article.title,
-          descripcion: article.description,
-          url_fuente: article.url,
-          url_imagen: article.urlToImage,
-          fuente_nombre: article.source.name,
-          fecha_publicacion: article.publishedAt,
-          categoria: item.categoria
-        }));
-
-const { error, count } = await supabase
-        .from('articulos_bienestar')
-        .insert(articulosParaInsertar, { 
-          onConflict: 'url_fuente',
-          count: 'exact' // <--- LÍNEA AÑADIDA
-        });
-
-      if (error) {
-        console.error(`Job Error (Supabase): ${error.message}`);
-      } else {
-        console.log(`Job: Éxito para ${item.categoria}. Artículos procesados: ${count ?? 0}`);
-        totalArticulosInsertados += (count ?? 0);
-      }
+      // Mapeamos el artículo del feed a nuestra tabla
+      articulosParaInsertar.push({
+        titulo: item.title,
+        descripcion: item.contentSnippet,
+        url_fuente: item.link,
+        url_imagen: extractImageUrl(item.content), // Usamos nuestra nueva función
+        fuente_nombre: item.creator || item.title.split(' - ').pop(), // El 'creator' a veces viene, si no, intentamos sacarlo del título
+        fecha_publicacion: item.isoDate,
+        categoria: categoria
+      });
     }
 
-    console.log('Job finalizado. Total de artículos nuevos insertados:', totalArticulosInsertados);
+    if (articulosParaInsertar.length === 0) {
+      console.log('Job v2: No se encontraron artículos nuevos que coincidan con los filtros.');
+      return res.status(200).json({ 
+        message: 'Job ejecutado, no se encontraron artículos nuevos.', 
+        nuevos_articulos: 0 
+      });
+    }
+
+    // Insertamos en Supabase (con el 'count: exact' que ya arreglamos)
+    const { error, count } = await supabase
+      .from('articulos_bienestar')
+      .insert(articulosParaInsertar, { 
+        onConflict: 'url_fuente',
+        count: 'exact'
+      });
+
+    if (error) {
+      console.error(`Job v2 Error (Supabase): ${error.message}`);
+      // No devolvemos 500, porque el error puede ser solo un 'duplicate key'
+    }
+
+    const articulosInsertados = count ?? 0;
+    console.log(`Job v2 finalizado. Total de artículos nuevos insertados: ${articulosInsertados}`);
     return res.status(200).json({ 
-      message: 'Job ejecutado exitosamente.', 
-      nuevos_articulos: totalArticulosInsertados 
+      message: 'Job v2 ejecutado exitosamente.', 
+      nuevos_articulos: articulosInsertados
     });
 
   } catch (err) {
-    console.error('Error inesperado en el Job:', err.message);
+    console.error('Error inesperado en el Job v2:', err.message);
     return res.status(500).json({ error: err.message });
   }
 });
