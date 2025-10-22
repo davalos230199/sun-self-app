@@ -26,10 +26,9 @@ const KEYWORDS_POR_CATEGORIA = [
 router.post('/run-fetch-job', async (req, res) => {
   // --- AÑADIMOS SEGURIDAD ---
   // Verificamos un "bearer token" secreto para que solo el "Despertador" lo ejecute
-  const authHeader = req.headers['authorization'];
-  const secretToken = authHeader && authHeader.split(' ')[1];
+const authHeader = req.headers['authorization']; // Esto leerá "jobcito-de-noticias"
 
-  if (secretToken !== process.env.CRON_JOB_SECRET) {
+if (authHeader !== process.env.CRON_JOB_SECRET) {
     console.warn('Intento de ejecución de Job SIN token secreto.');
     return res.status(401).json({ error: 'No autorizado' });
   }
