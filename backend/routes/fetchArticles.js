@@ -1,7 +1,8 @@
-// backend/routes/fetchArticles.js
+// backend/routes/fetchArticles.js (v3 - Volvemos a NewsAPI)
+
 const express = require('express');
+const axios = require('axios');
 const { createClient } = require('@supabase/supabase-js');
-const Parser = require('rss-parser'); // <--- NUEVA HERRAMIENTA
 const router = express.Router();
 
 // Cliente de Supabase (sin cambios)
@@ -10,42 +11,20 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Usamos el Tópico de Salud Global (que SÍ tiene RSS)
-// pero le pedimos las noticias de Argentina (gl=AR y ceid=AR)
-const GOOGLE_NEWS_RSS_URL = 'https://news.google.com/rss/topics/CAAqIQgKIhtDQkFTRGdvSUwyMHZNR3N3ZDNvU0VnSmplZ0Fv?hl=es-419&gl=US&ceid=US:es-419';
-const parser = new Parser({
-  requestOptions: {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
-    }
-  }
-});
+// El "Manantial" 1.0 (El que funcionaba)
+const NEWS_API_URL = 'https://newsapi.org/v2/everything';
 
-// --- NUEVO: El "Filtro" de Categorías ---
-// Palabras clave para clasificar el agua pura que traemos
-const KEYWORDS = {
-  Mente: /mental|cerebro|ansiedad|estrés|depresión|psicolog|medita|bienestar mental/,
-  Cuerpo: /ejercicio|nutrición|alimentación|sueño|físico|cuerpo|dieta|sedentarismo/,
-  Emoción: /emocional|emocion|empatía|sentimientos|relaciones|inteligencia emocional/
-};
+// Las categorías (sin cambios)
+const KEYWORDS_POR_CATEGORIA = [
+  { categoria: 'Mente', q: '"salud mental" OR ansiedad OR estres OR bienestar mental OR meditación OR psicología' },
+  { categoria: 'Cuerpo', q: 'nutrición OR ejercicio OR sedentarismo OR "calidad de sueño" OR alimentación OR físico' },
+  { categoria: 'Emoción', q: '"inteligencia emocional" OR empatía OR "bienestar emocional" OR relaciones' }
+];
 
-function categorizeArticle(title) {
-  const lowerTitle = title.toLowerCase();
-  if (KEYWORDS.Mente.test(lowerTitle)) return 'Mente';
-  if (KEYWORDS.Cuerpo.test(lowerTitle)) return 'Cuerpo';
-  if (KEYWORDS.Emoción.test(lowerTitle)) return 'Emoción';
-  return null; // Si no coincide, lo descartamos
-}
-
-// Función para extraer la imagen del contenido HTML (Google RSS)
-function extractImageUrl(content) {
-  const match = content.match(/<img src="([^"]+)"/);
-  return match ? match[1] : null;
-}
-// --- FIN DEL FILTRO ---
+// --- EL NUEVO FILTRO ANTI-BASURA ---
+const TERMINOS_EXCLUIDOS = ' NOT política NOT deportes NOT fútbol NOT farándula NOT horóscopo NOT crimen NOT finanzas';
 
 
-// La ruta (sin cambios)
 router.post('/run-fetch-job', async (req, res) => {
   // Seguridad (sin cambios)
   const authHeader = req.headers['authorization'];
@@ -54,66 +33,76 @@ router.post('/run-fetch-job', async (req, res) => {
     return res.status(401).json({ error: 'No autorizado' });
   }
 
-  // --- INICIO DE LA NUEVA LÓGICA ---
-try {
-    // --- INICIO DE LA NUEVA LÓGICA ---
-    console.log('Iniciando búsqueda de artículos (Job v2 - Google News RSS)...');
-    // --- FIN DEL CAMBIO ---
-    console.log(`Job v2: Intentando conectar con ${GOOGLE_NEWS_RSS_URL}`); // Log de depuración
-    
-    // Pasamos las 'options' a la petición
-    const feed = await parser.parseURL(GOOGLE_NEWS_RSS_URL);
-    
-    console.log(`Job v2: Conexión exitosa. ${feed.items.length} artículos encontrados en el feed.`); // Log de depuración
+  // --- INICIO DE LA LÓGICA v3 ---
+  console.log('Iniciando búsqueda de artículos (Job v3 - NewsAPI)...');
+  const NEWSAPI_KEY = process.env.NEWSAPI_KEY;
 
-    let articulosParaInsertar = [];
-    
-    for (const item of feed.items) {
-      const categoria = categorizeArticle(item.title);
+  if (!NEWSAPI_KEY) {
+    console.error('CRON JOB ERROR: NEWSAPI_KEY no encontrada.');
+    return res.status(500).json({ error: 'NEWSAPI_KEY no configurada' });
+  }
 
-      if (!categoria) {
-        continue; // Ignoramos si no se categoriza
+  let totalArticulosInsertados = 0;
+
+  try {
+    for (const item of KEYWORDS_POR_CATEGORIA) {
+      
+      // --- EL FILTRO DE CALIDAD (v3) ---
+      const params = {
+        apiKey: NEWSAPI_KEY,
+        language: 'es',
+        q: item.q + TERMINOS_EXCLUIDOS, // <-- 1. AÑADIMOS EXCLUSIONES
+        searchIn: 'title',              // <-- 2. TU IDEA: BUSCAR SOLO EN TÍTULO
+        pageSize: 5,                    // <-- 3. ARREGLO: LÍMITE DE 5
+        sortBy: 'publishedAt'
+        // 'domains' está ELIMINADO: ahora buscamos en blogs de salud, no solo en diarios.
+      };
+      // --- FIN DEL FILTRO ---
+
+      const response = await axios.get(NEWS_API_URL, { params });
+      const articles = response.data.articles;
+
+      if (!articles || articles.length === 0) {
+        console.log(`Job v3: No se encontraron artículos para ${item.categoria}`);
+        continue;
       }
 
-      articulosParaInsertar.push({
-        titulo: item.title,
-        descripcion: item.contentSnippet,
-        url_fuente: item.link,
-        url_imagen: extractImageUrl(item.content),
-        fuente_nombre: item.creator || item.title.split(' - ').pop(),
-        fecha_publicacion: item.isoDate,
-        categoria: categoria
-      });
+      const articulosParaInsertar = articles
+        .filter(article => article.title && article.url && article.description)
+        .map(article => ({
+          titulo: article.title,
+          descripcion: article.description,
+          url_fuente: article.url,
+          url_imagen: article.urlToImage,
+          fuente_nombre: article.source.name,
+          fecha_publicacion: article.publishedAt,
+          categoria: item.categoria
+        }));
+
+      // Insertamos en Supabase (con el 'count' arreglado)
+      const { error, count } = await supabase
+        .from('articulos_bienestar')
+        .insert(articulosParaInsertar, { 
+          onConflict: 'url_fuente',
+          count: 'exact' // <-- 4. ARREGLO: EL CONTADOR
+        });
+
+      if (error) {
+        console.error(`Job v3 Error (Supabase): ${error.message}`);
+      } else {
+        console.log(`Job v3: Éxito para ${item.categoria}. Artículos procesados: ${count ?? 0}`);
+        totalArticulosInsertados += (count ?? 0);
+      }
     }
 
-    if (articulosParaInsertar.length === 0) {
-      console.log('Job v2: No se encontraron artículos nuevos que coincidan con los filtros.');
-      return res.status(200).json({ 
-        message: 'Job ejecutado, no se encontraron artículos nuevos.', 
-        nuevos_articulos: 0 
-      });
-    }
-
-    const { error, count } = await supabase
-      .from('articulos_bienestar')
-      .insert(articulosParaInsertar, { 
-        onConflict: 'url_fuente',
-        count: 'exact'
-      });
-
-    if (error) {
-      console.error(`Job v2 Error (Supabase): ${error.message}`);
-    }
-
-    const articulosInsertados = count ?? 0;
-    console.log(`Job v2 finalizado. Total de artículos nuevos insertados: ${articulosInsertados}`);
+    console.log('Job v3 finalizado. Total de artículos nuevos insertados:', totalArticulosInsertados);
     return res.status(200).json({ 
-      message: 'Job v2 ejecutado exitosamente.', 
-      nuevos_articulos: articulosInsertados
+      message: 'Job v3 ejecutado exitosamente.', 
+      nuevos_articulos: totalArticulosInsertados 
     });
 
   } catch (err) {
-    console.error('Error inesperado en el Job v2:', err.message);
+    console.error('Error inesperado en el Job v3:', err.message);
     return res.status(500).json({ error: err.message });
   }
 });
