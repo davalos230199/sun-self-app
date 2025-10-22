@@ -49,27 +49,40 @@ router.post('/run-fetch-job', async (req, res) => {
   }
 
   // --- INICIO DE LA NUEVA LÓGICA ---
-  console.log('Iniciando búsqueda de artículos (Job v2 - Google News RSS)...');
-  let articulosParaInsertar = [];
+try {
+    // --- INICIO DE LA NUEVA LÓGICA ---
+    console.log('Iniciando búsqueda de artículos (Job v2 - Google News RSS)...');
+    
+    // --- EL "DISFRAZ" (User-Agent) ---
+    const options = {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
+      }
+    };
+    // --- FIN DEL CAMBIO ---
 
-  try {
-    const feed = await parser.parseURL(GOOGLE_NEWS_RSS_URL);
+    console.log(`Job v2: Intentando conectar con ${GOOGLE_NEWS_RSS_URL}`); // Log de depuración
+    
+    // Pasamos las 'options' a la petición
+    const feed = await parser.parseURL(GOOGLE_NEWS_RSS_URL, options);
+    
+    console.log(`Job v2: Conexión exitosa. ${feed.items.length} artículos encontrados en el feed.`); // Log de depuración
+
+    let articulosParaInsertar = [];
     
     for (const item of feed.items) {
       const categoria = categorizeArticle(item.title);
 
-      // Si el artículo no coincide con nuestras categorías, lo ignoramos
       if (!categoria) {
-        continue;
+        continue; // Ignoramos si no se categoriza
       }
 
-      // Mapeamos el artículo del feed a nuestra tabla
       articulosParaInsertar.push({
         titulo: item.title,
         descripcion: item.contentSnippet,
         url_fuente: item.link,
-        url_imagen: extractImageUrl(item.content), // Usamos nuestra nueva función
-        fuente_nombre: item.creator || item.title.split(' - ').pop(), // El 'creator' a veces viene, si no, intentamos sacarlo del título
+        url_imagen: extractImageUrl(item.content),
+        fuente_nombre: item.creator || item.title.split(' - ').pop(),
         fecha_publicacion: item.isoDate,
         categoria: categoria
       });
@@ -83,7 +96,6 @@ router.post('/run-fetch-job', async (req, res) => {
       });
     }
 
-    // Insertamos en Supabase (con el 'count: exact' que ya arreglamos)
     const { error, count } = await supabase
       .from('articulos_bienestar')
       .insert(articulosParaInsertar, { 
@@ -93,7 +105,6 @@ router.post('/run-fetch-job', async (req, res) => {
 
     if (error) {
       console.error(`Job v2 Error (Supabase): ${error.message}`);
-      // No devolvemos 500, porque el error puede ser solo un 'duplicate key'
     }
 
     const articulosInsertados = count ?? 0;
