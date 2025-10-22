@@ -1,29 +1,36 @@
 // frontend/src/pages/Landing.jsx
-// Versión 2: "El Hub de Bienestar" (con datos de ejemplo)
+// Versión 3: "El Hub de Bienestar" (Conectado a Supabase)
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Importamos useEffect
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { supabase } from '../services/supabaseClient'; // ¡Importante! Asegurate que la ruta a tu cliente sea correcta
 
-// --- COMPONENTE DE EJEMPLO ---
-// Este componente simula una tarjeta de artículo
+// --- COMPONENTE DE TARJETA ---
+// (Este componente no cambia)
 const ArticleCard = ({ article }) => (
   <motion.div 
     className="bg-white rounded-2xl shadow-lg overflow-hidden"
     whileHover={{ y: -5, shadow: 'xl' }}
   >
+    {/* Si no hay imagen, mostramos un placeholder genérico */}
     <div 
-      className="h-48 bg-cover bg-center" 
-      style={{ backgroundImage: `url(${article.url_imagen})` }}
+      className="h-48 bg-cover bg-center bg-zinc-200" 
+      style={{ backgroundImage: `url(${article.url_imagen || 'https://via.placeholder.com/400x300/f0f0f0/AAAAAA?text=Sun+Self'})` }}
     />
     <div className="p-6">
-      <span className={`text-sm font-bold ${article.categoria === 'Mente' ? 'text-blue-500' : article.categoria === 'Cuerpo' ? 'text-green-500' : 'text-yellow-500'}`}>
+      <span className={`text-sm font-bold ${
+          article.categoria === 'Mente' ? 'text-blue-500' 
+        : article.categoria === 'Cuerpo' ? 'text-green-500' 
+        : article.categoria === 'Emoción' ? 'text-yellow-500' 
+        : 'text-zinc-400'
+      }`}>
         {article.categoria.toUpperCase()}
       </span>
       <h3 className="text-xl font-bold text-zinc-800 mt-2 mb-3 font-['Patrick_Hand']">
         {article.titulo}
       </h3>
-      <p className="text-zinc-600 text-base mb-4">
+      <p className="text-zinc-600 text-base mb-4 line-clamp-3"> {/* line-clamp-3 limita a 3 líneas */}
         {article.descripcion}
       </p>
       <a 
@@ -38,21 +45,42 @@ const ArticleCard = ({ article }) => (
   </motion.div>
 );
 
-// --- DATOS DE EJEMPLO (Simulación de Supabase) ---
-const mockArticles = [
-  { id: 1, categoria: 'Cuerpo', titulo: 'El sedentarismo envejece: consecuencias de no moverse para el cerebro', descripcion: 'Nuevos estudios revelan cómo la falta de actividad física impacta directamente en la salud cognitiva...', url_fuente: 'https://www.infobae.com/salud/ciencia/2025/10/21/el-sedentarismo-envejece-cuales-son-las-consecuencias-de-no-moverse-para-el-cerebro/', url_imagen: 'https://www.infobae.com/new-resizer/ejemplo-imagen.jpg', fuente_nombre: 'Infobae' },
-  { id: 2, categoria: 'Mente', titulo: 'Ansiedad: 3 técnicas de respiración probadas para encontrar la calma', descripcion: 'Expertos detallan métodos simples que se pueden aplicar en cualquier momento del día para reducir el estrés.', url_fuente: '#', url_imagen: 'https://via.placeholder.com/400x300/A7C7E7/FFFFFF?text=Mente', fuente_nombre: 'Salud Global' },
-  { id: 3, categoria: 'Emoción', titulo: 'Inteligencia Emocional: ¿Por qué es más importante que el IQ?', descripcion: 'Comprender y gestionar las emociones es clave para el éxito profesional y personal.', url_fuente: '#', url_imagen: 'https://via.placeholder.com/400x300/FDFD96/FFFFFF?text=Emocion', fuente_nombre: 'Psicología Hoy' },
-  // ... (aquí irían más artículos)
-];
-
+// --- COMPONENTE PRINCIPAL ---
 export default function Landing() {
   const [filter, setFilter] = useState('Todos'); // Estado para el filtro
+  const [articles, setArticles] = useState([]); // ¡NUEVO! Estado para guardar artículos
+  const [loading, setLoading] = useState(true); // ¡NUEVO! Estado de carga
 
-  const filteredArticles = mockArticles.filter(article => 
-    filter === 'Todos' || article.categoria === filter
-  );
+  // --- ¡NUEVO! useEffect para cargar datos de Supabase ---
+  useEffect(() => {
+    async function fetchArticles() {
+      setLoading(true);
+      
+      let query = supabase
+        .from('articulos_bienestar')
+        .select('*')
+        .order('fecha_publicacion', { ascending: false }) // Mostrar más nuevos primero
+        .limit(12); // Traer los últimos 12
 
+      // Si el filtro NO es "Todos", filtramos por categoría
+      if (filter !== 'Todos') {
+        query = query.eq('categoria', filter);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error al cargar artículos:', error);
+      } else {
+        setArticles(data);
+      }
+      setLoading(false);
+    }
+
+    fetchArticles();
+  }, [filter]); // ¡IMPORTANTE! El array se recarga cuando 'filter' cambia
+
+  // --- El NavLink no cambia ---
   const NavLink = ({ children, category }) => (
     <button
       onClick={() => setFilter(category)}
@@ -65,10 +93,9 @@ export default function Landing() {
 
   return (
     <div className="bg-zinc-50 min-h-screen">
-      {/* --- Navbar (El Header que propuso) --- */}
+      {/* --- Navbar (No cambia) --- */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
         <nav className="max-w-7xl mx-auto flex justify-between items-center p-4">
-          {/* Lado Izquierdo: Logo y Filtros */}
           <div className="flex items-center space-x-8">
             <span className="font-['Patrick_Hand'] text-3xl font-bold text-orange-600">
               Sun Self
@@ -80,7 +107,6 @@ export default function Landing() {
               <NavLink category="Emoción">Emoción</NavLink>
             </div>
           </div>
-          {/* Lado Derecho: Autenticación */}
           <div className="flex items-center space-x-4">
             <Link 
               to="/login" 
@@ -89,7 +115,7 @@ export default function Landing() {
               Iniciar Sesión
             </Link>
             <Link 
-              to="/login" // O puede ir a una página /registro nueva
+              to="/login"
               className="bg-orange-500 text-white font-['Patrick_Hand'] text-lg px-6 py-2 rounded-full hover:bg-orange-600 transition-colors"
             >
               Registrarse
@@ -105,21 +131,26 @@ export default function Landing() {
           Artículos y noticias curadas para tu mente, cuerpo y emoción.
         </p>
 
-        {/* Grid de Artículos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredArticles.map(article => (
-            <ArticleCard key={article.id} article={article} />
-          ))}
-        </div>
+        {/* --- ¡MODIFICADO! Grid de Artículos --- */}
+        {loading ? (
+          <p className="text-center text-zinc-500">Cargando artículos...</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {articles.map(article => (
+              <ArticleCard key={article.id} article={article} />
+            ))}
+          </div>
+        )}
+        
+        {(!loading && articles.length === 0) && (
+          <p className="text-center text-zinc-500">No se encontraron artículos para esta categoría.</p>
+        )}
       </main>
 
-      {/* --- Futuro CTA para la Encuesta Anónima --- */}
-      {/* (Desactivado por ahora, pero aquí iría) */}
-
-      {/* --- Footer --- */}
+      {/* --- Footer (No cambia) --- */}
       <footer className="text-center p-10 mt-12 bg-white border-t border-zinc-100">
         <p className="text-zinc-500 text-base font-['Patrick_Hand']">
-          &copy; {new Date().getFullYear()} Sun Self. Un movimiento por la calma.
+          {new Date().getFullYear()} Sun Self. Un movimiento por la calma.
         </p>
       </footer>
     </div>
