@@ -5,36 +5,30 @@ const axios = require('axios');
 const { createClient } = require('@supabase/supabase-js');
 const router = express.Router();
 
-// Cliente de Supabase (sin cambios)
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// El "Manantial" 1.0 (El que funcionaba)
-const NEWS_API_URL = 'https://newsapi.org/v2/everything';
+const NEWS_API_URL = 'https://newsapi.org/v2/top-headlines'; // <-- ¡EL ENDPOINT CORRECTO!
+const KEYWORDS = {
+  Mente: /mental|cerebro|ansiedad|estrés|depresión|psicolog|medita|bienestar mental/,
+  Cuerpo: /ejercicio|nutrición|alimentación|sueño|físico|cuerpo|dieta|sedentarismo/,
+  Emoción: /emocional|emocion|empatía|sentimientos|relaciones|inteligencia emocional/
+};
 
-// Las categorías (sin cambios)
-const KEYWORDS_POR_CATEGORIA = [
-  { categoria: 'Mente', q: '"salud mental" OR ansiedad OR estres OR bienestar mental OR meditación OR psicología' },
-  { categoria: 'Cuerpo', q: 'nutrición OR ejercicio OR sedentarismo OR "calidad de sueño" OR alimentación OR físico' },
-  { categoria: 'Emoción', q: '"inteligencia emocional" OR empatía OR "bienestar emocional" OR relaciones' }
-];
-
-// --- EL NUEVO FILTRO ANTI-BASURA ---
-const TERMINOS_EXCLUIDOS = ' NOT política NOT deportes NOT fútbol NOT farándula NOT horóscopo NOT crimen NOT finanzas';
-
+function categorizeArticle(title) {
+  if (!title) return 'Bienestar'; // Categoría por defecto si el título es nulo
+  const lowerTitle = title.toLowerCase();
+  if (KEYWORDS.Mente.test(lowerTitle)) return 'Mente';
+  if (KEYWORDS.Cuerpo.test(lowerTitle)) return 'Cuerpo';
+  if (KEYWORDS.Emoción.test(lowerTitle)) return 'Emoción';
+  return 'Bienestar'; // Si no coincide, categoría general
+}
 
 router.post('/run-fetch-job', async (req, res) => {
-  // Seguridad (sin cambios)
-  const authHeader = req.headers['authorization'];
-  if (authHeader !== process.env.CRON_JOB_SECRET) {
-    console.warn('Intento de ejecución de Job SIN token secreto.');
-    return res.status(401).json({ error: 'No autorizado' });
-  }
-
-  // --- INICIO DE LA LÓGICA v3 ---
-  console.log('Iniciando búsqueda de artículos (Job v3 - NewsAPI)...');
+  
+  console.log('Iniciando búsqueda de artículos (Job v4 - Top-Headlines)...');
   const NEWSAPI_KEY = process.env.NEWSAPI_KEY;
 
   if (!NEWSAPI_KEY) {
@@ -45,64 +39,69 @@ router.post('/run-fetch-job', async (req, res) => {
   let totalArticulosInsertados = 0;
 
   try {
-    for (const item of KEYWORDS_POR_CATEGORIA) {
-      
-      // --- EL FILTRO DE CALIDAD (v3) ---
-      const params = {
-        apiKey: NEWSAPI_KEY,
-        language: 'es',
-        q: item.q + TERMINOS_EXCLUIDOS, // <-- 1. AÑADIMOS EXCLUSIONES
-        searchIn: 'title',              // <-- 2. TU IDEA: BUSCAR SOLO EN TÍTULO
-        pageSize: 5,                    // <-- 3. ARREGLO: LÍMITE DE 5
-        sortBy: 'publishedAt'
-        // 'domains' está ELIMINADO: ahora buscamos en blogs de salud, no solo en diarios.
-      };
-      // --- FIN DEL FILTRO ---
+    // --- EL FILTRO DE CALIDAD (v4) ---
+    // ¡Usamos la estrategia correcta!
+    const params = {
+      apiKey: NEWSAPI_KEY,
+      country: 'ar',     // <-- 1. ¡ARGENTINA!
+      category: 'health',  // <-- 2. ¡CATEGORÍA SALUD!
+      pageSize: 20       // <-- 3. Traemos los 20 titulares de salud más recientes
+    };
+    // --- FIN DEL FILTRO ---
 
-      const response = await axios.get(NEWS_API_URL, { params });
-      const articles = response.data.articles;
+    const response = await axios.get(NEWS_API_URL, { params });
+    const articles = response.data.articles;
 
-      if (!articles || articles.length === 0) {
-        console.log(`Job v3: No se encontraron artículos para ${item.categoria}`);
-        continue;
-      }
-
-      const articulosParaInsertar = articles
-        .filter(article => article.title && article.url && article.description)
-        .map(article => ({
-          titulo: article.title,
-          descripcion: article.description,
-          url_fuente: article.url,
-          url_imagen: article.urlToImage,
-          fuente_nombre: article.source.name,
-          fecha_publicacion: article.publishedAt,
-          categoria: item.categoria
-        }));
-
-      // Insertamos en Supabase (con el 'count' arreglado)
-      const { error, count } = await supabase
-        .from('articulos_bienestar')
-        .insert(articulosParaInsertar, { 
-          onConflict: 'url_fuente',
-          count: 'exact' // <-- 4. ARREGLO: EL CONTADOR
-        });
-
-      if (error) {
-        console.error(`Job v3 Error (Supabase): ${error.message}`);
-      } else {
-        console.log(`Job v3: Éxito para ${item.categoria}. Artículos procesados: ${count ?? 0}`);
-        totalArticulosInsertados += (count ?? 0);
-      }
+    if (!articles || articles.length === 0) {
+      console.log(`Job v4: No se encontraron artículos de salud en Argentina.`);
+      return res.status(200).json({ message: 'Job ejecutado, no se encontraron artículos.', nuevos_articulos: 0 });
     }
 
-    console.log('Job v3 finalizado. Total de artículos nuevos insertados:', totalArticulosInsertados);
+    console.log(`Job v4: Encontrados ${articles.length} artículos de Salud en Argentina.`);
+
+    const articulosParaInsertar = articles
+      .filter(article => article.title && article.url && article.description)
+      .map(article => ({
+        titulo: article.title,
+        descripcion: article.description,
+        url_fuente: article.url,
+        url_imagen: article.urlToImage,
+        fuente_nombre: article.source.name,
+        fecha_publicacion: article.publishedAt,
+        categoria: categorizeArticle(article.title) // <-- Usamos nuestro filtro interno
+      }));
+
+    // Insertamos en Supabase (con el 'count' arreglado)
+    const { error, count } = await supabase
+      .from('articulos_bienestar')
+      .insert(articulosParaInsertar, { 
+        onConflict: 'url_fuente',
+        count: 'exact'
+      });
+
+    if (error) {
+      console.error(`Job v4 Error (Supabase): ${error.message}`);
+    } else {
+      totalArticulosInsertados = count ?? 0;
+      console.log(`Job v4: Éxito. Artículos nuevos insertados: ${totalArticulosInsertados}`);
+    }
+
+    console.log('Job v4 finalizado.');
     return res.status(200).json({ 
-      message: 'Job v3 ejecutado exitosamente.', 
+      message: 'Job v4 ejecutado exitosamente.', 
       nuevos_articulos: totalArticulosInsertados 
     });
 
   } catch (err) {
-    console.error('Error inesperado en el Job v3:', err.message);
+    console.error('Error inesperado en el Job v4:', err.message);
+    
+    // --- Log de depuración para errores de API ---
+    if (err.response) {
+      console.error('Error Data:', err.response.data);
+      console.error('Error Status:', err.response.status);
+    }
+    // --- Fin del log ---
+
     return res.status(500).json({ error: err.message });
   }
 });
