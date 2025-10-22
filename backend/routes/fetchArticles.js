@@ -54,11 +54,13 @@ try {
     console.log('Iniciando búsqueda de artículos (Job v2 - Google News RSS)...');
     
     // --- EL "DISFRAZ" (User-Agent) ---
-    const options = {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
-      }
-    };
+const options = {
+  requestOptions: { // <--- ESTA LÍNEA ES EL ARREGLO
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
+    }
+  }
+};
     // --- FIN DEL CAMBIO ---
 
     console.log(`Job v2: Intentando conectar con ${GOOGLE_NEWS_RSS_URL}`); // Log de depuración
