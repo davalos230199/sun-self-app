@@ -49,9 +49,8 @@ if (authHeader !== process.env.CRON_JOB_SECRET) {
       const params = {
         apiKey: NEWSAPI_KEY,
         language: 'es',
-        domains: 'infobae.com,clarin.com,lanacion.com.ar',
+        domains: 'infobae.com,lanacion.com.ar,nytimes.com/es,cnnespanol.cnn.com,elpais.com,bbc.com/mundo', 
         q: item.q,
-        pageSize: 5,
         sortBy: 'publishedAt'
       };
 
