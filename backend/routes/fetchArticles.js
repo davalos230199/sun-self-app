@@ -12,8 +12,7 @@ const supabase = createClient(
 );
 
 // El "Manantial"
-const NEWS_API_URL = 'https://newsapi.org/v2/top-headlines?' +
-          'country=AR&';
+const NEWS_API_URL = 'https://newsapi.org/v2/top-headlines?';
 
 // Las categorías (las últimas que probamos)
 const KEYWORDS_POR_CATEGORIA = [
