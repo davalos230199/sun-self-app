@@ -10,8 +10,9 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// El "Manantial" 2.0: Google News Salud (Latinoamérica)
-const GOOGLE_NEWS_RSS_URL = 'https://news.google.com/rss/topics/CAAqIQgKIhtDQkFTRGdvSUwyMHZNR3N3ZDNvU0VnSmplZ0Fv?hl=es-419&gl=US&ceid=US:es-419';
+// Usamos el Tópico de Salud Global (que SÍ tiene RSS)
+// pero le pedimos las noticias de Argentina (gl=AR y ceid=AR)
+const GOOGLE_NEWS_RSS_URL = 'https://news.google.com/rss/topics/CAAqIQgKIhtDQkFTRGdvSUwyMHZNR3N3ZDNvU0VnSmplZ0Fv?hl=es-419&gl=AR&ceid=AR:es-419';
 const parser = new Parser();
 
 // --- NUEVO: El "Filtro" de Categorías ---
