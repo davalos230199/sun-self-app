@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useRef, useState, useEffect }  from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDia } from '../../contexts/DiaContext';
 import Lottie from 'lottie-react';
+import api from '../../services/api';
 
 // --- Importamos las animaciones que usaremos ---
 import sunLoopAnimation from '../../assets/animations/sun-loop.json';
@@ -39,23 +40,64 @@ export default function PageHeader() {
     const { user } = useAuth();
     // Traemos los datos y el tema directamente del contexto
     const { registroDeHoy, theme } = useDia();
+    const [fraseDelDia, setFraseDelDia] = useState({
+        quote: "Que tengas un gran día.",
+        author: "Sun Self"
+    });
+    const [cargandoFrase, setCargandoFrase] = useState(true);
+    
+    useEffect(() => {
+        const fetchFrase = async () => {
+            setCargandoFrase(true);
+            try {
+                // --- ¡AQUÍ LA MAGIA! ---
+                // 1. Leemos el estado del día
+                const estadoGeneral = registroDeHoy?.estado_general || 'nublado'; // 'soleado', 'lluvioso', 'nublado'
 
-    // Determinamos la frase (con un fallback)
-    const fraseSunny = "Que tengas un gran día.";
+                // 2. Mapeamos tu idea de "días lluviosos"
+                let categoria;
+                if (estadoGeneral === 'soleado') {
+                    categoria = 'positiva';
+                } else if (estadoGeneral === 'lluvioso') {
+                    categoria = 'reflexiva';
+                } else {
+                    // 'nublado' o por defecto
+                    categoria = 'estoica';
+                }
+
+                // 3. Llamamos a NUESTRA PROPIA API
+                const response = await api.getFraseHeader(categoria);
+                
+                setFraseDelDia(response.data);
+
+            } catch (error) {
+                console.error("Error al cargar frase:", error);
+                setFraseDelDia({
+                    quote: "Que tengas un gran día.",
+                    author: "Sun Self"
+                });
+            }
+            setCargandoFrase(false);
+        };
+
+        // Lo llamamos cuando el componente carga
+        fetchFrase();
+        
+    // Añadimos registroDeHoy al array de dependencias
+    // Así, si el usuario completa el ritual y el estado cambia,
+    // ¡la frase se actualizará sola!
+    }, [registroDeHoy]);
+
 
     return (
         // Usamos el tema dinámico
 <div className={`${theme.headerBg} ${theme.headerBorder} flex flex-row items-center space-x-4 p-4 bg-white rounded-xl shadow-lg`}>
     
-    {/* --- Columna Izquierda: Icono (El "cuadrado") --- */}
-    {/* flex-shrink-0 evita que el icono se encoja */}
     <div className="w-20 h-20 flex-shrink-0">
         <ClimaIconoAnimado estadoGeneral={registroDeHoy?.estado_general} />
     </div>
 
     {/* --- Columna Derecha: Contenido (El "resto") --- */}
-    {/* flex-1 toma todo el ancho restante */}
-    {/* flex-col apila la parte superior y la inferior verticalmente */}
     <div className="flex flex-col flex-1">
         
         {/* Fila Superior: Saludo y Fecha */}
@@ -70,14 +112,24 @@ export default function PageHeader() {
         </div>
 
         {/* Fila Inferior: Línea de puntos y Frase */}
-        {/* mt-2 crea espacio, border-t es la línea, pt-2 es el padding post-línea */}
-        <div className="w-full mt-2 pt-2 border-t border-dashed border-amber-300">
-            <p className="italic text-xs text-zinc-500 font-semibold text-center">
-                {fraseSunny || '...'}
-            </p>
-        </div>
-        
-    </div>
-</div>      
+       <div className="w-full mt-2 pt-2 border-t border-dashed border-amber-300">
+                    <div className="text-center min-h-[40px] flex flex-col justify-center">
+                        {cargandoFrase ? (
+                            <p className="italic text-xs text-zinc-400">...</p>
+                        ) : (
+                            <>
+                                <p className="italic text-xs text-zinc-600 font-semibold line-clamp-2">
+                                    "{fraseDelDia.quote}"
+                                </p>
+                                <p className="text-xs text-zinc-400 font-bold text-right mt-1">
+                                    - {fraseDelDia.author}
+                                </p>
+                            </>
+                        )}
+                    </div>
+                </div>
+                
+            </div>
+        </div>     
     );
 }

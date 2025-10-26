@@ -45,6 +45,7 @@ const sunnyRoutes = require('./routes/sunny');
 const metasRouter = require('./routes/metas');
 const muroRoutes = require('./routes/muro');
 const fetchArticlesRoutes = require('./routes/fetchArticles.js');
+const frasesRoutes = require('./routes/frases');
 
 
 app.use('/api/sunny', sunnyRoutes);
@@ -53,10 +54,11 @@ app.use('/api/metas', metasRouter);
 app.use('/api/fetch-articles', fetchArticlesRoutes);
 app.use('/api/registros', registrosRoutes);
 app.use('/api/diario', diarioRoutes);
+app.use('/api/frases', frasesRoutes);
 
 // =================================================================
 // 4. INICIO DEL SERVIDOR
 // =================================================================
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor de Sun Self corriendo en el puerto tal ${PORT}`);
+    console.log(`🚀 Servidor de Sun Self corriendo en el puerto ${PORT}`);
 });

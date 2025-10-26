@@ -56,6 +56,8 @@ const postToSunny = (payload) => { return apiClient.post('/sunny', payload); };
 const getChartData = (filter) => {return apiClient.get(`/registros/chart-data?filter=${filter}`);};
 const getRegistroPorFecha = (fecha) => apiClient.get(`/registros/fecha/${fecha}`);
 
+//FRASES HEADER
+const getFraseHeader = (category) => apiClient.get(`/frases/random?category=${category}`);
 
 // --- EXPORTACIÓN UNIFICADA (sin los endpoints de auth manual que ya no existen) ---
 const api = { 
@@ -75,6 +77,8 @@ const api = {
   
   generarFraseInteligente,
   postToSunny,
+
+  getFraseHeader,
 
   getChartData,
   getRegistroPorFecha,
