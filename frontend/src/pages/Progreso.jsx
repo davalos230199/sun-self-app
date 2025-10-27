@@ -1,110 +1,131 @@
-// frontend/src/pages/Progreso.jsx
+// EN: frontend/src/pages/Progreso.jsx (Reemplazo total)
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { AreaChart, Area, ResponsiveContainer, XAxis } from 'recharts';
-import Lottie from 'lottie-react';
-import api from '../services/api';
+import React, { useState, useEffect } from 'react';
+import api from '../services/api'; // Tu api.js
 import LoadingSpinner from '../components/LoadingSpinner';
 
-// Importamos las animaciones para los iconos
-import brainLoopAnimation from '../assets/animations/brain-loop.json';
-import emotionLoopAnimation from '../assets/animations/emotion-loop.json';
-import bodyLoopAnimation from '../assets/animations/body-loop.json';
+// --- ¡NUEVO! Sub-componente para Metas de Pixela ---
+const MetaTracker = ({ meta, onLog }) => {
+    // ¡OJO! Reemplaza esto con tu username real de Pixela que creaste.
+    const PIXELA_USERNAME_FRONTEND = 'danilo-sunself-admin'; 
 
-// --- Sub-componente para cada "Slide" de Aspecto ---
-const AspectoSlide = ({ aspecto, data, color, animacion }) => {
-    // Preparamos los datos para el gráfico, usando useMemo para eficiencia
-    const chartData = useMemo(() => 
-        data.map(d => ({
-            // Solo nos interesa el valor del aspecto para el eje Y
-            valor: d[aspecto] 
-        })).reverse(), // Invertimos para que la línea vaya de izquierda (antiguo) a derecha (nuevo)
-    [data, aspecto]);
+    const graphUrl = `https://pixe.la/v1/users/${PIXELA_USERNAME_FRONTEND}/graphs/${meta.pixela_graph_id}.svg`;
 
     return (
-        // Cada slide es un Link a una futura sección de detalle
-        <Link to="#" className="no-underline text-inherit block">
-            <div className="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-lg border border-zinc-200 h-32">
-                {/* Icono a la izquierda */}
-                <div className="w-24 h-24 flex-shrink-0">
-                    <Lottie animationData={animacion} loop={true} />
-                </div>
-
-                {/* Gráfico a la derecha */}
-                <div className="w-full h-full">
-                    <ResponsiveContainer>
-                        <AreaChart data={chartData}>
-                            {/* Definimos un degradado para el área */}
-                            <defs>
-                                <linearGradient id={`color-${aspecto}`} x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={color} stopOpacity={0.4}/>
-                                    <stop offset="95%" stopColor={color} stopOpacity={0}/>
-                                </linearGradient>
-                            </defs>
-                            {/* La línea principal del gráfico */}
-                            <Area type="monotone" dataKey="valor" stroke={color} strokeWidth={4} fill={`url(#color-${aspecto})`} />
-                            {/* Opcional: Eje X minimalista solo con el primer y último valor */}
-                            <XAxis dataKey="name" tick={false} axisLine={false} />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                </div>
+        <div className="p-4 bg-white rounded-2xl shadow-lg border border-zinc-200">
+            <h3 className="text-lg font-bold text-zinc-800">{meta.nombre}</h3>
+            
+            {/* El "Calendario" (El SVG de Pixela) */}
+            <div className="w-full overflow-x-auto my-3">
+                <img 
+                    src={`https://pixe.la/v1/users/${PIXELA_USERNAME_FRONTEND}/graphs/${meta.pixela_graph_id}.svg?mode=short&${new Date().getTime()}`} 
+                    alt={`Gráfico de ${meta.nombre}`}
+                />
             </div>
-        </Link>
+            
+            {/* El botón de "¡Lo hice!" */}
+            <button 
+                onClick={() => onLog(meta.pixela_graph_id)}
+                className="w-full p-2 bg-green-500 text-white rounded-md font-bold"
+            >
+                Marcar como Hecho Hoy
+            </button>
+        </div>
     );
 };
 
 
+// --- COMPONENTE PRINCIPAL (Construido desde Cero) ---
 export default function Progreso() {
-    const [historialSemanal, setHistorialSemanal] = useState([]);
+    const [habitos, setHabitos] = useState([]); // Usamos 'habitos'
+    const [nuevoHabitoNombre, setNuevoHabitoNombre] = useState('');
     const [isLoading, setIsLoading] = useState(true);
 
+    // --- Cargar los "Hábitos" (de Supabase) al abrir ---
+    const fetchHabitos = async () => {
+        setIsLoading(true);
+        try {
+            // (Debes crear api.getHabitos() en api.js)
+            const response = await api.getHabitos(); 
+            setHabitos(response.data); // Asumiendo que api.js devuelve response.data
+        } catch (error) {
+            console.error("Error al cargar hábitos:", error);
+        }
+        setIsLoading(false);
+    };
+
+    // Cargar datos al montar la página
     useEffect(() => {
-        const fetchHistorial = async () => {
-            try {
-                const response = await api.getResumenSemanal();
-                // Mapeamos los datos para que sean más fáciles de usar
-                const formattedData = response.data.map(reg => ({
-                    mente: reg.mente_estado,
-                    emocion: reg.emocion_estado,
-                    cuerpo: reg.cuerpo_estado
-                }));
-                setHistorialSemanal(formattedData);
-            } catch (error) {
-                console.error("Error al cargar el resumen semanal:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchHistorial();
+        fetchHabitos();
     }, []);
 
+    // --- Handlers para Hábitos ---
+    const handleCrearHabito = async (e) => {
+        e.preventDefault();
+        if (nuevoHabitoNombre.trim() === '') return;
+        try {
+            // (Debes crear api.crearHabito() en api.js)
+            await api.crearHabito({ nombre: nuevoHabitoNombre }); 
+            setNuevoHabitoNombre('');
+            fetchHabitos(); // Recargar la lista
+        } catch (error) {
+            console.error("Error creando hábito:", error);
+        }
+    };
+
+    const handleLogPixel = async (graphID) => {
+        try {
+            // (Debes crear api.logHabito() en api.js)
+            await api.logHabito(graphID); 
+            alert('¡Hábito registrado!');
+            fetchHabitos(); // Recargar todo para actualizar el SVG
+        } catch (error) {
+            console.error("Error registrando pixel:", error);
+        }
+    };
+
     if (isLoading) {
-        return <LoadingSpinner message="Analizando tu progreso..." />;
+        return <LoadingSpinner message="Cargando hábitos..." />;
     }
 
     return (
         <main className="h-full overflow-y-auto p-4 space-y-6">
-            <h2 className="font-['Patrick_Hand'] text-3xl text-zinc-800 text-center">Tu Fluctuación Semanal</h2>
             
-            <AspectoSlide 
-                aspecto="mente"
-                data={historialSemanal}
-                color="#3b82f6" // Azul
-                animacion={brainLoopAnimation}
-            />
-            <AspectoSlide 
-                aspecto="emocion"
-                data={historialSemanal}
-                color="#8b5cf6" // Violeta
-                animacion={emotionLoopAnimation}
-            />
-            <AspectoSlide 
-                aspecto="cuerpo"
-                data={historialSemanal}
-                color="#10b981" // Verde
-                animacion={bodyLoopAnimation}
-            />
+            <section id="habitos-diarios">
+                <h2 className="font-['Patrick_Hand'] text-3xl text-zinc-800 text-center mb-4">
+                    Mis Hábitos (Progreso)
+                </h2>
+
+                {/* Formulario de creación */}
+                <form onSubmit={handleCrearHabito} className="flex space-x-2 mb-6">
+                    <input
+                        type="text"
+                        value={nuevoHabitoNombre}
+                        onChange={(e) => setNuevoHabitoNombre(e.target.value)}
+                        placeholder="Nuevo hábito (ej: Meditar)"
+                        className="flex-1 p-3 rounded-lg border border-zinc-300"
+                    />
+                    <button type="submit" className="p-3 bg-amber-500 text-white rounded-lg font-bold">
+                        Crear Hábito
+                    </button>
+                </form>
+
+                {/* Lista de Hábitos y Gráficos */}
+                <div className="space-y-6">
+                    {habitos.length === 0 && (
+                        <p className="text-center text-zinc-500">
+                            Crea tu primer hábito para empezar a registrar tu progreso.
+                        </p>
+                    )}
+                    {habitos.map(habito => (
+                        <MetaTracker 
+                            key={habito.pixela_graph_id} 
+                            meta={habito} 
+                            onLog={handleLogPixel} 
+                        />
+                    ))}
+                </div>
+            </section>
         </main>
     );
 }

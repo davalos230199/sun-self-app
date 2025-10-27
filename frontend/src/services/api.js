@@ -59,6 +59,11 @@ const getRegistroPorFecha = (fecha) => apiClient.get(`/registros/fecha/${fecha}`
 //FRASES HEADER
 const getFraseHeader = (category) => apiClient.get(`/frases/random?category=${category}`);
 
+//HABITOS PIXELA
+  const getHabitos = () => apiClient.get('/habitos');
+  const crearHabito = (payload) => apiClient.post('/habitos/crear', payload);
+  const logHabito = (graphID) => apiClient.post(`/habitos/log/${graphID}`);
+
 // --- EXPORTACIÓN UNIFICADA (sin los endpoints de auth manual que ya no existen) ---
 const api = { 
   checkRecordsExistence,
@@ -87,6 +92,9 @@ const api = {
   createMeta,
   updateMeta,
   deleteMeta,
+  getHabitos,
+  crearHabito,
+  logHabito,
 };
 
 export default api;
