@@ -20,8 +20,7 @@ export default function HistorialChart({ data, filter, visibility }) {
             case 'dia': startDate.setDate(endDate.getDate() - 1); break;
             case 'semana': startDate.setDate(endDate.getDate() - 7); break;
             case 'quince': startDate.setDate(endDate.getDate() - 15); break;
-            case 'todo':
-            default: startDate = new Date(0);
+            case 'mes': startDate.setDate(endDate.getDate() - 30); break;
         }
 
         const filteredByDate = data.filter(item => new Date(item.created_at) >= startDate && new Date(item.created_at) <= endDate);
