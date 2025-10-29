@@ -55,8 +55,56 @@ const ClimaIcon = ({ estado, className = "w-6 h-6" }) => {
     }
 };
 
-// --- [COMPONENTE 1 - VERSIÓN FINAL] TARJETA DE METAS (CON TASA) ---
-const MetasPlaceholderCard = () => {
+const DonutChart = ({ progress, size = 40 }) => {
+    const strokeWidth = 4;
+    const radius = (size / 2) - (strokeWidth / 2);
+    const circumference = 2 * Math.PI * radius;
+    // Calculamos el "hueco" que debe dejar la barra de progreso
+    const offset = circumference - (progress / 100) * circumference;
+
+    return (
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90">
+            {/* Círculo de fondo (gris) */}
+            <circle
+                stroke="#e5e7eb" // tailwind: gray-200
+                fill="transparent"
+                strokeWidth={strokeWidth}
+                r={radius}
+                cx={size / 2}
+                cy={size / 2}
+            />
+            {/* Círculo de progreso (azul) */}
+            <circle
+                stroke="#3b82f6" // tailwind: blue-500
+                fill="transparent"
+                strokeWidth={strokeWidth}
+                strokeDasharray={circumference}
+                strokeDashoffset={offset} // Aquí se aplica el porcentaje
+                strokeLinecap="round" // Puntas redondeadas
+                r={radius}
+                cx={size / 2}
+                cy={size / 2}
+            />
+            {/* Texto en el medio (rotado de vuelta) */}
+            <text
+                x="50%"
+                y="50%"
+                textAnchor="middle"
+                dy=".3em"
+                fontSize="10px"
+                fontWeight="bold"
+                fill="#374151" // tailwind: gray-700
+                className="transform rotate-90" // Corregimos la rotación del SVG padre
+                transform-origin="center" 
+            >
+                {`${progress}%`}
+            </text>
+        </svg>
+    );
+};
+
+// --- [COMPONENTE 1 - VERSIÓN FINAL] TARJETA DE METAS CON DONA ---
+const MetasStatsCard = () => { // <-- Renombramos el componente
     const [stats, setStats] = useState({ completadas: 0, incompletas: 0 });
     const [isLoading, setIsLoading] = useState(true);
 
@@ -77,9 +125,7 @@ const MetasPlaceholderCard = () => {
         fetchStats();
     }, []);
 
-    // --- (FIX VISUAL) ---
-    // Helper de número SIN ancho fijo. 
-    // El 'items-center' del div padre ahora funcionará.
+    // Helper de número
     const StatNumber = ({ value }) => {
         if (isLoading) {
             return <span className="text-sm font-bold text-zinc-400">...</span>;
@@ -87,33 +133,45 @@ const MetasPlaceholderCard = () => {
         return <span className="text-sm font-bold text-zinc-700">{value}</span>;
     };
 
-    // --- (NUEVA FEATURE) ---
     // Calculamos la tasa de éxito
     const total = stats.completadas + stats.incompletas;
     const tasaExito = total === 0 ? 0 : Math.round((stats.completadas / total) * 100);
 
     return (
         <div className="bg-white p-3 rounded-xl shadow-lg flex items-center justify-between">
+            
+            {/* LADO IZQUIERDO: El "Slide" (Texto) */}
             <div className="flex items-center space-x-3">
-                <Award size={20} className="text-blue-500 flex-shrink-0" />
-                <h3 className="text-lg font-['Patrick_Hand'] text-zinc-800">Metas</h3>
+                <Award size={24} className="text-blue-500 flex-shrink-0" />
                 
-                {/* Mostramos la tasa solo si no está cargando y hay metas */}
-                {!isLoading && total > 0 && (
-                    <span className="text-sm font-bold text-blue-600">({tasaExito}%)</span>
-                )}
+                {/* Contenedor para el Título y los Contadores (apilados) */}
+                <div>
+                    <h3 className="text-lg font-['Patrick_Hand'] text-zinc-800">Metas</h3>
+                    <div className="flex space-x-4">
+                        <div className="flex items-center space-x-1">
+                            <CheckCircle size={14} className="text-green-500" />
+                            <StatNumber value={stats.completadas} />
+                        </div>
+                        <div className="flex items-center space-x-1">
+                            <XCircle size={14} className="text-red-500" />
+                            <StatNumber value={stats.incompletas} />
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            {/* El layout de los contadores (ahora arreglado) */}
-            <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-1">
-                    <CheckCircle size={16} className="text-green-500" />
-                    <StatNumber value={stats.completadas} />
-                </div>
-                <div className="flex items-center space-x-1">
-                    <XCircle size={16} className="text-red-500" />
-                    <StatNumber value={stats.incompletas} />
-                </div>
+            {/* LADO DERECHO: La "Torta" (Gráfico) */}
+            <div className="flex-shrink-0">
+                {/* Mostramos el gráfico solo si no está cargando y hay datos */}
+                {!isLoading && total > 0 ? (
+                    <DonutChart progress={tasaExito} />
+                ) : (
+                    // Un placeholder mientras carga o si está en 0
+                    <div className="w-10 h-10 bg-zinc-100 rounded-full flex items-center justify-center">
+                        {isLoading && <span className="text-xs font-bold text-zinc-400">...</span>}
+                        {!isLoading && total === 0 && <Award size={16} className="text-zinc-400" />}
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -464,7 +522,8 @@ export default function Tracking() {
 
                 {/* 1. CONTENIDO FIJO (NO SCROLLEA) */}
                 <div className="flex-shrink-0 space-y-4">
-                    <MetasPlaceholderCard />
+                    {/* Tarjeta de Metas (Sutil) */}
+                    <MetasStatsCard /> {/* <-- USA EL NUEVO NOMBRE AQUÍ */}
                     <ViewSwitcher activeView={activeView} setActiveView={setActiveView} />
                 </div>
 
