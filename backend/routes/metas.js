@@ -28,6 +28,45 @@ router.get('/today', async (req, res) => {
     }
 });
 
+// GET /stats - Trae estadísticas de metas históricas
+router.get('/stats', async (req, res) => {
+    try {
+        const { id: profileId } = req.user;
+        
+        // --- AÑADIDO: El filtro de fecha ---
+        const fechaInicioLimpia = '2025-09-19T00:00:00Z'; // Ignora todo lo anterior
+
+        // Contar completadas (con filtro)
+        const { count: completadas, error: errCompletadas } = await req.supabase
+            .from('metas')
+            .select('id', { count: 'exact', head: true }) // Solo contamos
+            .eq('profile_id', profileId)
+            .eq('completada', true)
+            .gte('created_at', fechaInicioLimpia); // <-- AQUÍ LA MAGIA
+
+        if (errCompletadas) throw errCompletadas;
+
+        // Contar incompletas (con filtro)
+        const { count: incompletas, error: errIncompletas } = await req.supabase
+            .from('metas')
+            .select('id', { count: 'exact', head: true })
+            .eq('profile_id', profileId)
+            .eq('completada', false)
+            .gte('created_at', fechaInicioLimpia); // <-- AQUÍ LA MAGIA
+        
+        if (errIncompletas) throw errIncompletas;
+
+        res.status(200).json({
+            completadas: completadas || 0,
+            incompletas: incompletas || 0
+        });
+
+    } catch (err) {
+        console.error("Error en GET /api/metas/stats:", err);
+        res.status(500).json({ error: 'Error al obtener las estadísticas de metas' });
+    }
+});
+
 // POST / - Crea una nueva meta
 router.post('/', async (req, res) => {
     try {

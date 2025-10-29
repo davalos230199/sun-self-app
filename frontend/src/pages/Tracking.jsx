@@ -55,25 +55,69 @@ const ClimaIcon = ({ estado, className = "w-6 h-6" }) => {
     }
 };
 
-// --- [COMPONENTE 1 - REDISEÑADO] TARJETA DE METAS "SUTIL" ---
-const MetasPlaceholderCard = () => (
-    <div className="bg-white p-3 rounded-xl shadow-lg flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-            <Award size={20} className="text-blue-500 flex-shrink-0" />
-            <h3 className="text-lg font-['Patrick_Hand'] text-zinc-800">Metas</h3>
-        </div>
-        <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-1">
-                <CheckCircle size={16} className="text-green-500" />
-                <span className="text-sm font-bold text-zinc-700">0</span>
+// --- [COMPONENTE 1 - VERSIÓN FINAL] TARJETA DE METAS (CON TASA) ---
+const MetasPlaceholderCard = () => {
+    const [stats, setStats] = useState({ completadas: 0, incompletas: 0 });
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                setIsLoading(true);
+                const response = await api.getMetasStats(); 
+                if (response.data) {
+                    setStats(response.data);
+                }
+            } catch (err) {
+                console.error("Error al cargar stats de metas:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchStats();
+    }, []);
+
+    // --- (FIX VISUAL) ---
+    // Helper de número SIN ancho fijo. 
+    // El 'items-center' del div padre ahora funcionará.
+    const StatNumber = ({ value }) => {
+        if (isLoading) {
+            return <span className="text-sm font-bold text-zinc-400">...</span>;
+        }
+        return <span className="text-sm font-bold text-zinc-700">{value}</span>;
+    };
+
+    // --- (NUEVA FEATURE) ---
+    // Calculamos la tasa de éxito
+    const total = stats.completadas + stats.incompletas;
+    const tasaExito = total === 0 ? 0 : Math.round((stats.completadas / total) * 100);
+
+    return (
+        <div className="bg-white p-3 rounded-xl shadow-lg flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+                <Award size={20} className="text-blue-500 flex-shrink-0" />
+                <h3 className="text-lg font-['Patrick_Hand'] text-zinc-800">Metas</h3>
+                
+                {/* Mostramos la tasa solo si no está cargando y hay metas */}
+                {!isLoading && total > 0 && (
+                    <span className="text-sm font-bold text-blue-600">({tasaExito}%)</span>
+                )}
             </div>
-            <div className="flex items-center space-x-1">
-                <XCircle size={16} className="text-red-500" />
-                <span className="text-sm font-bold text-zinc-700">0</span>
+
+            {/* El layout de los contadores (ahora arreglado) */}
+            <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-1">
+                    <CheckCircle size={16} className="text-green-500" />
+                    <StatNumber value={stats.completadas} />
+                </div>
+                <div className="flex items-center space-x-1">
+                    <XCircle size={16} className="text-red-500" />
+                    <StatNumber value={stats.incompletas} />
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 // --- [NUEVO] COMPONENTE 1: SELECTOR DE VISTA ---
 const ViewSwitcher = ({ activeView, setActiveView }) => {
@@ -143,15 +187,15 @@ const AspectFeed = ({ historial, aspectoActivo }) => {
         <div className="space-y-4 mt-6">
             {feedItems.map(item => (
                 // --- REDISEÑO VISUAL "MÁS ÉNFASIS" ---
-                <div key={item.id} className="bg-white p-4 rounded-xl shadow-lg flex space-x-4 scroll-snap-align-start">
-                    <div className="flex-shrink-0 pt-1">
-                        <ClimaIcon estado={item.estado} className="w-8 h-8" />
+                <div key={item.id} className="bg-white p-4 rounded-xl shadow-lg flex space-x-4 items-center scroll-snap-align-start">
+                    <div className="flex-shrink-0">
+                        <ClimaIcon estado={item.estado} className="w-12 h-12" />
                     </div>
                     <blockquote className="flex-grow">
-                        <p className="text-base font-semibold text-zinc-800 italic">
+                        <p className="text-sm font-semibold text-zinc-800 italic">
                             "{item.comentario}"
                         </p>
-                        <cite className="text-xs text-zinc-500 mt-2 block not-italic font-medium">
+                        <cite className="text-xs text-zinc-500 mt-2 block italic">
                             {item.fecha_formateada}
                         </cite>
                     </blockquote>
@@ -168,11 +212,10 @@ const AspectFeed = ({ historial, aspectoActivo }) => {
 const AspectSquare = ({ icon, isActive, onClick }) => (
     <button 
         onClick={onClick} 
-        className={`flex flex-col items-center justify-center p-3 rounded-2xl shadow-lg transition-all aspect-square ${
+        className={`flex flex-col items-center justify-center p-1 rounded-2xl shadow-lg transition-all aspect-square ${
             isActive ? 'bg-amber-100 border-2 border-amber-400' : 'bg-white'
         }`}
     >
-        {/* Ícono de aspecto más grande, sin contadores */}
         <img src={icon} alt="aspecto" className="w-16 h-16" />
     </button>
 );
@@ -417,27 +460,16 @@ export default function Tracking() {
     return (
         <>
             <style>{calendarCustomStyles}</style>
-
-            {/* Este es el nuevo layout:
-                - Un contenedor flex-col que ocupa toda la altura (h-full).
-                - La parte de arriba (Metas, Switcher) no se achica (flex-shrink-0).
-                - La parte de abajo (Contenido) crece (flex-grow) y tiene su PROPIO scroll (overflow-y-auto).
-            */}
             <div className="flex flex-col h-full">
 
                 {/* 1. CONTENIDO FIJO (NO SCROLLEA) */}
                 <div className="flex-shrink-0 space-y-4">
-                    {/* Tarjeta de Metas (Sutil) */}
                     <MetasPlaceholderCard />
-                    {/* El Selector de Vista */}
                     <ViewSwitcher activeView={activeView} setActiveView={setActiveView} />
                 </div>
 
                 {/* 2. CONTENIDO DINÁMICO (SCROLLEA) */}
                 <div className="flex-grow overflow-y-auto mt-4 space-y-4 pb-4 scroll-snap-type: y proximity;">
-                    {/* Añadimos 'scroll-snap-type' al contenedor que scrollea.
-                        Y 'scroll-snap-align-start' a los hijos (ver 'AspectFeed', 'ChartView', 'CalendarView').
-                    */}
                     {renderActiveView()}
                 </div>
             

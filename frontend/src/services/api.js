@@ -39,7 +39,6 @@ const getResumenSemanal= () => apiClient.get('/registros/historial/resumen-seman
 const getDiario = (periodo = 'hoy') => apiClient.get(`/diario?periodo=${periodo}`);
 const saveEntradaDiario = (payload) => apiClient.post('/diario', payload);
 const deleteEntradaDiario= (id) => apiClient.delete(`/diario/${id}`);
-// 🆕 NUEVA FUNCIÓN: El mesero aprende a pedir "post-its de un registro específico"
 const getDiarioPorRegistro = (registroId) => apiClient.get(`/diario/registro/${registroId}`);
 
 // -- METAS --
@@ -47,6 +46,7 @@ const getMetasHoy = () => apiClient.get('/metas/today');
 const createMeta = (payload) => apiClient.post('/metas', payload);
 const updateMeta = (id, payload) => apiClient.patch(`/metas/${id}`, payload);
 const deleteMeta = (id) => apiClient.delete(`/metas/${id}`);
+const getMetasStats = () => apiClient.get('/metas/stats');
 
 
 // -- SUNNY (IA) --
@@ -92,6 +92,8 @@ const api = {
   createMeta,
   updateMeta,
   deleteMeta,
+  getMetasStats,
+  
   getHabitos,
   crearHabito,
   logHabito,
