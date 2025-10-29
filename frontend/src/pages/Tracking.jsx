@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '/src/contexts/AuthContext.jsx';
-import { useHeader } from '/src/contexts/HeaderContext.jsx';
 import { useTracking } from '/src/contexts/TrackingContext.jsx'; 
 import api from '/src/services/api.js';
 
@@ -73,9 +71,9 @@ const DonutChart = ({ progress, size = 40 }) => {
                 cx={size / 2}
                 cy={size / 2}
             />
-            {/* Círculo de progreso (azul) */}
+            {/* Círculo de progreso (verde) */}
             <circle
-                stroke="#3b82f6" // tailwind: blue-500
+                stroke="#48bb78" // tailwind: green-500
                 fill="transparent"
                 strokeWidth={strokeWidth}
                 strokeDasharray={circumference}
@@ -407,39 +405,8 @@ const CalendarView = ({ registrosMap, activeStartDate, setActiveStartDate }) => 
         return null;
     };
 
-    // --- NUEVO: Botón "Ayer" ---
-    const handleGoToYesterday = () => {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const dateString = yesterday.toISOString().split('T')[0];
-        navigate(`/app/resumen/${dateString}`);
-    };
-
-    // --- NUEVO: Botón "Hoy" ---
-    const handleGoToToday = () => {
-        setActiveStartDate(new Date());
-    };
-
     return (
         <section className="bg-amber-50 border border-amber-400 shadow-lg rounded-2xl p-4">
-            
-            {/* --- NUEVO: Barra de navegación estilo "Promiedos" --- */}
-            <div className="flex items-center justify-center gap-4 mb-4">
-                <button
-                    onClick={handleGoToYesterday}
-                    className="px-4 py-2 bg-white rounded-full shadow text-zinc-700 font-semibold"
-                >
-                    Ayer
-                </button>
-                <button
-                    onClick={handleGoToToday}
-                    className="px-6 py-2 bg-amber-400 text-white rounded-full shadow-lg font-bold"
-                >
-                    Hoy
-                </button>
-            </div>
-            
-            <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800 mb-4 text-center">Tu Historial</h2>
             <Calendar
                 onClickDay={handleDayClick}
                 tileContent={tileContent}
@@ -450,7 +417,6 @@ const CalendarView = ({ registrosMap, activeStartDate, setActiveStartDate }) => 
         </section>
     );
 };
-
 
 // --- COMPONENTE PRINCIPAL (REESTRUCTURADO) ---
 export default function Tracking() {
