@@ -14,8 +14,7 @@ import LoadingSpinner from '/src/components/LoadingSpinner.jsx';
 
 // --- ICONOS Y ANIMACIONES ---
 import { 
-    RotateCw, Brain, Activity, Heart, Zap, Award, 
-    TrendingUp, BarChart3, CalendarDays, Eye, CheckCircle, XCircle 
+    RotateCw, Award, TrendingUp, BarChart3, CalendarDays, CheckCircle, XCircle 
 } from 'lucide-react';
 import Lottie from 'lottie-react';
 import brainIcon from '/src/assets/icons/brain.svg';
@@ -24,9 +23,6 @@ import bodyIcon from '/src/assets/icons/body.svg';
 import sunIcon from '/src/assets/icons/sun.svg'; // Asumo que tienes estos
 import cloudIcon from '/src/assets/icons/cloud.svg'; // Asumo que tienes estos
 import rainIcon from '/src/assets/icons/rain.svg'; // Asumo que tienes estos
-import sunLoopAnimation from '/src/assets/animations/sun-loop.json';
-import cloudLoopAnimation from '/src/assets/animations/cloud-loop.json';
-import rainLoopAnimation from '/src/assets/animations/rain-loop.json';
 
 // --- ESTILOS DEL CALENDARIO (SIN CAMBIOS) ---
 const calendarCustomStyles = `
@@ -38,57 +34,51 @@ const calendarCustomStyles = `
     .react-calendar__tile:enabled:hover, .react-calendar__tile:enabled:focus { background: #fde68a; }
 `;
 
-// --- WIDGET DE PERFIL (EL ESPEJO) (SIN CAMBIOS) ---
-const ProfileWidget = ({ user, resumen }) => {
-    const getPromedio = () => {
-        if (!resumen || resumen.length === 0) return { icon: cloudLoopAnimation, text: 'Neutral' };
-        const valor = { soleado: 2, nublado: 1, lluvioso: 0 };
-        const suma = resumen.reduce((acc, dia) => acc + valor[dia.estado_general], 0);
-        const avg = suma / resumen.length;
-        if (avg > 1.5) return { icon: sunLoopAnimation, text: 'Tendencia Soleada' };
-        if (avg < 0.5) return { icon: rainLoopAnimation, text: 'Tendencia Lluviosa' };
-        return { icon: cloudLoopAnimation, text: 'Tendencia Variable' };
-    };
-    const promedio = getPromedio();
-    return (
-        <div className="flex items-center space-x-4 p-4 bg-white rounded-xl shadow-lg">
-            <div className="w-20 h-20 flex-shrink-0">
-                <Lottie animationData={promedio.icon} loop={true} />
-            </div>
-            <div>
-                <h2 className="text-xl font-bold text-zinc-800">Hola, {user.username}</h2>
-                <p className="text-sm font-semibold text-zinc-500">{promedio.text} en los últimos 7 días</p>
-            </div>
-        </div>
-    );
+// --- [NUEVO] HELPERS DE LÓGICA ---
+const getClimaFromValor = (valor) => {
+    if (valor === null || valor === undefined) return null;
+    if (valor > 66) return 'soleado';
+    if (valor > 33) return 'nublado';
+    return 'lluvioso';
 };
 
-// --- WIDGET DE ESTADÍSTICAS RÁPIDAS (SIN CAMBIOS) ---
-const StatsWidget = ({ historial }) => {
-    // Lógica simple de racha (placeholder)
-    const racha = historial.length > 0 ? "1 Día" : "0 Días"; // Placeholder
-    const mejorAspecto = "Mente"; // Placeholder
+const ClimaIcon = ({ estado, className = "w-6 h-6" }) => {
+    switch (estado) {
+        case 'soleado':
+            return <img src={sunIcon} alt="Soleado" className={className} />;
+        case 'nublado':
+            return <img src={cloudIcon} alt="Nublado" className={className} />;
+        case 'lluvioso':
+            return <img src={rainIcon} alt="Lluvioso" className={className} />;
+        default:
+            return <div className={`bg-zinc-200 rounded-full ${className}`} />; // Placeholder si no hay estado
+    }
+};
 
-    return (
-        <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white p-4 rounded-xl shadow text-center">
-                <Zap size={24} className="mx-auto text-yellow-500" />
-                <p className="text-2xl font-bold">{racha}</p>
-                <p className="text-xs text-zinc-500">Racha Actual</p>
+// --- [COMPONENTE 1 - REDISEÑADO] TARJETA DE METAS "SUTIL" ---
+const MetasPlaceholderCard = () => (
+    <div className="bg-white p-3 rounded-xl shadow-lg flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+            <Award size={20} className="text-blue-500 flex-shrink-0" />
+            <h3 className="text-lg font-['Patrick_Hand'] text-zinc-800">Metas</h3>
+        </div>
+        <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-1">
+                <CheckCircle size={16} className="text-green-500" />
+                <span className="text-sm font-bold text-zinc-700">0</span>
             </div>
-            <div className="bg-white p-4 rounded-xl shadow text-center">
-                <Brain size={24} className="mx-auto text-blue-500" />
-                <p className="text-2xl font-bold">{mejorAspecto}</p>
-                <p className="text-xs text-zinc-500">Tu Foco</p>
+            <div className="flex items-center space-x-1">
+                <XCircle size={16} className="text-red-500" />
+                <span className="text-sm font-bold text-zinc-700">0</span>
             </div>
         </div>
-    )
-}
+    </div>
+);
 
 // --- [NUEVO] COMPONENTE 1: SELECTOR DE VISTA ---
 const ViewSwitcher = ({ activeView, setActiveView }) => {
     const views = [
-        { key: 'numeros', label: 'Números', icon: BarChart3 },
+        { key: 'numeros', label: 'Estadísticas', icon: BarChart3 },
         { key: 'grafico', label: 'Gráfico', icon: TrendingUp },
         { key: 'calendario', label: 'Calendario', icon: CalendarDays },
     ];
@@ -113,89 +103,106 @@ const ViewSwitcher = ({ activeView, setActiveView }) => {
     );
 };
 
-// --- [NUEVO] COMPONENTE 2: DASHBOARD DE "NÚMEROS" ---
-const StatsDashboard = ({ historial }) => {
-    const stats = useMemo(() => {
-        // Filtramos por los últimos 30 días
-        const hoy = new Date();
-        const hace30Dias = new Date(hoy.setDate(hoy.getDate() - 30));
-        
-        const historial30Dias = historial.filter(r => new Date(r.created_at) >= hace30Dias);
+// --- [COMPONENTE 3 - REDISEÑADO] EL FEED DE ASPECTOS ---
+const AspectFeed = ({ historial, aspectoActivo }) => {
+    
+    // --- CORRECCIÓN DE KEY ---
+    const comentarioKey = {
+        mente: 'mente_comentario',
+        emocion: 'emocion_comentario',
+        cuerpo: 'cuerpo_comentario'
+    }[aspectoActivo];
 
-        // Contadores
-        const data = {
-            mente: { soleado: 0, nublado: 0, lluvioso: 0 },
-            emocion: { soleado: 0, nublado: 0, lluvioso: 0 },
-            cuerpo: { soleado: 0, nublado: 0, lluvioso: 0 },
-            metas: { completadas: 0, incompletas: 0 } // Placeholder
-        };
+    const estadoKey = {
+        mente: 'mente_estado', // Corregido
+        emocion: 'emocion_estado', // Corregido
+        cuerpo: 'cuerpo_estado' // Corregido
+    }[aspectoActivo];
 
-        historial30Dias.forEach(r => {
-            if (r.estado_mente) data.mente[r.estado_mente]++;
-            if (r.estado_emocion) data.emocion[r.estado_emocion]++;
-            if (r.estado_cuerpo) data.cuerpo[r.estado_cuerpo]++;
-            
-            // Lógica de Metas (cuando esté)
-            // if (r.meta_completada === true) data.metas.completadas++;
-            // if (r.meta_completada === false) data.metas.incompletas++;
-        });
-        
-        // Hardcodeo de metas (como pediste, para el futuro)
-        data.metas.completadas = 0; // Cambiar cuando la lógica exista
-        data.metas.incompletas = 0; // Cambiar cuando la lógica exista
+    const feedItems = useMemo(() => {
+        return historial
+            .filter(r => r[comentarioKey] && r[comentarioKey].trim() !== '')
+            .map(r => ({
+                id: r.id,
+                fecha_original: r.created_at, // <-- Guardamos la fecha original para ordenar
+                fecha_formateada: new Date(r.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long' }),
+                comentario: r[comentarioKey],
+                estado: getClimaFromValor(r[estadoKey])
+            }))
+            // --- ORDEN CORREGIDO --- (b - a para descendente)
+            .sort((a, b) => new Date(b.fecha_original) - new Date(a.fecha_original))
+            // --- LÍMITE AÑADIDO ---
+            .slice(0, 15); 
+    }, [historial, aspectoActivo, comentarioKey, estadoKey]);
 
-        return data;
-    }, [historial]);
+    if (feedItems.length === 0) {
+        return <p className="text-center text-zinc-500 mt-6 scroll-snap-align-start">No hay comentarios escritos para este aspecto.</p>;
+    }
 
-    const StatCard = ({ title, icon, data }) => (
-        <div className="bg-white p-4 rounded-xl shadow-lg">
-            <div className="flex items-center space-x-3 mb-3">
-                <img src={icon} alt={title} className="w-8 h-8" />
-                <h3 className="text-xl font-['Patrick_Hand'] text-zinc-800">{title}</h3>
-            </div>
-            <div className="flex justify-around items-center text-center">
-                <div className="flex flex-col items-center">
-                    <img src={sunIcon} alt="Soleado" className="w-6 h-6" />
-                    <span className="text-lg font-bold text-zinc-700">{data.soleado}</span>
+    return (
+        <div className="space-y-4 mt-6">
+            {feedItems.map(item => (
+                // --- REDISEÑO VISUAL "MÁS ÉNFASIS" ---
+                <div key={item.id} className="bg-white p-4 rounded-xl shadow-lg flex space-x-4 scroll-snap-align-start">
+                    <div className="flex-shrink-0 pt-1">
+                        <ClimaIcon estado={item.estado} className="w-8 h-8" />
+                    </div>
+                    <blockquote className="flex-grow">
+                        <p className="text-base font-semibold text-zinc-800 italic">
+                            "{item.comentario}"
+                        </p>
+                        <cite className="text-xs text-zinc-500 mt-2 block not-italic font-medium">
+                            {item.fecha_formateada}
+                        </cite>
+                    </blockquote>
                 </div>
-                <div className="flex flex-col items-center">
-                    <img src={cloudIcon} alt="Nublado" className="w-6 h-6" />
-                    <span className="text-lg font-bold text-zinc-700">{data.nublado}</span>
-                </div>
-                <div className="flex flex-col items-center">
-                    <img src={rainIcon} alt="Lluvioso" className="w-6 h-6" />
-                    <span className="text-lg font-bold text-zinc-700">{data.lluvioso}</span>
-                </div>
-            </div>
+            ))}
+            {historial.filter(r => r[comentarioKey] && r[comentarioKey].trim() !== '').length > 15 && (
+                <p className="text-center text-zinc-500 text-sm py-4 scroll-snap-align-start">Mostrando los 15 más recientes.</p>
+            )}
         </div>
     );
+};
+
+// --- [COMPONENTE 4 - PURIFICADO] EL SELECTOR DE ASPECTOS ---
+const AspectSquare = ({ icon, isActive, onClick }) => (
+    <button 
+        onClick={onClick} 
+        className={`flex flex-col items-center justify-center p-3 rounded-2xl shadow-lg transition-all aspect-square ${
+            isActive ? 'bg-amber-100 border-2 border-amber-400' : 'bg-white'
+        }`}
+    >
+        {/* Ícono de aspecto más grande, sin contadores */}
+        <img src={icon} alt="aspecto" className="w-16 h-16" />
+    </button>
+);
+
+// --- [COMPONENTE 5 - PURIFICADO] VISTA DE "ESTADÍSTICAS" ---
+const StatsView = ({ historial }) => {
+    const [aspectoActivo, setAspectoActivo] = useState('mente'); // 'mente' por defecto
 
     return (
         <div className="space-y-4">
-            <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800">Resumen (Últimos 30 días)</h2>
-            <StatCard title="Mente" icon={brainIcon} data={stats.mente} />
-            <StatCard title="Emoción" icon={emotionIcon} data={stats.emocion} />
-            <StatCard title="Cuerpo" icon={bodyIcon} data={stats.cuerpo} />
-            
-            {/* Tarjeta de Metas (Placeholder) */}
-            <div className="bg-white p-4 rounded-xl shadow-lg">
-                <div className="flex items-center space-x-3 mb-3">
-                    <Award size={24} className="text-blue-500" />
-                    <h3 className="text-xl font-['Patrick_Hand'] text-zinc-800">Metas (Próximamente)</h3>
-                </div>
-                <div className="flex justify-around items-center text-center">
-                    <div className="flex flex-col items-center">
-                        <CheckCircle size={24} className="text-green-500" />
-                        <span className="text-lg font-bold text-zinc-700">{stats.metas.completadas}</span>
-                        <span className="text-xs text-zinc-500">Completadas</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                        <XCircle size={24} className="text-red-500" />
-                        <span className="text-lg font-bold text-zinc-700">{stats.metas.incompletas}</span>
-                        <span className="text-xs text-zinc-500">Incompletas</span>
-                    </div>
-                </div>
+            {/* 1. Los 3 Selectores Cuadrados */}
+            <div className="grid grid-cols-3 gap-4">
+                <AspectSquare
+                    icon={brainIcon}
+                    isActive={aspectoActivo === 'mente'}
+                    onClick={() => setAspectoActivo('mente')}
+                />
+                <AspectSquare
+                    icon={emotionIcon}
+                    isActive={aspectoActivo === 'emocion'}
+                    onClick={() => setAspectoActivo('emocion')}
+                />
+                <AspectSquare
+                    icon={bodyIcon}
+                    isActive={aspectoActivo === 'cuerpo'}
+                    onClick={() => setAspectoActivo('cuerpo')}
+                />
             </div>
+            {/* 2. El Feed Cronológico */}
+            <AspectFeed historial={historial} aspectoActivo={aspectoActivo} />
         </div>
     );
 };
@@ -241,43 +248,43 @@ const ChartView = ({ historial }) => {
     }
 
     return (
-                    <section className="bg-white border border-amber-400 shadow-lg rounded-2xl p-4">
-                        <div className="flex justify-between items-center">
-                            <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800">Fluctuación</h2>
-                            <div className="flex items-center gap-1 bg-white border-none rounded-full p-1">
-                                {dateFilters.map(filter => (
-                                    <button 
-                                        key={filter.key} 
-                                        onClick={() => setActiveDateFilter(filter.key)} 
-                                        className={`px-3 py-1 font-['Patrick_Hand'] font-size: 1.2rem font-semibold rounded-full transition-colors border-none ${activeDateFilter === filter.key ? 'focus:bg-amber-100 shadow-sm' : 'text-zinc-500 hover:text-zinc-600'}`}>
-                                        {filter.label}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="relative">
-                            <HistorialChart 
-                                data={historial} 
-                                filter={activeDateFilter}
-                                visibility={aspectVisibility}
-                            />
-                        </div> 
-                        <div className="flex justify-end gap-4 bg-white border-none rounded-full p-1">
-                            {aspectFilters.map(filter => (
-                                <button
-                                    key={filter.key}
-                                    onClick={() => handleAspectClick(filter.key)}
-                                    title={`Filtrar por ${filter.key}`}
-                                    className={`transition-all border-none rounded-full ${aspectVisibility[filter.key] ? 'focus:bg-amber-100 rounded-full shadow-sm' : 'opacity-40 hover:opacity-100'}`}
-                                >
-                                    <div className="w-8 h-8"><img src={filter.icon} alt={filter.key} /></div>
-                                </button>
-                            ))}
-                            <button onClick={handleResetAspects} title="Mostrar todos" className="border-none rounded-full">
-                                <RotateCw size={16} className="text-red-500" />
+            <section className="bg-white border border-amber-400 shadow-lg rounded-2xl p-4">
+                <div className="flex justify-between items-center">
+                    <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800">Fluctuación</h2>
+                        <div className="flex items-center gap-1 bg-white border-none rounded-full p-1">
+                            {dateFilters.map(filter => (
+                            <button 
+                            key={filter.key} 
+                            onClick={() => setActiveDateFilter(filter.key)} 
+                            className={`px-3 py-1 font-['Patrick_Hand'] font-size: 1.2rem font-semibold rounded-full transition-colors border-none ${activeDateFilter === filter.key ? 'focus:bg-amber-100 shadow-sm' : 'text-zinc-500 hover:text-zinc-600'}`}>
+                            {filter.label}
                             </button>
+                            ))}
                         </div>
-                    </section>
+                </div>
+                <div className="relative">
+                    <HistorialChart 
+                        data={historial} 
+                        filter={activeDateFilter}
+                        visibility={aspectVisibility}
+                        />
+                </div> 
+                <div className="flex justify-end gap-4 bg-white border-none rounded-full p-1">
+                {aspectFilters.map(filter => (
+                    <button
+                    key={filter.key}
+                    onClick={() => handleAspectClick(filter.key)}
+                    title={`Filtrar por ${filter.key}`}
+                    className={`transition-all border-none rounded-full ${aspectVisibility[filter.key] ? 'focus:bg-amber-100 rounded-full shadow-sm' : 'opacity-40 hover:opacity-100'}`}
+                    >
+                    <div className="w-8 h-8"><img src={filter.icon} alt={filter.key} /></div>
+                    </button>
+                    ))}
+                    <button onClick={handleResetAspects} title="Mostrar todos" className="border-none rounded-full">
+                        <RotateCw size={16} className="text-red-500" />
+                    </button>
+                    </div>
+            </section>
     );
 };
 
@@ -347,30 +354,18 @@ const CalendarView = ({ registrosMap, activeStartDate, setActiveStartDate }) => 
 // --- COMPONENTE PRINCIPAL (REESTRUCTURADO) ---
 export default function Tracking() {
     // --- Estados ---
-    const { user } = useAuth();
-    const { setIsHeaderVisible } = useHeader();
     const { activeStartDate, setActiveStartDate } = useTracking();
-    
-    const [historial, setHistorial] = useState([]);
-    const [resumenSemanal, setResumenSemanal] = useState([]);
+    const [historial, setHistorial] =useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
-    
-    // --- NUEVO ESTADO: Vista activa del dashboard ---
-    const [activeView, setActiveView] = useState('numeros'); // Default: 'numeros'
+    const [activeView, setActiveView] = useState('numeros');
 
-    // --- Hooks de Efecto ---
-
-    // UNIFICAMOS LA CARGA DE DATOS (SIN CAMBIOS)
+    // --- Carga de Datos (Sin cambios) ---
     useEffect(() => {
         const loadData = async () => {
             setIsLoading(true);
             try {
-                const [resumenData, historialData] = await Promise.all([
-                    api.getResumenSemanal(),
-                    api.getHistorialRegistros()
-                ]);
-                setResumenSemanal(resumenData.data || []);
+                const historialData = await api.getHistorialRegistros();
                 setHistorial(historialData.data || []);
             } catch (err) {
                 console.error("Error cargando datos del perfil:", err);
@@ -382,9 +377,7 @@ export default function Tracking() {
         loadData();
     }, []);
 
-    // --- Lógica de Componente (Memos) ---
-
-    // Mapa de registros para el calendario (SIN CAMBIOS)
+    // --- Memo para el Calendario (Sin cambios) ---
     const registrosMap = useMemo(() => {
         const map = new Map();
         historial.forEach(r => {
@@ -394,22 +387,19 @@ export default function Tracking() {
         return map;
     }, [historial]);
 
-
     // --- Renderizado Condicional (Loading/Error) ---
-
     if (isLoading) {
         return <LoadingSpinner message="Construyendo tu espejo..." />;
     }
-
     if (error) {
         return <div className="text-center text-red-500">{error}</div>;
     }
 
-    // --- [NUEVO] Helper de renderizado ---
+    // --- Helper de renderizado de Vista Activa (Sin cambios) ---
     const renderActiveView = () => {
         switch (activeView) {
             case 'numeros':
-                return <StatsDashboard historial={historial} />;
+                return <StatsView historial={historial} />;
             case 'grafico':
                 return <ChartView historial={historial} />;
             case 'calendario':
@@ -419,27 +409,39 @@ export default function Tracking() {
                             setActiveStartDate={setActiveStartDate} 
                         />;
             default:
-                return <StatsDashboard historial={historial} />;
+                return <StatsView historial={historial} />;
         }
     }
 
-    // --- 7. EL NUEVO RETURN (EL DASHBOARD CONSTRUIDO) ---
- return (
-    <>
-        <style>{calendarCustomStyles}</style>
+    // --- [NUEVO] RETURN PRINCIPAL (CON LAYOUT FIJO) ---
+    return (
+        <>
+            <style>{calendarCustomStyles}</style>
 
-        <div className="flex flex-col h-full space-y-4">
+            {/* Este es el nuevo layout:
+                - Un contenedor flex-col que ocupa toda la altura (h-full).
+                - La parte de arriba (Metas, Switcher) no se achica (flex-shrink-0).
+                - La parte de abajo (Contenido) crece (flex-grow) y tiene su PROPIO scroll (overflow-y-auto).
+            */}
+            <div className="flex flex-col h-full">
 
-            {/* 3. EL SELECTOR DE VISTA */}
-            <ViewSwitcher activeView={activeView} setActiveView={setActiveView} />
+                {/* 1. CONTENIDO FIJO (NO SCROLLEA) */}
+                <div className="flex-shrink-0 space-y-4">
+                    {/* Tarjeta de Metas (Sutil) */}
+                    <MetasPlaceholderCard />
+                    {/* El Selector de Vista */}
+                    <ViewSwitcher activeView={activeView} setActiveView={setActiveView} />
+                </div>
 
-            {/* 4. EL CONTENIDO DINÁMICO */}
-            <div className="mt-4">
-                {renderActiveView()}
+                {/* 2. CONTENIDO DINÁMICO (SCROLLEA) */}
+                <div className="flex-grow overflow-y-auto mt-4 space-y-4 pb-4 scroll-snap-type: y proximity;">
+                    {/* Añadimos 'scroll-snap-type' al contenedor que scrollea.
+                        Y 'scroll-snap-align-start' a los hijos (ver 'AspectFeed', 'ChartView', 'CalendarView').
+                    */}
+                    {renderActiveView()}
+                </div>
+            
             </div>
-        
-        </div>
-    </>
-);
+        </>
+    );
 }
-
