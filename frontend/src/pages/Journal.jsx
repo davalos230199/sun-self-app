@@ -6,6 +6,7 @@ import { PenSquare, X, TrendingUp, Pin, Copy, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDia } from '../contexts/DiaContext';
 import NotaExpandida from '../components/NotaExpandida';
+import NotaDiario from '../components/NotaDiario';
 
 // 🆕 COMPONENTE NUEVO: Post-it de Solo Lectura con Botón de Copiar
 const NotaDiarioReadOnly = ({ entrada }) => {
@@ -73,56 +74,6 @@ const NotaDiarioReadOnly = ({ entrada }) => {
             </div>
             
             {/* Contenido del post-it */}
-            <p className="text-zinc-800 text-xs italic lowercase line-clamp-5 pt-1">
-                {entrada.texto}
-            </p>
-        </motion.div>
-    );
-};
-
-const NotaDiario = ({ entrada, onSelect, onDelete }) => {
-    const rotacion = useState(() => Math.random() * (4 - -4) + -4)[0];
-        const handleDeleteClick = (e) => {
-        e.stopPropagation(); // ¡Muy importante! Evita que se abra la nota al querer borrarla.
-        onDelete(entrada.id);
-    }
-
-    const prioridadColores = {
-        alta: 'bg-red-200/70 border-red-400',
-        media: 'bg-yellow-200/70 border-yellow-400',
-        baja: 'bg-green-100/70 border-green-300',
-    };
-    
-    // Si la prioridad es null o no existe, usará el color de 'baja'
-    const colorClase = prioridadColores[entrada.prioridad] || prioridadColores.baja;
-    const fecha = new Date(entrada.created_at);
-    const horaFormateada = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-    const fechaFormateada = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' });
-
-    return (
-         <motion.div
-            layout // Esta prop anima los cambios de posición (cuando otra nota se borra, por ej.)
-            initial={{ opacity: 0, scale: 2, y: 50 }} // Estado inicial: invisible, un poco más pequeña y 50px más abajo
-            animate={{ opacity: 1, scale: 1, y: 0 }} // Estado final: visible, tamaño normal y en su posición
-            exit={{ opacity: 0, scale: 0.5 }} // Al salir (borrarse): se desvanece y encoge
-            transition={{ type: 'spring', stiffness: 900, damping: 50 }} // Física de la animación para que se sienta natural
-            layoutId={`nota-${entrada.id}`}
-            onClick={() => onSelect(entrada)}
-            className={`h-40 rounded-md p-3 shadow-md cursor-pointer hover:shadow-xl hover:scale-105 transition-all flex flex-col ${colorClase}`}
-            style={{ rotate: `${rotacion}deg` }}
-        >
-            <div className="flex justify-between items-start">
-                <p className="text-[9px] font-semibold text-zinc-500 italic">
-                {fechaFormateada} - {horaFormateada}hs
-                </p>
-                <button 
-                        onClick={handleDeleteClick} 
-                        className="p-1 -mr-1 -mt-1 italic text-zinc-400 hover:text-red-500 border-none transition-colors"
-                        title="Eliminar nota"
-                >
-                    <Pin style={{ transform: 'rotate(45deg)' }} color='red' size={16} />
-                </button>
-            </div>
             <p className="text-zinc-800 text-xs italic lowercase line-clamp-5 pt-1">
                 {entrada.texto}
             </p>

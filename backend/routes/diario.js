@@ -80,6 +80,36 @@ router.get('/registro/:registroId', async (req, res) => {
     }
 });
 
+// --- [ENDPOINT CORREGIDO OTRA VEZ, HDP] ---
+router.get('/historical-day', async (req, res) => {
+    try {
+        const { id: profileId } = req.user;
+        const clientTimezone = req.headers['x-client-timezone'] || 'America/Argentina/Buenos_Aires';
+
+        // --- [LA CORRECCIÓN] ---
+        const hoy = new Date(); // <--- ¡ESTA LÍNEA FALTABA, FORRO DE MÍ!
+        const diaSemanaHoy = hoy.getDay();
+        // --- [FIN DE LA CORRECCIÓN] ---
+        
+        const hace30Dias = new Date();
+        hace30Dias.setDate(hoy.getDate() - 30); // Ahora 'hoy' está definido
+
+        const { data, error } = await req.supabase.rpc('get_diario_by_dow', {
+            p_profile_id: profileId,
+            p_dow: diaSemanaHoy,
+            p_start_date: hace30Dias.toISOString()
+        });
+
+        if (error) throw error;
+
+        res.status(200).json(data || []);
+
+    } catch (err) {
+        console.error("Error en GET /diario/historical-day:", err.message);
+        res.status(500).json({ error: 'Error al obtener el historial de post-its.' });
+    }
+});
+
 // POST / -> Crea una nueva entrada en el diario
 router.post('/', async (req, res) => {
     try {

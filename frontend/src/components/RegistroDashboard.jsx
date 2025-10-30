@@ -1,11 +1,11 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect }  from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import Lottie from 'lottie-react'; // <-- REVIVIDO
-import { useDia } from '../contexts/DiaContext'; // <-- IMPORTADO DIRECTAMENTE
+import Lottie from 'lottie-react';
+import { useDia } from '../contexts/DiaContext';
 import api from '../services/api';
-import { TrendingUp, Settings, Check, Zap } from 'lucide-react';
+import { TrendingUp, Settings } from 'lucide-react';
 
-// --- Animaciones (REVIVIDAS) ---
+// --- Animaciones ---
 import sunLoopAnimation from '../assets/animations/sun-loop.json';
 import cloudLoopAnimation from '../assets/animations/cloud-loop.json';
 import rainLoopAnimation from '../assets/animations/rain-loop.json';
@@ -13,42 +13,120 @@ import brainLoopAnimation from '../assets/animations/brain-loop.json';
 import emotionLoopAnimation from '../assets/animations/emotion-loop.json';
 import bodyLoopAnimation from '../assets/animations/body-loop.json';
 
-// --- COMPONENTES ELIMINADOS (Como antes) ---
-// MiniHistorial, MetaPrincipalWidget, MicroHabitoButton (flotante) siguen borrados.
 
-/**
- * El "Lienzo Diario".
- * AHORA: Unifica Estado, Metas, Y los 3 Comentarios.
- */
-export const EstadoWidget = ({ registro, metaPrincipal, onEdit }) => {
-    const navigate = useNavigate();
-    // Accedemos al contexto de Dia para poder *actualizar* las metas
-    const { metas, setMetas } = useDia();
+// --- SUB-COMPONENTES REFACTORIZADOS ---
 
-    // 1. Calculamos los contadores (usando 'metas' del context)
-    const metasDelDia = metas;
+const MicroHabitoButton = ({ onClick }) => (
+    <button
+        onClick={(e) => {
+            // 2. Detenemos la propagación INMEDIATAMENTE
+            e.stopPropagation();
+            // 3. Luego, ejecutamos la acción que queremos
+            onClick();
+        }}
+        title="Iniciar Micro-Hábito"
+        className="absolute botton-3 right-3 w-20 h-20 rounded-lg -mt-0 flex flex-col items-center p-2  bg-amber-100/80 backdrop-blur-sm shadow-lg border border-amber-200 hover:scale-105 transition-transform"
+    >
+        <div className="w-12 h-12">
+            <Lottie animationData={sunLoopAnimation} loop={true} />
+        </div>
+        <span className="font-['Patrick_Hand'] text-xs text-zinc-700 font-semibold">Micro-Hábito</span>
+    </button>
+);
+
+export const MetaPrincipalWidget = ({ meta, metasDelDia }) => {
+    // Lógica para el contador de metas, tal como lo pediste
     const completadas = metasDelDia?.filter(m => m.completada).length || 0;
     const total = metasDelDia?.length || 0;
 
-    // 2. Encontramos la "Próxima Meta"
-    const proximaMeta = metasDelDia?.find(m => !m.completada && m.id !== metaPrincipal?.id);
+    if (!meta) {
+        return (
+            <div className="bg-green-50 border border-green-400 rounded-2xl p-5 text-center justify-center">
+                <h3 className="font-['Patrick_Hand'] text-xl text-amber-800">No definiste una meta para hoy.</h3>
+                <p className="text-zinc-500 text-sm mt-1">Puedes añadir metas secundarias desde la sección Metas.</p>
+            </div>
+        );
+    }
 
-    // 3. [NUEVA LÓGICA] - El "Tilde" (copiado de MetasPage)
-    const handleCompletarMeta = async (metaId) => {
-        // Lógica de actualización optimista
-        const metasOriginales = [...metas];
-        setMetas(prev => prev.map(m => m.id === metaId ? { ...m, completada: true } : m));
-        
-        try {
-            // Llamada a la API (usamos updateMeta, no patch genérico)
-            await api.updateMeta(metaId, { completada: true });
-        } catch (error) {
-            console.error("Error al completar meta", error);
-            setMetas(metasOriginales); // Revertir en caso de error
+    return (
+        <Link to="/app/metas" className="no-underline text-inherit block">
+            <div className="bg-green-100 border border-green-400 rounded-2xl p-3 text-center shadow-lg space-y-1">
+                <h3 className="text-2xl uppercase text-green-900 break-words mt-2 -mb-1">{meta.descripcion}</h3>
+                <div className="flex justify-center items-center gap-2">
+                    <h2 className="font-['Patrick_Hand'] text-lg text-amber-800 -mb-1">Tu Meta de Hoy</h2>
+                    <TrendingUp className="text-amber-800" size={24} />
+                </div>
+                {total > 0 && (
+                    <p className="text-xs font-semibold text-amber-800 italic bg-white/50 rounded-full -mt-2 inline-block">
+                        {completadas} de {total - 1} metas completadas
+                    </p>
+                )}
+            </div>
+        </Link>
+    );
+};
+
+export const MiniHistorial = ({ historial }) => {
+    
+    const scrollContainerRef = useRef(null);
+    // Función para obtener la etiqueta correcta del día ("Ayer" o el nombre del día)
+    const getDiaLabel = (fechaRegistro) => {
+        const hoy = new Date();
+        const ayer = new Date();
+        ayer.setDate(hoy.getDate() - 1);
+
+        const fecha = new Date(fechaRegistro);
+
+        // Compara solo las fechas, ignorando la hora
+        if (fecha.toDateString() === ayer.toDateString()) {
+            return "Ayer";
         }
+
+        // Si no es "Ayer", devuelve el nombre del día de la semana
+        let diaSemana = fecha.toLocaleDateString('es-ES', { weekday: 'short' });
+        return diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1).replace('.', '');
     };
 
-    // 4. [COMPONENTE REVIVIDO] - Para llenar el "vacío"
+    // Asegura que el historial esté ordenado del más reciente al más antiguo
+    const historialOrdenado = [...historial].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    useEffect(() => {
+        if (scrollContainerRef.current) {
+            const container = scrollContainerRef.current;
+            // Lo movemos al punto más a la derecha posible
+            container.scrollLeft = container.scrollWidth;
+        }
+    }, [historial]);
+
+    return (
+        <div className="absolute top-3 left-3 w-20 h-20 rounded-lg overflow-hidden bg-black/5">
+            <div ref={scrollContainerRef} className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide">
+                {historialOrdenado.map(reg => {
+                    const anim = reg.estado_general === 'soleado' 
+                        ? sunLoopAnimation 
+                        : reg.estado_general === 'lluvioso' 
+                        ? rainLoopAnimation 
+                        : cloudLoopAnimation;
+                    
+                    const label = getDiaLabel(reg.created_at);
+
+                    return (
+                        <div key={reg.id} className="w-20 flex-shrink-0 snap-center flex flex-col items-center justify-center [direction:ltr]">
+                            <div className="w-12 h-12">
+                                <Lottie animationData={anim} loop={true} />
+                            </div>
+                            <p className="text-xs font-semibold text-zinc-500 -mt-2">{label}</p>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
+
+export const EstadoWidget = ({ registro, onEdit, historial }) => {
+
+    const navigate = useNavigate();
     const ComentarioItem = ({ anim, text }) => (
         <div className="flex items-center gap-2 text-left">
             <div className="w-8 h-8 flex-shrink-0 -ml-1">
@@ -60,82 +138,31 @@ export const EstadoWidget = ({ registro, metaPrincipal, onEdit }) => {
 
     return (
         <div className="relative flex flex-col border border-amber-400 bg-amber-100 rounded-2xl p-4 text-center shadow-lg h-full justify-between">
-            
+            <MiniHistorial historial={historial} /> 
+            <MicroHabitoButton onClick={onEdit} /> 
+
             <Link to="/app/tracking" className="no-underline text-inherit flex flex-col items-center justify-center flex-grow pt-10">
-                <div className="w-24 h-24 mx-auto -my-2">
-                    <Lottie 
-                        animationData={
-                            registro.estado_general === 'soleado' ? sunLoopAnimation : 
-                            registro.estado_general === 'lluvioso' ? rainLoopAnimation : 
-                            cloudLoopAnimation
-                        } 
-                        loop={true} 
-                    />
-                </div>
+                <div className="w-24 h-24 mx-auto -my-2"><Lottie animationData={registro.estado_general === 'soleado' ? sunLoopAnimation : registro.estado_general === 'lluvioso' ? rainLoopAnimation : cloudLoopAnimation} loop={true} /></div>
                 <h3 className="font-['Patrick_Hand'] text-xl text-amber-800 -mb-1">Hoy</h3>
-                
-                {/* 1. Frase de Sunny */}
-                <p className="flex-grow text-zinc-700 font-['Patrick_Hand'] px-4">
-                    "{registro.frase_sunny || '...'}"
-                </p>
-                
-                {/* 2. Borde y sección de Metas */}
+                <p className="flex-grow text-zinc-700 font-['Patrick_Hand']">"{registro.frase_sunny || '...'}"</p>
                 <div className="w-full border-t border-dashed border-amber-300 pt-3 text-left">
-                    
-                    {/* Meta Principal */}
-                    {metaPrincipal ? (
-                        <div className="text-center mb-3">
-                            <h3 className="text-xl uppercase text-green-900 break-words mt-1 -mb-1">{metaPrincipal.descripcion}</h3>
-                            <h2 className="font-['Patrick_Hand'] text-base text-amber-800 -mb-1">Tu Meta Principal</h2>
-                        </div>
-                    ) : (
-                        <div className="text-center mb-3">
-                            <h3 className="font-['Patrick_Hand'] text-lg text-amber-800">No definiste una meta principal hoy.</h3>
-                        </div>
-                    )}
-
-                    {/* Próxima Meta (con Tilde funcional) */}
-                    {proximaMeta && (
-                        <div className="bg-white/60 rounded-lg p-3 flex items-center justify-between">
-                            <span className="text-sm font-semibold text-zinc-700">{proximaMeta.descripcion}</span>
-                            <button 
-                                onClick={(e) => {
-                                    e.preventDefault(); 
-                                    e.stopPropagation(); 
-                                    handleCompletarMeta(proximaMeta.id);
-                                }} 
-                                className="w-8 h-8 flex-shrink-0 rounded-full bg-green-200 border border-green-400 flex items-center justify-center"
-                            >
-                                <Check size={16} className="text-green-700" />
-                            </button>
-                        </div>
-                    )}
-                    
-                    {/* Contador de Metas */}
-                    {total > 0 && (
-                        <p className="text-xs font-semibold text-amber-800 italic bg-white/50 rounded-full mt-3 p-1 text-center">
-                            {completadas} de {total} metas completadas
-                        </p>
-                    )}
+                <ComentarioItem anim={brainLoopAnimation} text={registro.mente_comentario} />
+                <ComentarioItem anim={emotionLoopAnimation} text={registro.emocion_comentario} />
+                <ComentarioItem anim={bodyLoopAnimation} text={registro.cuerpo_comentario} />
                 </div>
-
-                {/* 3. [SECCIÓN REVIVIDA] - Los 3 Comentarios */}
-                <div className="w-full border-t border-dashed border-amber-300 pt-3 text-left mt-3">
-                    <ComentarioItem anim={brainLoopAnimation} text={registro.mente_comentario} />
-                    <ComentarioItem anim={emotionLoopAnimation} text={registro.emocion_comentario} />
-                    <ComentarioItem anim={bodyLoopAnimation} text={registro.cuerpo_comentario} />
-                </div>
-                
                 <footer className="mt-auto pt-3 border-t border-dashed italic border-amber-200 text-xs text-zinc-500 font-semibold">
                     Toca para acceder a tu calendario
                 </footer>
-            </Link>      
+            </Link>    
         </div>
     );
 };
 
+// --- NUEVOS WIDGETS PARA EL DASHBOARD ---
+
 export const DiarioWidget = ({ registroId }) => (
     <Link to={`/app/journal/${registroId}`} className="no-underline text-inherit block h-full group">
+        {/* Usamos un color azul pizarra, elegante y sobrio */}
         <div className="h-full bg-slate-700 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-lg hover:bg-slate-600 transition-colors">
             <h3 className="font-['Patrick_Hand'] italic text-lg text-white">Tablero</h3>
             <p className="text-xs font-['Patrick_Hand'] italic text-slate-300">Organiza tu dia.</p>
@@ -143,24 +170,34 @@ export const DiarioWidget = ({ registroId }) => (
     </Link>
 );
 
-/**
- * [COMPONENTE REDISEÑADO]
- * Vuelve el Sol. Vuela el gris.
- */
-export const MicroHabitoWidget = ({ onEdit }) => (
-    <button onClick={onEdit} className="h-full w-full bg-amber-100 border border-amber-300 rounded-2xl p-4 flex flex-col items-center justify-center text-center group hover:bg-amber-200 transition-colors shadow-lg">
-        <div className="w-16 h-16">
-            <Lottie animationData={sunLoopAnimation} loop={true} />
-        </div>
-        <h4 className="font-['Patrick_Hand'] text-lg italic text-amber-800 mt-2">Micro-Hábito</h4>
-    </button>
+export const PersonalizacionWidget = () => (
+    <div className="h-full bg-zinc-100 border border-dashed border-zinc-300 rounded-2xl p-4 flex flex-col items-center justify-center text-center">
+        <Settings className="text-zinc-400 mb-2" size={40} />
+        <h4 className="font-['Patrick_Hand'] text-lg italic text-zinc-700">Personaliza tu Micro-Habito</h4>
+        <p className="text-sm text-zinc-500">(Próximamente)</p>
+    </div>
 );
 
 
 // --- COMPONENTE PRINCIPAL REFACTORIZADO ---
 export default function RegistroDashboard({ onEdit }) {
-    // AHORA importamos 'metas' también, para pasarlo a EstadoWidget
-    const { registroDeHoy, metas } = useDia(); 
+    const { registroDeHoy, metas } = useDia();
+    const [historialSemanal, setHistorialSemanal] = useState([]);
+        
+    useEffect(() => {
+        const fetchHistorial = async () => {
+            try {
+                const response = await api.getResumenSemanal();
+                const ayerYAntes = response.data.filter(reg => 
+                    new Date(reg.created_at).toDateString() !== new Date().toDateString()
+                );
+                setHistorialSemanal(ayerYAntes);
+            } catch (error) {
+                console.error("Error al cargar el resumen semanal:", error);
+            }
+        };
+        fetchHistorial();
+    }, []);
 
     if (!registroDeHoy) return null;
     
@@ -169,22 +206,12 @@ export default function RegistroDashboard({ onEdit }) {
         : null;
 
     return (
-        <div className="h-full grid grid-rows-[1fr_auto] gap-4 animate-fade-in">
-            
-            {/* 1. El "Lienzo Diario" (ahora pasa 'metas' también) */}
-            <div>
-                <EstadoWidget 
-                    registro={registroDeHoy} 
-                    metaPrincipal={metaPrincipal} 
-                    // 'metas' ya no se pasa como prop, EstadoWidget lo toma del context
-                    onEdit={onEdit} 
-                />
-            </div>
-            
-            {/* 2. Los botones inferiores */}
+        <div className="h-full grid grid-rows-[auto_1fr_auto] gap-4 animate-fade-in">
+            <div><MetaPrincipalWidget meta={metaPrincipal} metasDelDia={metas} /></div>
+            <div><EstadoWidget registro={registroDeHoy} onEdit={onEdit} historial={historialSemanal} /></div>
             <div className="grid grid-cols-2 gap-4 h-32">
                 <div className="col-span-1"><DiarioWidget registroId={registroDeHoy.id} /></div>
-                <div className="col-span-1"><MicroHabitoWidget onEdit={onEdit} /></div>
+                <div className="col-span-1"><PersonalizacionWidget /></div>
             </div>
         </div>
     );

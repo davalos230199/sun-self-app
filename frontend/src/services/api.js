@@ -40,6 +40,7 @@ const getDiario = (periodo = 'hoy') => apiClient.get(`/diario?periodo=${periodo}
 const saveEntradaDiario = (payload) => apiClient.post('/diario', payload);
 const deleteEntradaDiario= (id) => apiClient.delete(`/diario/${id}`);
 const getDiarioPorRegistro = (registroId) => apiClient.get(`/diario/registro/${registroId}`);
+const getDiarioHistoricalDay = () => apiClient.get('/diario/historical-day');
 
 // -- METAS --
 const getMetasHoy = () => apiClient.get('/metas/today');
@@ -79,6 +80,7 @@ const api = {
   saveEntradaDiario,
   deleteEntradaDiario,
   getDiarioPorRegistro, // 🆕 AGREGAMOS LA NUEVA FUNCIÓN AQUÍ
+  getDiarioHistoricalDay,
   
   generarFraseInteligente,
   postToSunny,
