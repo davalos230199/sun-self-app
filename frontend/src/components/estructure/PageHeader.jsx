@@ -104,7 +104,7 @@ export default function PageHeader() {
         {/* flex y justify-between separa los elementos a los extremos */}
         <div className="flex justify-between items-center w-full">
             <h2 className="text-xl font-bold text-zinc-800">
-                Hola, {user?.username || 'Viajero'}
+                Hola, {user?.username.split(' ')[0]  || 'Viajero'}
             </h2>
             <p className="text-sm font-semibold text-zinc-400">
                 {getFormattedDate()}

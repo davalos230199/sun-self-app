@@ -6,6 +6,7 @@ import api from '../services/api';
 import LoadingSpinner from './LoadingSpinner';
 import NotaExpandida from './NotaExpandida'; 
 import NotaDiario from './NotaDiario';
+import DashboardVacio from './DashboardVacio';
 
 // --- Animaciones ---
 import brainLoopAnimation from '../assets/animations/brain-loop.json';
@@ -222,7 +223,11 @@ export default function DashboardCajas({ onEdit }) {
     const [modalActivo, setModalActivo] = useState(null);
     const [notaExpandida, setNotaExpandida] = useState(null);
 
-    if (!registroDeHoy) return <LoadingSpinner message="Cargando..." />;
+    if (!registroDeHoy) {
+    // En lugar de mostrar cajas vacías...
+    // Mostramos la nueva "Invitación".
+    return <DashboardVacio onStartRitual={onEdit} />;
+    }
 
     const renderModal = () => {
         switch (modalActivo) {

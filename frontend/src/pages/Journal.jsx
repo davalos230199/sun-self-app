@@ -5,6 +5,7 @@ import api from '../services/api';
 import { PenSquare, X, TrendingUp, Pin, Copy, Check } from 'lucide-react'; 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDia } from '../contexts/DiaContext';
+import { useTracking } from '../contexts/TrackingContext';
 import NotaExpandida from '../components/NotaExpandida';
 import NotaDiario from '../components/NotaDiario';
 
@@ -103,21 +104,21 @@ const SelectorPrioridad = ({ prioridad, setPrioridad }) => {
 };
 
 export default function Journal() {
-    const [todasLasEntradas, setTodasLasEntradas] = useState([]); // Almacenará el mes completo
+    const { entradasDiario, setEntradasDiario, isLoadingHistorial } = useTracking(); // <-- LEEMOS DEL CONTEXTO
     const { registroDeHoy, metas } = useDia(); 
-    const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [notaSeleccionada, setNotaSeleccionada] = useState(null);
     const [prioridad, setPrioridad] = useState('baja');
     const [filtroTiempo, setFiltroTiempo] = useState('hoy');
+
     // Creamos una clave única para el borrador del día actual. Si no hay registro, no guardamos nada.
     const draftStorageKey = registroDeHoy ? `journal_draft_${registroDeHoy.id}` : null;
-    // El estado 'nuevoTexto' ahora lee primero del localStorage. Si hay un borrador guardado, lo carga.
     const [nuevoTexto, setNuevoTexto] = useState(() => {
         if (!draftStorageKey) return '';
         return localStorage.getItem(draftStorageKey) || '';
     });
 
+ 
     // Este useEffect se ejecuta cada vez que 'nuevoTexto' cambia.
     useEffect(() => {
         if (!draftStorageKey) return; // Si no hay clave, no hacemos nada.
@@ -131,18 +132,6 @@ export default function Journal() {
         return () => clearTimeout(timerId);
     }, [nuevoTexto, draftStorageKey]);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setIsLoading(true);
-            try {
-                const diarioRes = await api.getDiario(filtroTiempo); // Llama al nuevo endpoint simple
-                setTodasLasEntradas(diarioRes.data || []);
-            } catch (error) { console.error("Error al cargar datos del diario:", error); } 
-            finally { setIsLoading(false); }
-        };
-        fetchData();
-    }, [filtroTiempo]);
-
     const entradasFiltradas = useMemo(() => {
         // Aplicamos el filtro de tiempo primero para obtener la lista base
             const filtradasPorTiempo = (() => {
@@ -155,12 +144,11 @@ export default function Journal() {
 
             switch (filtroTiempo) {
                 case 'semana':
-                    return todasLasEntradas.filter(e => new Date(e.created_at) >= inicioSemana);
+                    return entradasDiario.filter(e => new Date(e.created_at) >= inicioSemana);
                 case 'mes':
-                    return todasLasEntradas;
+                    return entradasDiario;
                 case 'hoy':
-                default:
-                    return todasLasEntradas.filter(e => new Date(e.created_at) >= inicioHoy);
+                    return entradasDiario.filter(e => new Date(e.created_at) >= inicioHoy);
             }
         })();
 
@@ -183,7 +171,7 @@ export default function Journal() {
             return prioridadB - prioridadA;
         });
 
-    }, [todasLasEntradas, filtroTiempo]);
+    }, [entradasDiario, filtroTiempo]);
 
     const handleSave = async () => {
         if (!registroDeHoy) {
@@ -200,7 +188,7 @@ export default function Journal() {
                 prioridad: prioridad, // ¡Aquí se envía la prioridad!
             });
 
-            setTodasLasEntradas(prevEntradas => {
+            setEntradasDiario(prevEntradas => {
                 // Add new note and re-sort
                 const newArray = [...prevEntradas, nuevaEntrada];
                 const prioridadValor = { 'alta': 3, 'media': 2, 'baja': 1 };
@@ -231,7 +219,7 @@ const handleDelete = async (entradaId) => {
         
         // --- LA CORRECCIÓN ---
         // Actualizamos 'todasLasEntradas', no el antiguo 'entradas'.
-        setTodasLasEntradas(prev => prev.filter(e => e.id !== entradaId));
+        setEntradasDiario(prev => prev.filter(e => e.id !== entradaId));
 
     } catch (error) {
         console.error("Error al eliminar la nota:", error);
@@ -278,7 +266,7 @@ const handleDelete = async (entradaId) => {
                 </div>
 
                 {/* Mensaje de "vacío" ahora usa la data filtrada */}
-                {entradasFiltradas.length === 0 && !isLoading && (
+                {entradasFiltradas.length === 0 && !isLoadingHistorial && (
                     <p className="italic text-zinc-400 ...">No hay notas para este período...</p>
                 )}
             </div>

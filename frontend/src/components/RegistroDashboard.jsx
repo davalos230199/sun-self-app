@@ -13,7 +13,7 @@ import brainLoopAnimation from '../assets/animations/brain-loop.json';
 import emotionLoopAnimation from '../assets/animations/emotion-loop.json';
 import bodyLoopAnimation from '../assets/animations/body-loop.json';
 
-
+import DashboardVacio from './DashboardVacio';
 // --- SUB-COMPONENTES REFACTORIZADOS ---
 
 const MicroHabitoButton = ({ onClick }) => (
@@ -199,8 +199,12 @@ export default function RegistroDashboard({ onEdit }) {
         fetchHistorial();
     }, []);
 
-    if (!registroDeHoy) return null;
-    
+    if (!registroDeHoy) {
+    // En lugar de mostrar cajas vacías...
+    // Mostramos la nueva "Invitación".
+    return <DashboardVacio onStartRitual={onEdit} />;
+    }
+
     const metaPrincipal = registroDeHoy.meta_principal_id
         ? metas.find(meta => meta.id === registroDeHoy.meta_principal_id)
         : null;

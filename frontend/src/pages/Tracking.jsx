@@ -420,29 +420,14 @@ const CalendarView = ({ registrosMap, activeStartDate, setActiveStartDate }) => 
 
 // --- COMPONENTE PRINCIPAL (REESTRUCTURADO) ---
 export default function Tracking() {
-    // --- Estados ---
+
     const { activeStartDate, setActiveStartDate } = useTracking();
-    const [historial, setHistorial] =useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState(null); // Mantenemos el error local
     const [activeView, setActiveView] = useState('numeros');
 
-    // --- Carga de Datos (Sin cambios) ---
-    useEffect(() => {
-        const loadData = async () => {
-            setIsLoading(true);
-            try {
-                const historialData = await api.getHistorialRegistros();
-                setHistorial(historialData.data || []);
-            } catch (err) {
-                console.error("Error cargando datos del perfil:", err);
-                setError("No se pudo cargar tu espejo. Inténtalo de nuevo.");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        loadData();
-    }, []);
+    // --- DATOS DEL CONTEXTO (¡LA MAGIA!) ---
+    // Usamos el historial y el isLoading del CONTEXTO
+    const { historial, isLoadingHistorial } = useTracking();
 
     // --- Memo para el Calendario (Sin cambios) ---
     const registrosMap = useMemo(() => {
@@ -454,12 +439,8 @@ export default function Tracking() {
         return map;
     }, [historial]);
 
-    // --- Renderizado Condicional (Loading/Error) ---
-    if (isLoading) {
+    if (isLoadingHistorial) {
         return <LoadingSpinner message="Construyendo tu espejo..." />;
-    }
-    if (error) {
-        return <div className="text-center text-red-500">{error}</div>;
     }
 
     // --- Helper de renderizado de Vista Activa (Sin cambios) ---

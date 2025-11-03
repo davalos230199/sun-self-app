@@ -23,8 +23,7 @@ export default function Sunny() {
     useEffect(() => {
         const fetchInitialContext = async () => {
             try {
-                const registroResponse = await api.getRegistroDeHoy();
-                const registroDeHoy = registroResponse.data.registro;
+                
                 if (registroDeHoy && registroDeHoy.frase_sunny) {
                     setMessages([{ sender: 'sunny', text: registroDeHoy.frase_sunny }]);
                 } else {
