@@ -299,6 +299,7 @@ export default function Tracking() {
 
     // --- DATOS DEL CONTEXTO (SIN CAMBIOS) ---
     const { historial, isLoadingHistorial } = useTracking();
+    const [visibleCount, setVisibleCount] = useState(30);
     
     // --- 3. [NUEVO] ESTADO PARA EL ACORDEÓN ---
     const [expandedId, setExpandedId] = useState(null);
@@ -331,10 +332,12 @@ export default function Tracking() {
                 }
                 // Ordenamos por fecha (más nuevo primero)
                 const historialOrdenado = [...historial].reverse();
-                
-                return (
+                const itemsVisibles = historialOrdenado.slice(0, visibleCount);
+                const hayMasParaCargar = historialOrdenado.length > visibleCount;
+
+            return (
                     <div className="space-y-4"> 
-                        {historialOrdenado.map(registro => (
+                        {itemsVisibles.map(registro => (
                             <SlideDeRegistro 
                                 key={registro.id} 
                                 registro={registro} 
@@ -342,6 +345,16 @@ export default function Tracking() {
                                 onToggle={() => handleToggle(registro.id)}
                             />
                         ))}
+                        
+                        {/* --- 3. [NUEVO] Botón Cargar Más --- */}
+                        {hayMasParaCargar && (
+                            <button
+                                onClick={() => setVisibleCount(prev => prev + 30)} // Carga 30 más
+                                className="w-full p-3 bg-white border border-zinc-200 rounded-xl shadow text-zinc-700 font-semibold font-['Patrick_Hand'] text-lg hover:bg-zinc-50"
+                            >
+                                Cargar Más Registros
+                            </button>
+                        )}
                     </div>
                 );
             
