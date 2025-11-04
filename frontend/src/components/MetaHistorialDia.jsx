@@ -43,9 +43,7 @@ const DonutChart = ({ progress, size = 60 }) => {
 
 
 // --- El componente "Mueble" ---
-export default function MetaHistorialDia({ dia }) {
-    const [isExpanded, setIsExpanded] = useState(false);
-
+export default function MetaHistorialDia({ dia, isExpanded, onToggle }) {
     // Cálculos para la Dona
     // Incluimos la meta principal en el conteo total
     const totalMetas = dia.metas_secundarias.length + 1; // +1 por la principal
@@ -69,7 +67,7 @@ export default function MetaHistorialDia({ dia }) {
             <motion.div 
                 layout
                 className="flex items-center p-4 cursor-pointer"
-                onClick={() => setIsExpanded(!isExpanded)}
+                onClick={onToggle} // Llama a la función pasada desde el padre
             >
                 {/* 1. LADO IZQUIERDO: La Dona */}
                 <div className="flex-shrink-0 w-16 flex justify-center">

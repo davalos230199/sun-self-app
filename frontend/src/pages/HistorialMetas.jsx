@@ -9,6 +9,7 @@ export default function HistorialMetas() {
     const [dias, setDias] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [expandedDiaFecha, setExpandedDiaFecha] = useState(null);
 
     useEffect(() => {
         const fetchHistorial = async () => {
@@ -31,7 +32,15 @@ export default function HistorialMetas() {
         fetchHistorial();
     }, []); // Se ejecuta solo una vez al montar
 
-    // --- Renderizado ---
+   // --- ¡AQUÍ LA OTRA PARTE DE LA MAGIA! ---
+    // Esta función maneja cuál slide abrir o cerrar
+    const handleToggle = (fecha) => {
+        setExpandedDiaFecha(prevFecha => {
+            // Si hago clic en el que ya estaba abierto, lo cierro (null)
+            // Si hago clic en uno nuevo, se convierte en el nuevo abierto
+            return prevFecha === fecha ? null : fecha;
+        });
+    };
 
     if (isLoading) {
         return <LoadingSpinner message="Buscando en tus archivos..." />;
@@ -51,7 +60,12 @@ export default function HistorialMetas() {
             <div className="flex-grow overflow-y-auto pr-2 -mr-2 pb-4">
                 {dias.map(dia => (
                     // Usamos la fecha (que es un timestamp único) como key
-                    <MetaHistorialDia key={dia.fecha} dia={dia} />
+                    <MetaHistorialDia 
+                    key={dia.fecha} 
+                    dia={dia} // --- ¡AQUÍ LA CONEXIÓN! ---
+                    isExpanded={expandedDiaFecha === dia.fecha} // ¿Estoy abierto?
+                    onToggle={() => handleToggle(dia.fecha)}    // Función para abrirme
+                    />
                 ))}
             </div>
         </div>
