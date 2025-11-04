@@ -1,29 +1,18 @@
-// frontend/src/components/SlideDeRegistro.jsx (Versión Optimizada y con Variantes)
+// frontend/src/components/SlideDeRegistro.jsx (Versión Refinada)
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronRight, Zap } from 'lucide-react';
+import { useDia } from '../contexts/DiaContext';
 
-// --- Iconos Estáticos ---
-import sunIcon from '../assets/icons/sun.svg';
-import cloudIcon from '../assets/icons/cloud.svg';
-import rainIcon from '../assets/icons/rain.svg';
+// --- Iconos Estáticos (solo los necesarios para el desplegable) ---
 import brainIcon from '../assets/icons/brain.svg';
 import emotionIcon from '../assets/icons/emotion.svg';
 import bodyIcon from '../assets/icons/body.svg';
 
-// --- Sub-componente: Ícono del Clima ---
-const ClimaIcon = ({ estadoGeneral }) => {
-    let iconSrc;
-    switch (estadoGeneral) {
-        case 'soleado': iconSrc = sunIcon; break;
-        case 'lluvioso': iconSrc = rainIcon; break;
-        default: iconSrc = cloudIcon;
-    }
-    return <img src={iconSrc} alt={estadoGeneral} className="w-full h-full" />;
-};
+// --- (ClimaIcon ya no se usa aquí) ---
 
-// --- Sub-componente: Fila de Comentario ---
+// --- Sub-componente: Fila de Comentario (Sin cambios) ---
 const ComentarioItem = ({ anim, text }) => (
     <div className="flex items-center gap-2 text-left">
         <div className="w-8 h-8 flex-shrink-0 -ml-1">
@@ -38,9 +27,10 @@ export default function SlideDeRegistro({
     registro, 
     isExpanded, 
     onToggle, 
-    variant = 'tracking', // 'tracking' (default) o 'dashboard'
-    onEdit // Función para el botón de editar (solo en dashboard)
+    variant = 'tracking', 
+    onEdit 
 }) {
+    const { theme } = useDia(); 
 
     if (!registro) {
         return null; 
@@ -48,28 +38,25 @@ export default function SlideDeRegistro({
 
     const isDashboard = variant === 'dashboard';
 
-    // --- Lógica de Fecha/Hora ---
     const getLabel = (fechaRegistro) => {
         const fecha = new Date(fechaRegistro);
         
-        // VARIANTE DASHBOARD: Muestra "Hoy, HH:MM hs"
         if (isDashboard) {
-            const horaFormateada = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-            return `Hoy, ${horaFormateada} hs`;
+            const horaFormateada = fecha.toLocaleTimeString('es-ES', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+            return `${horaFormateada} hs`;
         }
 
-        // VARIANTE TRACKING: Muestra "Hoy", "Ayer" o "DD/MM/YYYY"
         const hoy = new Date();
         const ayer = new Date();
         ayer.setDate(hoy.getDate() - 1);
-
         if (fecha.toDateString() === hoy.toDateString()) return "Hoy";
         if (fecha.toDateString() === ayer.toDateString()) return "Ayer";
-        
         return fecha.toLocaleDateString('es-ES', { 
-            day: '2-digit', 
-            month: '2-digit', 
-            year: 'numeric' 
+            day: '2-digit', month: '2-digit', year: 'numeric' 
         });
     };
     
@@ -78,55 +65,52 @@ export default function SlideDeRegistro({
     return (
         <motion.div 
             layout 
-            className="relative bg-white rounded-2xl shadow-lg border border-zinc-200 overflow-hidden"
+            className={`relative ${theme.headerBg} rounded-2xl shadow-lg border ${theme.headerBorder} overflow-hidden`}
         >
-            {/* --- Botón de Editar (Solo en Dashboard) --- */}
             {isDashboard && onEdit && (
                 <button
                     onClick={onEdit}
                     title="Editar Micro-Hábito"
-                    className="absolute top-3 right-3 z-10 w-12 h-12 rounded-lg flex items-center justify-center 
-                               bg-amber-100/80 backdrop-blur-sm shadow-lg border border-amber-200 
-                               hover:scale-105 transition-transform text-zinc-700"
+                    className={`absolute top-3 right-3 z-10 w-12 h-12 rounded-lg flex items-center justify-center 
+                                ${theme.activeIcon} bg-white/50 backdrop-blur-sm shadow-lg border border-white/30 
+                                hover:scale-105 transition-transform`}
                 >
                     <Zap size={20} />
                 </button>
             )}
 
-            {/* --- SECCIÓN PRINCIPAL (SIEMPRE VISIBLE) --- */}
             <motion.div 
                 layout
-                className="flex items-center p-4 cursor-pointer"
+                className="flex items-start p-4 cursor-pointer" // items-start para alinear
                 onClick={onToggle}
             >
-                {/* 1. LADO IZQUIERDO: ClimaIcon */}
-                <div className="flex-shrink-0 w-12 h-12">
-                    <ClimaIcon estadoGeneral={registro.estado_general} />
-                </div>
+                {/* 1. SE ELIMINÓ EL DIV DE LOS 3 ICONOS */}
 
-                {/* 2. CENTRO: Frase de Sunny */}
-                <div className="flex-grow mx-4">
-                    <p className="text-xs text-zinc-500 font-semibold">{fechaLabel}</p>
-                    
-                    {/* Estilo condicional para la frase */}
-                    {isDashboard ? (
-                        <p className="text-lg font-['Patrick_Hand'] text-zinc-800 font-semibold break-words">
+                {/* 2. REDISEÑO: Frase y Epígrafe */}
+                {/* Ajustamos 'ml-4' a 'w-full' ya que no hay icono a la izquierda */}
+                <div className="w-full flex flex-col min-h-[6rem]">
+                    {/* La Frase (con énfasis) */}
+                    <div className="flex-grow pr-12"> {/* Damos espacio para el botón de editar/chevron */}
+                        <h2 className="text-xl font-['Patrick_Hand'] text-zinc-900 font-semibold break-words">
                             {registro.frase_sunny}
-                        </p>
-                    ) : (
-                        <p className="text-sm font-['Patrick_Hand'] text-zinc-800 italic break-words line-clamp-2">
-                            "{registro.frase_sunny}"
-                        </p>
+                        </h2>
+                    </div>
+                    
+                    {/* El Epígrafe (Hora) - ya tiene 'text-right' */}
+                    {isDashboard && (
+                        <cite className="block text-right text-xs text-zinc-600 font-semibold not-italic mt-2">
+                            {fechaLabel}
+                        </cite>
                     )}
                 </div>
 
-                {/* 3. DERECHA: El Botón de expandir */}
-                <div className="flex-shrink-0 text-zinc-400 mr-8"> {/* Damos espacio para el botón de editar */}
+                {/* 3. Botón de expandir (lo movemos dentro del div principal para mejor alineación) */}
+                <div className="absolute top-4 right-16 flex-shrink-0 text-zinc-500 mt-1">
                     {isExpanded ? <ChevronDown size={24} /> : <ChevronRight size={24} />}
                 </div>
             </motion.div>
 
-            {/* --- SECCIÓN EXPANDIBLE (PALABRAS DEL USUARIO) --- */}
+            {/* --- SECCIÓN EXPANDIBLE (Sin cambios) --- */}
             <AnimatePresence>
                 {isExpanded && (
                     <motion.div
@@ -134,7 +118,7 @@ export default function SlideDeRegistro({
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="px-4 pb-4 border-t border-dashed border-zinc-300"
+                        className="px-4 pb-4 border-t border-dashed border-amber-300"
                     >
                         <div className="space-y-2 mt-3 pl-6">
                             <ComentarioItem anim={brainIcon} text={registro.mente_comentario} />
@@ -147,3 +131,4 @@ export default function SlideDeRegistro({
         </motion.div>
     );
 }
+

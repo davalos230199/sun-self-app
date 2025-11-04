@@ -1,4 +1,4 @@
-// frontend/src/components/DashboardCajas.jsx (El Sandbox del Arquitecto)
+// frontend/src/components/DashboardCajas.jsx (El Sandbox del Arquitecto - Completo)
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -36,8 +36,9 @@ export default function DashboardCajas({ onEdit }) {
     }
 
     // Si hay registro, mostramos el NUEVO dashboard
+    // Eliminamos el 'p-4' del contenedor principal
     return (
-        <div className="h-full flex flex-col p-4 space-y-4">
+        <div className="h-full flex flex-col space-y-4">
             
             {/* 1. Ladrillo: El Slide de Estado */}
             <div className="flex-shrink-0">
@@ -56,8 +57,8 @@ export default function DashboardCajas({ onEdit }) {
             </div>
 
             {/* 3. Ladrillos: Los Botones de Navegación */}
-            {/* (Usamos los viejos 'CajaLink' para esto) */}
-            <div className="flex-grow grid grid-cols-2 gap-4">
+            {/* (Le damos 'pt-4' a la grilla para que no esté pegada) */}
+            <div className="flex-grow grid grid-cols-2 gap-4 pt-4">
                 <CajaLink to={`/app/journal`}>
                     <LayoutDashboard size={32} />
                     <span className="mt-2 font-['Patrick_Hand'] text-lg">Tablero</span>
@@ -72,3 +73,4 @@ export default function DashboardCajas({ onEdit }) {
         </div>
     );
 }
+
