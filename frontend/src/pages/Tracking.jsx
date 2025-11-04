@@ -1,10 +1,15 @@
+// frontend/src/pages/Tracking.jsx (MODIFICADO)
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTracking } from '/src/contexts/TrackingContext.jsx'; 
 import api from '/src/services/api.js';
 
+// --- NUEVO LADRILLO ---
+import SlideDeRegistro from '../components/SlideDeRegistro'; // <-- 1. IMPORTAMOS EL NUEVO LADRILLO
+
 // --- COMPONENTES VISUALES ---
-import HistorialChart from '/src/components/HistorialChart.jsx'; // Modificado
+import HistorialChart from '/src/components/HistorialChart.jsx';
 import Calendar from 'react-calendar';
 import CalendarTile from '/src/components/CalendarTile.jsx';
 import 'react-calendar/dist/Calendar.css';
@@ -14,13 +19,15 @@ import LoadingSpinner from '/src/components/LoadingSpinner.jsx';
 import { 
     RotateCw, Award, TrendingUp, BarChart3, CalendarDays, CheckCircle, XCircle 
 } from 'lucide-react';
-import Lottie from 'lottie-react';
+// (Ya no necesitamos brainIcon, emotionIcon, bodyIcon aquí)
+import sunIcon from '/src/assets/icons/sun.svg'; // (Lo dejamos por si lo usa CalendarTile)
+import cloudIcon from '/src/assets/icons/cloud.svg'; // (Lo dejamos por si lo usa CalendarTile)
+import rainIcon from '/src/assets/icons/rain.svg'; // (Lo dejamos por si lo usa CalendarTile)
+// --- [NUEVO] Importamos los iconos para el gráfico (si SlideDeRegistro no los exporta) ---
 import brainIcon from '/src/assets/icons/brain.svg';
 import emotionIcon from '/src/assets/icons/emotion.svg';
 import bodyIcon from '/src/assets/icons/body.svg';
-import sunIcon from '/src/assets/icons/sun.svg'; // Asumo que tienes estos
-import cloudIcon from '/src/assets/icons/cloud.svg'; // Asumo que tienes estos
-import rainIcon from '/src/assets/icons/rain.svg'; // Asumo que tienes estos
+
 
 // --- ESTILOS DEL CALENDARIO (SIN CAMBIOS) ---
 const calendarCustomStyles = `
@@ -32,77 +39,42 @@ const calendarCustomStyles = `
     .react-calendar__tile:enabled:hover, .react-calendar__tile:enabled:focus { background: #fde68a; }
 `;
 
-// --- [NUEVO] HELPERS DE LÓGICA ---
-const getClimaFromValor = (valor) => {
-    if (valor === null || valor === undefined) return null;
-    if (valor > 66) return 'soleado';
-    if (valor > 33) return 'nublado';
-    return 'lluvioso';
-};
+// --- [ELIMINADO] ---
+// getClimaFromValor y ClimaIcon ya no son necesarios aquí.
+// Viven dentro de SlideDeRegistro.
 
-const ClimaIcon = ({ estado, className = "w-6 h-6" }) => {
-    switch (estado) {
-        case 'soleado':
-            return <img src={sunIcon} alt="Soleado" className={className} />;
-        case 'nublado':
-            return <img src={cloudIcon} alt="Nublado" className={className} />;
-        case 'lluvioso':
-            return <img src={rainIcon} alt="Lluvioso" className={className} />;
-        default:
-            return <div className={`bg-zinc-200 rounded-full ${className}`} />; // Placeholder si no hay estado
-    }
-};
-
+// --- DonutChart (SIN CAMBIOS) ---
 const DonutChart = ({ progress, size = 40 }) => {
+    // ... (código sin cambios)
     const strokeWidth = 4;
     const radius = (size / 2) - (strokeWidth / 2);
     const circumference = 2 * Math.PI * radius;
-    // Calculamos el "hueco" que debe dejar la barra de progreso
     const offset = circumference - (progress / 100) * circumference;
 
     return (
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90">
-            {/* Círculo de fondo (gris) */}
-            <circle
-                stroke="#e5e7eb" // tailwind: gray-200
-                fill="transparent"
-                strokeWidth={strokeWidth}
-                r={radius}
-                cx={size / 2}
-                cy={size / 2}
-            />
-            {/* Círculo de progreso (verde) */}
+            <circle stroke="#e5e7eb" fill="transparent" strokeWidth={strokeWidth} r={radius} cx={size / 2} cy={size / 2} />
             <circle
                 stroke="#48bb78" // tailwind: green-500
                 fill="transparent"
                 strokeWidth={strokeWidth}
                 strokeDasharray={circumference}
-                strokeDashoffset={offset} // Aquí se aplica el porcentaje
-                strokeLinecap="round" // Puntas redondeadas
+                strokeDashoffset={offset} 
+                strokeLinecap="round"
                 r={radius}
                 cx={size / 2}
                 cy={size / 2}
             />
-            {/* Texto en el medio (rotado de vuelta) */}
-            <text
-                x="50%"
-                y="50%"
-                textAnchor="middle"
-                dy=".3em"
-                fontSize="10px"
-                fontWeight="bold"
-                fill="#374151" // tailwind: gray-700
-                className="transform rotate-90" // Corregimos la rotación del SVG padre
-                transform-origin="center" 
-            >
+            <text x="50%" y="50%" textAnchor="middle" dy=".3em" fontSize="10px" fontWeight="bold" fill="#374151" className="transform rotate-90" transform-origin="center" >
                 {`${progress}%`}
             </text>
         </svg>
     );
 };
 
-// --- [COMPONENTE 1 - VERSIÓN FINAL] TARJETA DE METAS CON DONA ---
-const MetasStatsCard = () => { // <-- Renombramos el componente
+// --- MetasStatsCard (SIN CAMBIOS) ---
+const MetasStatsCard = () => {
+    // ... (código sin cambios)
     const [stats, setStats] = useState({ completadas: 0, incompletas: 0 });
     const [isLoading, setIsLoading] = useState(true);
 
@@ -123,7 +95,6 @@ const MetasStatsCard = () => { // <-- Renombramos el componente
         fetchStats();
     }, []);
 
-    // Helper de número
     const StatNumber = ({ value }) => {
         if (isLoading) {
             return <span className="text-sm font-bold text-zinc-400">...</span>;
@@ -131,21 +102,14 @@ const MetasStatsCard = () => { // <-- Renombramos el componente
         return <span className="text-sm font-bold text-zinc-700">{value}</span>;
     };
 
-    // Calculamos la tasa de éxito
     const total = stats.completadas + stats.incompletas;
     const tasaExito = total === 0 ? 0 : Math.round((stats.completadas / total) * 100);
 
     return (
         <Link to="/app/historial-metas" className="no-underline">
-            {/* 4. Añadimos un hover para que se sienta "clickable" */}
-            <div className="bg-white p-3 rounded-xl shadow-lg flex items-center justify-between 
-                          transition-transform duration-200 hover:scale-[1.02] cursor-pointer">
-                
-                {/* LADO IZQUIERDO: El "Slide" (Texto) */}
+            <div className="bg-white p-3 rounded-xl shadow-lg flex items-center justify-between transition-transform duration-200 hover:scale-[1.02] cursor-pointer">
                 <div className="flex items-center space-x-3">
                     <Award size={24} className="text-blue-500 flex-shrink-0" />
-                    
-                    {/* Contenedor para el Título y los Contadores (apilados) */}
                     <div>
                         <h3 className="text-lg font-['Patrick_Hand'] text-zinc-800">Metas</h3>
                         <div className="flex space-x-4">
@@ -160,14 +124,10 @@ const MetasStatsCard = () => { // <-- Renombramos el componente
                         </div>
                     </div>
                 </div>
-
-                {/* LADO DERECHO: La "Torta" (Gráfico) */}
                 <div className="flex-shrink-0">
-                    {/* Mostramos el gráfico solo si no está cargando y hay datos */}
                     {!isLoading && total > 0 ? (
                         <DonutChart progress={tasaExito} />
                     ) : (
-                        // Un placeholder mientras carga o si está en 0
                         <div className="w-10 h-10 bg-zinc-100 rounded-full flex items-center justify-center">
                             {isLoading && <span className="text-xs font-bold text-zinc-400">...</span>}
                             {!isLoading && total === 0 && <Award size={16} className="text-zinc-400" />}
@@ -176,14 +136,14 @@ const MetasStatsCard = () => { // <-- Renombramos el componente
                 </div>
             </div>
         </Link>
-        // --- FIN DEL CAMBIO ---
     );
 };
 
-// --- [NUEVO] COMPONENTE 1: SELECTOR DE VISTA ---
+// --- ViewSwitcher (SIN CAMBIOS) ---
 const ViewSwitcher = ({ activeView, setActiveView }) => {
+    // ... (código sin cambios)
     const views = [
-        { key: 'numeros', label: 'Estadísticas', icon: BarChart3 },
+        { key: 'numeros', label: 'Registros', icon: BarChart3 }, // <-- 2. CAMBIAMOS EL LABEL
         { key: 'grafico', label: 'Gráfico', icon: TrendingUp },
         { key: 'calendario', label: 'Calendario', icon: CalendarDays },
     ];
@@ -208,111 +168,16 @@ const ViewSwitcher = ({ activeView, setActiveView }) => {
     );
 };
 
-// --- [COMPONENTE 3 - REDISEÑADO] EL FEED DE ASPECTOS ---
-const AspectFeed = ({ historial, aspectoActivo }) => {
-    
-    // --- CORRECCIÓN DE KEY ---
-    const comentarioKey = {
-        mente: 'mente_comentario',
-        emocion: 'emocion_comentario',
-        cuerpo: 'cuerpo_comentario'
-    }[aspectoActivo];
 
-    const estadoKey = {
-        mente: 'mente_estado', // Corregido
-        emocion: 'emocion_estado', // Corregido
-        cuerpo: 'cuerpo_estado' // Corregido
-    }[aspectoActivo];
+// --- [ELIMINADO] ---
+// Los componentes AspectFeed, AspectSquare y StatsView
+// han sido eliminados de este archivo.
 
-    const feedItems = useMemo(() => {
-        return historial
-            .filter(r => r[comentarioKey] && r[comentarioKey].trim() !== '')
-            .map(r => ({
-                id: r.id,
-                fecha_original: r.created_at, // <-- Guardamos la fecha original para ordenar
-                fecha_formateada: new Date(r.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long' }),
-                comentario: r[comentarioKey],
-                estado: getClimaFromValor(r[estadoKey])
-            }))
-            // --- ORDEN CORREGIDO --- (b - a para descendente)
-            .sort((a, b) => new Date(b.fecha_original) - new Date(a.fecha_original))
-            // --- LÍMITE AÑADIDO ---
-            .slice(0, 15); 
-    }, [historial, aspectoActivo, comentarioKey, estadoKey]);
-
-    if (feedItems.length === 0) {
-        return <p className="text-center text-zinc-500 mt-6 scroll-snap-align-start">No hay comentarios escritos para este aspecto.</p>;
-    }
-
-    return (
-        <div className="space-y-4 mt-6">
-            {feedItems.map(item => (
-                // --- REDISEÑO VISUAL "MÁS ÉNFASIS" ---
-                <div key={item.id} className="bg-white p-4 rounded-xl shadow-lg flex space-x-4 items-center scroll-snap-align-start">
-                    <div className="flex-shrink-0">
-                        <ClimaIcon estado={item.estado} className="w-12 h-12" />
-                    </div>
-                    <blockquote className="flex-grow">
-                        <p className="text-sm font-semibold text-zinc-800 italic">
-                            "{item.comentario}"
-                        </p>
-                        <cite className="text-xs text-zinc-500 mt-2 block italic">
-                            {item.fecha_formateada}
-                        </cite>
-                    </blockquote>
-                </div>
-            ))}
-            {historial.filter(r => r[comentarioKey] && r[comentarioKey].trim() !== '').length > 15 && (
-                <p className="text-center text-zinc-500 text-sm py-4 scroll-snap-align-start">Mostrando los 15 más recientes.</p>
-            )}
-        </div>
-    );
-};
-
-// --- [COMPONENTE 4 - PURIFICADO] EL SELECTOR DE ASPECTOS ---
-const AspectSquare = ({ icon, isActive, onClick }) => (
-    <button 
-        onClick={onClick} 
-        className={`flex flex-col items-center justify-center p-1 rounded-2xl shadow-lg transition-all aspect-square ${
-            isActive ? 'bg-amber-100 border-2 border-amber-400' : 'bg-white'
-        }`}
-    >
-        <img src={icon} alt="aspecto" className="w-16 h-16" />
-    </button>
-);
-
-// --- [COMPONENTE 5 - PURIFICADO] VISTA DE "ESTADÍSTICAS" ---
-const StatsView = ({ historial }) => {
-    const [aspectoActivo, setAspectoActivo] = useState('mente'); // 'mente' por defecto
-
-    return (
-        <div className="space-y-4">
-            {/* 1. Los 3 Selectores Cuadrados */}
-            <div className="grid grid-cols-3 gap-4">
-                <AspectSquare
-                    icon={brainIcon}
-                    isActive={aspectoActivo === 'mente'}
-                    onClick={() => setAspectoActivo('mente')}
-                />
-                <AspectSquare
-                    icon={emotionIcon}
-                    isActive={aspectoActivo === 'emocion'}
-                    onClick={() => setAspectoActivo('emocion')}
-                />
-                <AspectSquare
-                    icon={bodyIcon}
-                    isActive={aspectoActivo === 'cuerpo'}
-                    onClick={() => setAspectoActivo('cuerpo')}
-                />
-            </div>
-            {/* 2. El Feed Cronológico */}
-            <AspectFeed historial={historial} aspectoActivo={aspectoActivo} />
-        </div>
-    );
-};
-
-// --- [NUEVO] COMPONENTE 3: VISTA DE "GRÁFICO" (MODIFICADA) ---
+// --- ChartView (SIN CAMBIOS) ---
+// (Mantenemos ChartView tal cual, ya que 'historial'
+// todavía contiene los datos numéricos que necesita)
 const ChartView = ({ historial }) => {
+    // ... (código sin cambios)
     const [activeDateFilter, setActiveDateFilter] = useState('semana');
     const [aspectVisibility, setAspectVisibility] = useState({ mente: true, emocion: true, cuerpo: true });
 
@@ -333,12 +198,11 @@ const ChartView = ({ historial }) => {
         setAspectVisibility({ mente: true, emocion: true, cuerpo: true });
     };
 
-    // --- MODIFICACIÓN CLAVE: "Max" ahora es "30d" ---
     const dateFilters = [
         { key: 'dia', label: '1d' }, 
         { key: 'semana', label: '7d' }, 
         { key: 'quince', label: '15d' }, 
-        { key: 'mes', label: '30d' } // Antes: { key: 'todo', label: 'Max' }
+        { key: 'mes', label: '30d' }
     ];
     
     const aspectFilters = [
@@ -352,48 +216,50 @@ const ChartView = ({ historial }) => {
     }
 
     return (
-            <section className="bg-white border border-amber-400 shadow-lg rounded-2xl p-4">
-                <div className="flex justify-between items-center">
-                    <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800">Fluctuación</h2>
-                        <div className="flex items-center gap-1 bg-white border-none rounded-full p-1">
-                            {dateFilters.map(filter => (
-                            <button 
-                            key={filter.key} 
-                            onClick={() => setActiveDateFilter(filter.key)} 
-                            className={`px-3 py-1 font-['Patrick_Hand'] font-size: 1.2rem font-semibold rounded-full transition-colors border-none ${activeDateFilter === filter.key ? 'focus:bg-amber-100 shadow-sm' : 'text-zinc-500 hover:text-zinc-600'}`}>
-                            {filter.label}
-                            </button>
-                            ))}
-                        </div>
-                </div>
-                <div className="relative">
-                    <HistorialChart 
-                        data={historial} 
-                        filter={activeDateFilter}
-                        visibility={aspectVisibility}
-                        />
-                </div> 
-                <div className="flex justify-end gap-4 bg-white border-none rounded-full p-1">
-                {aspectFilters.map(filter => (
-                    <button
-                    key={filter.key}
-                    onClick={() => handleAspectClick(filter.key)}
-                    title={`Filtrar por ${filter.key}`}
-                    className={`transition-all border-none rounded-full ${aspectVisibility[filter.key] ? 'focus:bg-amber-100 rounded-full shadow-sm' : 'opacity-40 hover:opacity-100'}`}
-                    >
-                    <div className="w-8 h-8"><img src={filter.icon} alt={filter.key} /></div>
-                    </button>
-                    ))}
-                    <button onClick={handleResetAspects} title="Mostrar todos" className="border-none rounded-full">
-                        <RotateCw size={16} className="text-red-500" />
-                    </button>
+        <section className="bg-white border border-amber-400 shadow-lg rounded-2xl p-4">
+            <div className="flex justify-between items-center">
+                <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800">Fluctuación</h2>
+                    <div className="flex items-center gap-1 bg-white border-none rounded-full p-1">
+                        {dateFilters.map(filter => (
+                        <button 
+                        key={filter.key} 
+                        onClick={() => setActiveDateFilter(filter.key)} 
+                        className={`px-3 py-1 font-['Patrick_Hand'] font-size: 1.2rem font-semibold rounded-full transition-colors border-none ${activeDateFilter === filter.key ? 'focus:bg-amber-100 shadow-sm' : 'text-zinc-500 hover:text-zinc-600'}`}>
+                        {filter.label}
+                        </button>
+                        ))}
                     </div>
-            </section>
+            </div>
+            <div className="relative">
+                <HistorialChart 
+                    data={historial} 
+                    filter={activeDateFilter}
+                    visibility={aspectVisibility}
+                    />
+            </div> 
+            <div className="flex justify-end gap-4 bg-white border-none rounded-full p-1">
+            {aspectFilters.map(filter => (
+                <button
+                key={filter.key}
+                onClick={() => handleAspectClick(filter.key)}
+                title={`Filtrar por ${filter.key}`}
+                className={`transition-all border-none rounded-full ${aspectVisibility[filter.key] ? 'focus:bg-amber-100 rounded-full shadow-sm' : 'opacity-40 hover:opacity-100'}`}
+                >
+                <div className="w-8 h-8"><img src={filter.icon} alt={filter.key} /></div>
+                </button>
+                ))}
+                <button onClick={handleResetAspects} title="Mostrar todos" className="border-none rounded-full">
+                    <RotateCw size={16} className="text-red-500" />
+                </button>
+                </div>
+        </section>
     );
 };
 
-// --- [NUEVO] COMPONENTE 4: VISTA DE "CALENDARIO" (MODIFICADA) ---
+
+// --- CalendarView (SIN CAMBIOS) ---
 const CalendarView = ({ registrosMap, activeStartDate, setActiveStartDate }) => {
+    // ... (código sin cambios)
     const navigate = useNavigate();
 
     const handleDayClick = (date) => {
@@ -423,18 +289,24 @@ const CalendarView = ({ registrosMap, activeStartDate, setActiveStartDate }) => 
     );
 };
 
+
 // --- COMPONENTE PRINCIPAL (REESTRUCTURADO) ---
 export default function Tracking() {
 
     const { activeStartDate, setActiveStartDate } = useTracking();
-    const [error, setError] = useState(null); // Mantenemos el error local
+    const [error, setError] = useState(null); // (Mantenemos el error por si acaso)
     const [activeView, setActiveView] = useState('numeros');
 
-    // --- DATOS DEL CONTEXTO (¡LA MAGIA!) ---
-    // Usamos el historial y el isLoading del CONTEXTO
+    // --- DATOS DEL CONTEXTO (SIN CAMBIOS) ---
     const { historial, isLoadingHistorial } = useTracking();
+    
+    // --- 3. [NUEVO] ESTADO PARA EL ACORDEÓN ---
+    const [expandedId, setExpandedId] = useState(null);
+    const handleToggle = (id) => {
+        setExpandedId(prevId => (prevId === id ? null : id));
+    };
 
-    // --- Memo para el Calendario (Sin cambios) ---
+    // --- Memo para el Calendario (SIN CAMBIOS) ---
     const registrosMap = useMemo(() => {
         const map = new Map();
         historial.forEach(r => {
@@ -448,25 +320,47 @@ export default function Tracking() {
         return <LoadingSpinner message="Construyendo tu espejo..." />;
     }
 
-    // --- Helper de renderizado de Vista Activa (Sin cambios) ---
+    // --- Helper de renderizado (MODIFICADO) ---
     const renderActiveView = () => {
         switch (activeView) {
+            
+            // --- 4. [AQUÍ ESTÁ LA MODIFICACIÓN] ---
             case 'numeros':
-                return <StatsView historial={historial} />;
+                if (historial.length === 0) {
+                    return <p className="text-center text-zinc-500 italic p-4">No hay registros en tu historial.</p>;
+                }
+                // Ordenamos por fecha (más nuevo primero)
+                const historialOrdenado = [...historial].reverse();
+                
+                return (
+                    <div className="space-y-4"> 
+                        {historialOrdenado.map(registro => (
+                            <SlideDeRegistro 
+                                key={registro.id} 
+                                registro={registro} 
+                                isExpanded={expandedId === registro.id}
+                                onToggle={() => handleToggle(registro.id)}
+                            />
+                        ))}
+                    </div>
+                );
+            
             case 'grafico':
                 return <ChartView historial={historial} />;
+            
             case 'calendario':
                 return <CalendarView 
                             registrosMap={registrosMap} 
                             activeStartDate={activeStartDate} 
                             setActiveStartDate={setActiveStartDate} 
                         />;
+            
             default:
-                return <StatsView historial={historial} />;
+                return null; // El caso 'numeros' es el default ahora
         }
     }
 
-    // --- [NUEVO] RETURN PRINCIPAL (CON LAYOUT FIJO) ---
+    // --- RETURN PRINCIPAL (SIN CAMBIOS) ---
     return (
         <>
             <style>{calendarCustomStyles}</style>
@@ -474,8 +368,7 @@ export default function Tracking() {
 
                 {/* 1. CONTENIDO FIJO (NO SCROLLEA) */}
                 <div className="flex-shrink-0 space-y-4">
-                    {/* Tarjeta de Metas (Sutil) */}
-                    <MetasStatsCard /> {/* <-- USA EL NUEVO NOMBRE AQUÍ */}
+                    <MetasStatsCard />
                     <ViewSwitcher activeView={activeView} setActiveView={setActiveView} />
                 </div>
 
