@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useTracking } from '/src/contexts/TrackingContext.jsx'; 
 import api from '/src/services/api.js';
 
@@ -136,42 +136,47 @@ const MetasStatsCard = () => { // <-- Renombramos el componente
     const tasaExito = total === 0 ? 0 : Math.round((stats.completadas / total) * 100);
 
     return (
-        <div className="bg-white p-3 rounded-xl shadow-lg flex items-center justify-between">
-            
-            {/* LADO IZQUIERDO: El "Slide" (Texto) */}
-            <div className="flex items-center space-x-3">
-                <Award size={24} className="text-blue-500 flex-shrink-0" />
+        <Link to="/app/historial-metas" className="no-underline">
+            {/* 4. Añadimos un hover para que se sienta "clickable" */}
+            <div className="bg-white p-3 rounded-xl shadow-lg flex items-center justify-between 
+                          transition-transform duration-200 hover:scale-[1.02] cursor-pointer">
                 
-                {/* Contenedor para el Título y los Contadores (apilados) */}
-                <div>
-                    <h3 className="text-lg font-['Patrick_Hand'] text-zinc-800">Metas</h3>
-                    <div className="flex space-x-4">
-                        <div className="flex items-center space-x-1">
-                            <CheckCircle size={14} className="text-green-500" />
-                            <StatNumber value={stats.completadas} />
-                        </div>
-                        <div className="flex items-center space-x-1">
-                            <XCircle size={14} className="text-red-500" />
-                            <StatNumber value={stats.incompletas} />
+                {/* LADO IZQUIERDO: El "Slide" (Texto) */}
+                <div className="flex items-center space-x-3">
+                    <Award size={24} className="text-blue-500 flex-shrink-0" />
+                    
+                    {/* Contenedor para el Título y los Contadores (apilados) */}
+                    <div>
+                        <h3 className="text-lg font-['Patrick_Hand'] text-zinc-800">Metas</h3>
+                        <div className="flex space-x-4">
+                            <div className="flex items-center space-x-1">
+                                <CheckCircle size={14} className="text-green-500" />
+                                <StatNumber value={stats.completadas} />
+                            </div>
+                            <div className="flex items-center space-x-1">
+                                <XCircle size={14} className="text-red-500" />
+                                <StatNumber value={stats.incompletas} />
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* LADO DERECHO: La "Torta" (Gráfico) */}
-            <div className="flex-shrink-0">
-                {/* Mostramos el gráfico solo si no está cargando y hay datos */}
-                {!isLoading && total > 0 ? (
-                    <DonutChart progress={tasaExito} />
-                ) : (
-                    // Un placeholder mientras carga o si está en 0
-                    <div className="w-10 h-10 bg-zinc-100 rounded-full flex items-center justify-center">
-                        {isLoading && <span className="text-xs font-bold text-zinc-400">...</span>}
-                        {!isLoading && total === 0 && <Award size={16} className="text-zinc-400" />}
-                    </div>
-                )}
+                {/* LADO DERECHO: La "Torta" (Gráfico) */}
+                <div className="flex-shrink-0">
+                    {/* Mostramos el gráfico solo si no está cargando y hay datos */}
+                    {!isLoading && total > 0 ? (
+                        <DonutChart progress={tasaExito} />
+                    ) : (
+                        // Un placeholder mientras carga o si está en 0
+                        <div className="w-10 h-10 bg-zinc-100 rounded-full flex items-center justify-center">
+                            {isLoading && <span className="text-xs font-bold text-zinc-400">...</span>}
+                            {!isLoading && total === 0 && <Award size={16} className="text-zinc-400" />}
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
+        </Link>
+        // --- FIN DEL CAMBIO ---
     );
 };
 

@@ -48,6 +48,7 @@ const createMeta = (payload) => apiClient.post('/metas', payload);
 const updateMeta = (id, payload) => apiClient.patch(`/metas/${id}`, payload);
 const deleteMeta = (id) => apiClient.delete(`/metas/${id}`);
 const getMetasStats = () => apiClient.get('/metas/stats');
+const getHistorialMetas = () => apiClient.get('/metas/historial');
 
 
 // -- SUNNY (IA) --
@@ -95,6 +96,7 @@ const api = {
   updateMeta,
   deleteMeta,
   getMetasStats,
+  getHistorialMetas,
   
   getHabitos,
   crearHabito,

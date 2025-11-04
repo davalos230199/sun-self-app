@@ -23,6 +23,7 @@ import Filosofia from './pages/Filosofia';
 import Home from './pages/Home';
 import Journal from './pages/Journal';
 import MetasPage from './pages/MetasPage';
+import HistorialMetas from './pages/HistorialMetas';
 import Progreso from './pages/Progreso';
 import ResumenDia from './pages/ResumenDia';
 import Settings from './pages/Settings';
@@ -83,6 +84,7 @@ function App() {
             
             <Route path="tracking" element={<Tracking />} />
             <Route path="metas" element={<MetasPage />} />
+            <Route path="historial-metas" element={<HistorialMetas />} />
             <Route path="progreso" element={<Progreso />} />
             <Route path="sunny" element={<Sunny />} />
             <Route path="settings" element={<Settings />} />

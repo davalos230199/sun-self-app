@@ -2,7 +2,6 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/auth');
-
 router.use(authMiddleware);
 
 // GET /today - Trae las metas de hoy para el usuario logueado
@@ -64,6 +63,79 @@ router.get('/stats', async (req, res) => {
     } catch (err) {
         console.error("Error en GET /api/metas/stats:", err);
         res.status(500).json({ error: 'Error al obtener las estadísticas de metas' });
+    }
+});
+
+// --- NUEVA RUTA: GET /historial ---
+// Trae todas las metas agrupadas por día, identificando la principal.
+router.get('/historial', async (req, res) => {
+    try {
+        const { id: profileId } = req.user;
+        const fechaInicioLimpia = '2025-09-19T00:00:00Z'; // La fecha de limpieza
+
+        // 1. Traer todos los registros (con su meta principal)
+        const { data: registros, error: regError } = await req.supabase
+            .from('registros')
+            .select('id, created_at, meta_principal_id')
+            .eq('profile_id', profileId)
+            .gte('created_at', fechaInicioLimpia)
+            .order('created_at', { ascending: false }); // Más nuevos primero
+
+        if (regError) throw regError;
+
+        // 2. Traer TODAS las metas desde la fecha
+        const { data: metas, error: metasError } = await req.supabase
+            .from('metas')
+            .select('*') // Traemos todo de las metas
+            .eq('profile_id', profileId)
+            .gte('created_at', fechaInicioLimpia);
+        
+        if (metasError) throw metasError;
+
+        // 3. (Alambres) Agrupar metas por fecha (YYYY-MM-DD) para búsqueda rápida
+        const metasPorFecha = new Map();
+        for (const meta of metas) {
+            const fecha = meta.created_at.split('T')[0]; // Clave '2025-11-04'
+            if (!metasPorFecha.has(fecha)) {
+                metasPorFecha.set(fecha, []);
+            }
+            metasPorFecha.get(fecha).push(meta);
+        }
+
+        // 4. (Alambres) Construir la respuesta final
+        const historialDias = [];
+        for (const registro of registros) {
+            const fechaRegistro = registro.created_at.split('T')[0];
+            const metasDelDia = metasPorFecha.get(fechaRegistro) || [];
+            
+            let metaPrincipal = null;
+            const metasSecundarias = [];
+
+            // Separamos la principal del resto
+            for (const meta of metasDelDia) {
+                if (meta.id === registro.meta_principal_id) {
+                    metaPrincipal = meta;
+                } else {
+                    metasSecundarias.push(meta);
+                }
+            }
+
+            // Solo añadimos el día al historial si tuvo una meta principal
+            // (que es el centro de tu diseño visual)
+            if (metaPrincipal) {
+                historialDias.push({
+                    fecha: registro.created_at, // La fecha exacta del registro
+                    meta_principal: metaPrincipal,
+                    metas_secundarias: metasSecundarias
+                });
+            }
+        }
+        
+        res.status(200).json(historialDias);
+
+    } catch (err) {
+        console.error("Error en GET /api/metas/historial:", err);
+        res.status(500).json({ error: 'Error al construir el historial de metas' });
     }
 });
 

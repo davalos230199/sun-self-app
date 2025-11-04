@@ -46,7 +46,7 @@ export const TrackingProvider = ({ children }) => {
         };
 
         loadAllData();
-    }, [user]); // Se ejecuta 1 sola vez, cuando el usuario cambia.
+    }, [user?.id]); // Se ejecuta 1 sola vez, cuando el usuario cambia.
 
     const value = {
         activeStartDate,

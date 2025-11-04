@@ -48,7 +48,7 @@ export const DiaProvider = ({ children }) => {
         if (user) {
             refrescarDia();
         }
-    }, [user]); // IMPORTANTE: Solo dependemos de user, no de refrescarDia
+    }, [user?.id]); // IMPORTANTE: Solo dependemos de user, no de refrescarDia
     
     // 🎨 1. DEFINIMOS LA PALETA DE COLORES
     const getThemeColors = (estadoGeneral) => {
