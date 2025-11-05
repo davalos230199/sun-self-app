@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react'; // 1. IMPORTAMOS useMemo
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDia } from '../contexts/DiaContext';
 import api from '../services/api';
-import { TrendingUp, ChevronUp, ChevronDown, Check, Clock } from 'lucide-react';
+import { TrendingUp, ChevronUp, ChevronRight, Check, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 // --- Sub-componente: El Checkbox (Modificado) ---
@@ -113,18 +113,18 @@ export default function ChecklistDeMetas() {
                 onClick={() => setIsExpanded(!isExpanded)}
             >
                 <div className="flex-shrink-0 text-green-800">
-                    <TrendingUp size={24} />
+                    <TrendingUp size={28} />
                 </div>
 
                 <div className="flex-grow mx-4 text-center">
-                    <h2 className="font-['Patrick_Hand'] text-2xl font-bold text-green-900 break-words">
+                    <h2 className="font-['Patrick_Hand'] uppercase text-2xl font-semibold text-green-800 break-words">
                         {metaPrincipal.descripcion}
                     </h2>
-                    <p className="text-xs text-amber-800 font-semibold">TU META DE HOY</p>
+                    <p className="text-sm text-amber-800 font-semibold">Tu Meta De Hoy</p>
                 </div>
 
                 <div className="flex-shrink-0 text-green-800">
-                    {isExpanded ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+                    {isExpanded ? <ChevronUp size={24} /> : <ChevronRight size={24} />}
                 </div>
             </motion.div>
 

@@ -40,6 +40,11 @@ export default function DashboardCajas({ onEdit }) {
     return (
         <div className="h-full flex flex-col space-y-4">
             
+                        {/* 2. Ladrillo: El Checklist de Metas */}
+            <div className="flex-shrink-0">
+                <ChecklistDeMetas />
+            </div>
+
             {/* 1. Ladrillo: El Slide de Estado */}
             <div className="flex-shrink-0">
                 <SlideDeRegistro 
@@ -49,11 +54,6 @@ export default function DashboardCajas({ onEdit }) {
                     isExpanded={isSlideExpanded}
                     onToggle={() => setIsSlideExpanded(!isSlideExpanded)}
                 />
-            </div>
-
-            {/* 2. Ladrillo: El Checklist de Metas */}
-            <div className="flex-shrink-0">
-                <ChecklistDeMetas />
             </div>
 
             {/* 3. Ladrillos: Los Botones de Navegación */}

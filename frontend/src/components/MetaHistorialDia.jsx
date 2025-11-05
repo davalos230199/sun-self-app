@@ -77,7 +77,7 @@ export default function MetaHistorialDia({ dia, isExpanded, onToggle }) {
                 {/* 2. CENTRO: La Meta Principal */}
                 <div className="flex-grow mx-4">
                     <p className="text-xs text-zinc-500 font-semibold">{fechaFormateada}</p>
-                    <h3 className={`text-lg font-['Patrick_Hand'] text-zinc-800 break-words ${dia.meta_principal.completada ? 'line-through text-zinc-500' : ''}`}>
+                    <h3 className={`text-lg font-['Patrick_Hand'] uppercase text-zinc-800 break-words ${dia.meta_principal.completada ? 'line-through text-zinc-500' : ''}`}>
                         {dia.meta_principal.descripcion}
                     </h3>
                 </div>
