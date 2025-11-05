@@ -1,5 +1,3 @@
-// frontend/src/components/InfoSlide.jsx
-
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronRight } from 'lucide-react';

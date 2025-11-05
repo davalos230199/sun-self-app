@@ -1,14 +1,16 @@
-// frontend/src/components/DashboardVacio.jsx (Reconstruido)
-
 import React, { useState } from 'react';
-import Lottie from 'lottie-react';
-import { useAuth } from '../contexts/AuthContext';
+import { motion } from 'framer-motion';
+import { useAuth } from '../contexts/AuthContext.jsx'; 
 import { BookOpen, Brain, Zap, Heart, Shield, Sparkles } from 'lucide-react';
 
-import bookOpenAnimation from '../assets/animations/book-open.json'; 
-import InfoSlide from './InfoSlide'; // <-- 1. IMPORTAMOS EL NUEVO LADRILLO
+// Componentes
+import InfoSlide from './InfoSlide.jsx'; 
+import Lottie from 'lottie-react';
 
-// Extraemos el contenido del informe en un objeto fácil de manejar
+// Animación
+import sunLoopAnimation from '../assets/animations/sun-loop.json';
+
+// --- (el array 'materialDeEstudio' sigue igual que antes) ---
 const materialDeEstudio = [
     {
         id: 'mental',
@@ -67,75 +69,63 @@ const materialDeEstudio = [
     }
 ];
 
-
 export default function DashboardVacio({ onStartRitual }) {
     const { user } = useAuth(); 
     const nombreUsuario = user?.username.split(' ')[0] || 'Sol';
 
-    // Estado para el acordeón (solo uno abierto a la vez)
+    // Estado para el acordeón de "Material de Estudio" (se mantiene igual)
     const [expandedSlideId, setExpandedSlideId] = useState(null);
-
-    const handleToggle = (id) => {
+    const handleInfoToggle = (id) => {
         setExpandedSlideId(prevId => (prevId === id ? null : id));
     };
 
     return (
-        // Usamos overflow-y-auto para que la página scrollee si el contenido es mucho
-        <div className="flex flex-col h-full px-4 pt-16 overflow-y-auto">
+        // Contenedor principal ahora con fondo azul cielo
+        <div className="flex flex-col h-full overflow-y-auto space-y-6 pb-24 px-4 bg-sky-100">
             
-            {/* --- SECCIÓN 1: El Saludo y el Ritual --- */}
-            <div className="flex flex-col items-center text-center">
-                <h1 className="text-3xl font-bold text-gray-800 mb-4">
-                    ¿Cómo estás hoy, {nombreUsuario}?
-                </h1>
-                
-                <div className="w-48 h-48 my-4">
+            {/* --- SECCIÓN 1: Tarjeta de Bienvenida (La que debería aparecer) --- */}
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col items-center text-center p-6 pt-0"
+            >
+                {/* 1. La Animación del Sol (Forzada a SVG) */}
+                <div className="w-48 h-48 -mt-8 -mb-4">
                     <Lottie 
-                        animationData={bookOpenAnimation}
-                        loop={false} 
+                        animationData={sunLoopAnimation} 
+                        loop={true} 
+                        renderer="svg" // Forzamos SVG para evitar canvas
                     />
                 </div>
-                
-                <p className="text-lg text-gray-600 mb-8 max-w-md">
+
+                {/* 2. El Saludo (Más amigable) */}
+                <h1 className="text-3xl font-['Patrick_Hand'] text-zinc-900 font-bold">
+                    ¡Hola, {nombreUsuario}!
+                </h1>
+                <h2 className="text-2xl font-['Patrick_Hand'] text-amber-700 font-semibold mt-1">
+                    ¿Cómo estás hoy?
+                </h2>
+
+                {/* 3. El Texto de Apoyo */}
+                <p className="text-lg text-gray-700 mt-4 mb-6 max-w-xs">
                     El primer paso para ser libre es observarte. 
                     Tómate 3 minutos para anclarte en tu presente.
                 </p>
                 
+                {/* 4. El Botón (Call To Action) */}
                 <button
                     onClick={onStartRitual}
                     className="flex items-center justify-center gap-2
-                               bg-gradient-to-r from-amber-500 to-orange-500 
-                               text-white text-lg font-semibold 
-                               py-3 px-8 rounded-full shadow-lg
-                               transform transition-all duration-300 hover:scale-105"
+                                bg-gradient-to-r from-amber-500 to-orange-500 
+                                text-white text-lg font-semibold 
+                                py-3 px-8 rounded-full shadow-lg
+                                transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
                 >
                     <BookOpen size={20} />
-                    Iniciar mi Sol
+                    Iniciar Micro-habito
                 </button>
-            </div>
-
-            {/* --- SECCIÓN 2: El "Material de Estudio" --- */}
-            <div className="w-full max-w-lg mx-auto mt-16 pb-24">
-                <h2 className="text-2xl font-['Patrick_Hand'] text-zinc-800 font-semibold mb-4 text-center">
-                    El Poder de 3 Minutos de Escritura
-                </h2>
-                
-                {/* Aquí renderizamos el acordeón interactivo */}
-                <div className="space-y-3">
-                    {materialDeEstudio.map((item) => (
-                        <InfoSlide
-                            key={item.id}
-                            icon={item.icon}
-                            title={item.title}
-                            isExpanded={expandedSlideId === item.id}
-                            onToggle={() => handleToggle(item.id)}
-                        >
-                            {item.content}
-                        </InfoSlide>
-                    ))}
-                </div>
-            </div>
-
+            </motion.div>
         </div>
     );
 }
