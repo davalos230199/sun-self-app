@@ -7,7 +7,7 @@ import { useDia } from '../../contexts/DiaContext';
 
 // Este componente ahora es más complejo, maneja su propia lógica de edición
 export default function MetaItem({ meta, isExpanded, onExpand }) {
-    const { setMetas } = useDia();
+    const { metas, setMetas } = useDia();
     
     // Estado de edición
     const [isEditing, setIsEditing] = useState(false);
