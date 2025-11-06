@@ -124,7 +124,7 @@ export default function DashboardVacio({ onStartRitual }) {
             {/* --- SECCIÓN 2: El "Material de Estudio" (La volvemos a poner) --- */}
             <div className="">
                 <h2 className="text-2xl font-['Patrick_Hand'] text-zinc-800 font-semibold mb-4 text-center">
-                    El Poder de Auto-Observarte
+                    Beneficios de Auto-Observarte
                 </h2>
                 
                 <div className="space-y-3">
