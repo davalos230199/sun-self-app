@@ -17,7 +17,7 @@ const ClimaIconoAnimado = ({ estadoGeneral }) => {
         lluvioso: rainLoopAnimation,
     };
     // Si no hay registro, o es nublado, muestra la nube.
-    const animationData = animationMap[estadoGeneral] || cloudLoopAnimation;
+    const animationData = animationMap[estadoGeneral] || sunLoopAnimation;
 
     return ( 
             <Lottie animationData={animationData} loop={true} />
@@ -52,7 +52,7 @@ export default function PageHeader() {
             try {
                 // --- ¡AQUÍ LA MAGIA! ---
                 // 1. Leemos el estado del día
-                const estadoGeneral = registroDeHoy?.estado_general || 'nublado'; // 'soleado', 'lluvioso', 'nublado'
+                const estadoGeneral = registroDeHoy?.estado_general || 'soleado'; // 'soleado', 'lluvioso', 'nublado'
 
                 // 2. Mapeamos tu idea de "días lluviosos"
                 let categoria;
@@ -82,10 +82,6 @@ export default function PageHeader() {
 
         // Lo llamamos cuando el componente carga
         fetchFrase();
-        
-    // Añadimos registroDeHoy al array de dependencias
-    // Así, si el usuario completa el ritual y el estado cambia,
-    // ¡la frase se actualizará sola!
     }, [registroDeHoy]);
 
 

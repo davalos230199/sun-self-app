@@ -26,11 +26,11 @@ const materialDeEstudio = [
     {
         id: 'neuro',
         icon: Zap,
-        title: "Pasa de 'Modo Pánico' a 'Modo Control'",
+        title: "Pasa de 'Modo Automático' a 'Modo Control'",
         content: (
             <>
                 <p><strong>Mecanismo:</strong> Etiquetado de Afectos (Affect Labeling).</p>
-                <p className="mt-1 italic">"Pasa del 'modo pánico' al 'modo control' en 3 minutos." Nombrar una emoción activa tu corteza prefrontal y calma la amígdala.</p>
+                <p className="mt-1 italic">"Pasa del 'modo automático' al 'modo control' en 2 minutos." Nombrar una emoción activa tu corteza prefrontal y calma la amígdala.</p>
             </>
         )
     },
@@ -81,17 +81,17 @@ export default function DashboardVacio({ onStartRitual }) {
 
     return (
         // Contenedor principal ahora con fondo azul cielo
-        <div className="flex flex-col h-full overflow-y-auto space-y-6 pb-24 px-4 bg-sky-100">
+        <div className="flex flex-col space-y-6">
             
             {/* --- SECCIÓN 1: Tarjeta de Bienvenida (La que debería aparecer) --- */}
             <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col items-center text-center p-6 pt-0"
+                className="bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col items-center text-center p-6 mt-4"
             >
                 {/* 1. La Animación del Sol (Forzada a SVG) */}
-                <div className="w-48 h-48 -mt-8 -mb-4">
+                <div className="w-48 h-48">
                     <Lottie 
                         animationData={sunLoopAnimation} 
                         loop={true} 
@@ -106,12 +106,6 @@ export default function DashboardVacio({ onStartRitual }) {
                 <h2 className="text-2xl font-['Patrick_Hand'] text-amber-700 font-semibold mt-1">
                     ¿Cómo estás hoy?
                 </h2>
-
-                {/* 3. El Texto de Apoyo */}
-                <p className="text-lg text-gray-700 mt-4 mb-6 max-w-xs">
-                    El primer paso para ser libre es observarte. 
-                    Tómate 3 minutos para anclarte en tu presente.
-                </p>
                 
                 {/* 4. El Botón (Call To Action) */}
                 <button
@@ -126,6 +120,28 @@ export default function DashboardVacio({ onStartRitual }) {
                     Iniciar Micro-habito
                 </button>
             </motion.div>
+
+            {/* --- SECCIÓN 2: El "Material de Estudio" (La volvemos a poner) --- */}
+            <div className="">
+                <h2 className="text-2xl font-['Patrick_Hand'] text-zinc-800 font-semibold mb-4 text-center">
+                    El Poder de Auto-Observarte
+                </h2>
+                
+                <div className="space-y-3">
+                    {materialDeEstudio.map((item) => (
+                        <InfoSlide
+                            key={item.id}
+                            icon={item.icon}
+                            title={item.title}
+                            isExpanded={expandedSlideId === item.id}
+                            onToggle={() => handleInfoToggle(item.id)}
+                        >
+                            {item.content}
+                        </InfoSlide>
+                    ))}
+                </div>
+            </div>
+
         </div>
     );
 }
