@@ -1,0 +1,25 @@
+{
+  "name": "Sun Self",
+  "short_name": "Sun Self",
+  "description": "Auto-observación diaria para anclarte en tu presente.",
+  "lang": "es-ES",
+  
+  "start_url": "/app/",
+  
+  "display": "standalone",
+  "background_color": "#fff",
+  "theme_color": "#f59e0b",
+  
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
