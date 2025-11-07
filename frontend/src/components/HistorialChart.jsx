@@ -62,7 +62,7 @@ export default function HistorialChart({ data, filter, visibility }) {
                     <CartesianGrid strokeDasharray="3 3" stroke={COLORS.grid} />
                     <XAxis dataKey="name" tick={{ fontFamily: 'Patrick Hand', fontSize: 12 }} />
                     <YAxis domain={[0, 100]} tick={{ fontFamily: 'Patrick Hand', fontSize: 12 }} />
-                    <Tooltip contentStyle={{ borderRadius: '0.75rem', borderColor: '#fcd34d', fontFamily: 'Patrick Hand' }} />
+                    <Tooltip contentStyle={{ borderRadius: '0.75rem', fontFamily: 'Patrick Hand' }} />
                     {/* Las líneas ahora usan la prop 'visibility' que viene de Tracking.jsx */}
                     <Line type="monotone" dataKey="mente" stroke={COLORS.mente} strokeWidth={3} dot={false} activeDot={{ r: 6 }} hide={!visibility.mente} />
                     <Line type="monotone" dataKey="emocion" stroke={COLORS.emocion} strokeWidth={3} dot={false} activeDot={{ r: 6 }} hide={!visibility.emocion} />

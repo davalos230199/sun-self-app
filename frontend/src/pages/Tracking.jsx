@@ -143,8 +143,8 @@ const MetasStatsCard = () => {
 const ViewSwitcher = ({ activeView, setActiveView }) => {
     // ... (código sin cambios)
     const views = [
-        { key: 'numeros', label: 'Registros', icon: BarChart3 }, // <-- 2. CAMBIAMOS EL LABEL
         { key: 'grafico', label: 'Gráfico', icon: TrendingUp },
+        { key: 'numeros', label: 'Registros', icon: BarChart3 }, // <-- 2. CAMBIAMOS EL LABEL
         { key: 'calendario', label: 'Calendario', icon: CalendarDays },
     ];
 
@@ -168,14 +168,6 @@ const ViewSwitcher = ({ activeView, setActiveView }) => {
     );
 };
 
-
-// --- [ELIMINADO] ---
-// Los componentes AspectFeed, AspectSquare y StatsView
-// han sido eliminados de este archivo.
-
-// --- ChartView (SIN CAMBIOS) ---
-// (Mantenemos ChartView tal cual, ya que 'historial'
-// todavía contiene los datos numéricos que necesita)
 const ChartView = ({ historial }) => {
     // ... (código sin cambios)
     const [activeDateFilter, setActiveDateFilter] = useState('semana');
@@ -216,7 +208,7 @@ const ChartView = ({ historial }) => {
     }
 
     return (
-        <section className="bg-white border border-amber-400 shadow-lg rounded-2xl p-4">
+        <section className="bg-white h-full shadow-lg rounded-2xl p-4">
             <div className="flex justify-between items-center">
                 <h2 className="font-['Patrick_Hand'] text-2xl text-zinc-800">Fluctuación</h2>
                     <div className="flex items-center gap-1 bg-white border-none rounded-full p-1">
@@ -229,15 +221,10 @@ const ChartView = ({ historial }) => {
                         </button>
                         ))}
                     </div>
+                    
             </div>
-            <div className="relative">
-                <HistorialChart 
-                    data={historial} 
-                    filter={activeDateFilter}
-                    visibility={aspectVisibility}
-                    />
-            </div> 
-            <div className="flex justify-end gap-4 bg-white border-none rounded-full p-1">
+            
+            <div className="flex justify-end gap-3 bg-white border-none rounded-full mr-4">
             {aspectFilters.map(filter => (
                 <button
                 key={filter.key}
@@ -251,7 +238,15 @@ const ChartView = ({ historial }) => {
                 <button onClick={handleResetAspects} title="Mostrar todos" className="border-none rounded-full">
                     <RotateCw size={16} className="text-red-500" />
                 </button>
-                </div>
+            </div>
+
+            <div className="relative">
+                <HistorialChart 
+                    data={historial} 
+                    filter={activeDateFilter}
+                    visibility={aspectVisibility}
+                />        
+            </div> 
         </section>
     );
 };
