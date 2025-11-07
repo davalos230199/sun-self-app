@@ -7,7 +7,7 @@
   "start_url": "/app/",
   
   "display": "standalone",
-  "background_color": "#f87CEEB",
+  "background_color": "#e0f2fe",
   
   "icons": [
     {

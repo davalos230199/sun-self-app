@@ -124,7 +124,7 @@ export default function SlideDeRegistro({
                     )}
                     
                     {/* El Epígrafe (Hora o Fecha) */}
-                    <cite className="block text-right text-xs text-zinc-600 font-semibold not-italic mt-1">
+                    <cite className="block text-right text-xs text-zinc-600 font-semibold italic">
                         {fechaLabel}
                     </cite>
                 </div>
