@@ -34,7 +34,7 @@ export default function MetaItem({ meta, isExpanded, onExpand }) {
         handleActionClick(e);
         if (isCompleted || isNotCompleted) return; // No hacer nada si ya está en un estado final
 
-        const metasOriginales = [...metas]; // (Necesitamos 'metas' del context)
+        const metasOriginales = [...metas]; 
         setMetas(prev => prev.map(m => m.id === meta.id ? { ...m, completada: true } : m));
         try {
             await api.updateMeta(meta.id, { completada: true });
@@ -48,7 +48,7 @@ export default function MetaItem({ meta, isExpanded, onExpand }) {
         handleActionClick(e);
         setIsEditing(true);
         setEditingHora(meta.hora_objetivo ? meta.hora_objetivo.substring(0, 5) : '');
-        onExpand(null); // Cierra el 'expand' si se abre el 'edit'
+        if (onExpand) onExpand(null); // Cierra el 'expand' si se abre el 'edit'
     };
 
     const handleCancelEdit = (e) => {
@@ -58,6 +58,7 @@ export default function MetaItem({ meta, isExpanded, onExpand }) {
 
     const handleSaveEdit = async (e) => {
         handleActionClick(e);
+        
         const metasOriginales = [...metas];
         const nuevaHora = editingHora || null;
 
@@ -70,9 +71,10 @@ export default function MetaItem({ meta, isExpanded, onExpand }) {
         setIsEditing(false);
 
         try {
+            const metaOriginal = metasOriginales.find(m => m.id === meta.id);
             await api.updateMeta(meta.id, { 
                 hora_objetivo: nuevaHora,
-                completada: meta.completada === false ? null : meta.completada
+                completada: metaOriginal?.completada === false ? null : metaOriginal?.completada
             });
         } catch (error) {
             console.error("Error al guardar meta, revirtiendo:", error);
@@ -84,7 +86,7 @@ export default function MetaItem({ meta, isExpanded, onExpand }) {
     return (
         <motion.div
             layout="position"
-            onClick={() => !isEditing && onExpand(meta.id)} // Solo expande si NO está en modo edición
+            onClick={() => !isEditing && onExpand && onExpand(meta.id)} // Solo expande si NO está en modo edición
             className={`relative flex items-center p-4 rounded-xl shadow-md transition-all duration-300 cursor-pointer ${bgColor}`}
             style={{ opacity: isPending ? 1 : 0.8 }}
         >
@@ -135,7 +137,9 @@ export default function MetaItem({ meta, isExpanded, onExpand }) {
                             )}
                         </div>
                         <AnimatePresence>
-                            {isExpanded && isPending && ( // Solo mostrar 'editar' si está expandida Y pendiente
+                            {/* --- LA CORRECCIÓN ESTÁ AQUÍ --- */}
+                            {/* Le permitimos mostrarse si está (pendiente O incompleta) */}
+                            {isExpanded && (isPending || isNotCompleted) && (
                                 <motion.div
                                     initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
                                     className="flex items-center rounded-full"
