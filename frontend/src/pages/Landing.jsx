@@ -92,67 +92,70 @@ export default function Landing() {
   );
 
   return (
-    <div className="bg-zinc-50 min-h-screen">
-      {/* --- Navbar (No cambia) --- */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
-        <nav className="max-w-7xl mx-auto flex justify-between items-center p-4">
-          <div className="flex items-center space-x-8">
-            <span className="font-['Patrick_Hand'] text-3xl font-bold text-orange-600">
-              Sun Self
-            </span>
-            <div className="hidden md:flex items-center space-x-2">
-              <NavLink category="Todos">Todos</NavLink>
-              <NavLink category="Mente">Mente</NavLink>
-              <NavLink category="Cuerpo">Cuerpo</NavLink>
-              <NavLink category="Emoción">Emoción</NavLink>
-            </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Link 
-              to="/login" 
-              className="font-['Patrick_Hand'] text-lg text-zinc-600 hover:text-orange-600"
-            >
-              Iniciar Sesión
-            </Link>
-            <Link 
-              to="/login"
-              className="bg-orange-500 text-white font-['Patrick_Hand'] text-lg px-6 py-2 rounded-full hover:bg-orange-600 transition-colors"
-            >
-              Registrarse
-            </Link>
-          </div>
-        </nav>
-      </header>
+        <div className="bg-zinc-50 min-h-screen">
+            
+            {/* --- Navbar (MODIFICADA) --- */}
+            <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
+                <nav className="max-w-7xl mx-auto flex justify-between items-center p-4">
+                    <div className="flex items-center space-x-8">
+                        <span className="font-['Patrick_Hand'] text-3xl font-bold text-orange-600">
+                            Sun Self
+                        </span>
+                        <div className="hidden md:flex items-center space-x-2">
+                            <NavLink category="Todos">Todos</NavLink>
+                            <NavLink category="Mente">Mente</NavLink>
+                            <NavLink category="Cuerpo">Cuerpo</NavLink>
+                            <NavLink category="Emoción">Emoción</NavLink>
+                        </div>
+                    </div>
+                    {/* --- AQUÍ ESTÁ EL CAMBIO --- */}
+                    <div className="flex items-center space-x-4">
+                        <Link 
+                            to="/filosofia" // <-- NUEVA RUTA
+                            className="font-['Patrick_Hand'] text-lg text-zinc-600 hover:text-orange-600"
+                        >
+                            +Info
+                        </Link>
+                        <Link 
+                            to="/login"
+                            className="bg-orange-500 text-white font-['Patrick_Hand'] text-lg px-6 py-2 rounded-full hover:bg-orange-600 transition-colors"
+                        >
+                            Ingresar
+                        </Link>
+                    </div>
+                    {/* --- FIN DEL CAMBIO --- */}
+                </nav>
+            </header>
 
-      {/* --- Contenido Principal (El Feed) --- */}
-      <main className="max-w-7xl mx-auto p-8 mt-4">
-        <h1 className="text-4xl font-bold text-zinc-800 mb-2">Tu Rincón de Bienestar</h1>
-        <p className="text-xl text-zinc-600 mb-8 font-['Patrick_Hand']">
-          Artículos y noticias curadas para tu mente, cuerpo y emoción.
-        </p>
+            {/* --- Contenido Principal (El Feed) --- */}
+            <main className="max-w-7xl mx-auto p-8 mt-4">
+                <h1 className="text-4xl font-bold text-zinc-800 mb-2">Tu Rincón de Bienestar</h1>
+                <p className="text-xl text-zinc-600 mb-8 font-['Patrick_Hand']">
+                    Artículos y noticias curadas para tu mente, cuerpo y emoción.
+                </p>
 
-        {/* --- ¡MODIFICADO! Grid de Artículos --- */}
-        {loading ? (
-          <p className="text-center text-zinc-500">Cargando artículos...</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {articles.map(article => (
-              <ArticleCard key={article.id} article={article} />
-            ))}
-          </div>
-        )}
-        
-        {(!loading && articles.length === 0) && (
-          <p className="text-center text-zinc-500">No se encontraron artículos para esta categoría.</p>
-        )}
-      </main>
+                {/* --- Grid de Artículos --- */}
+                {loading ? (
+                    <p className="text-center text-zinc-500">Cargando artículos...</p>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {articles.map(article => (
+                            <ArticleCard key={article.id} article={article} />
+                        ))}
+                    </div>
+                )}
+                
+                {(!loading && articles.length === 0) && (
+                    <p className="text-center text-zinc-500">No se encontraron artículos para esta categoría.</p>
+                )}
+            </main>
 
-      {/* --- Footer (No cambia) --- */}
-      <footer className="text-center p-10 mt-12 bg-white border-t border-zinc-100">
-        <p className="text-zinc-500 text-base font-['Patrick_Hand']">
-          {new Date().getFullYear()} Sun Self. Un movimiento por la calma.
-        </p>
-      </footer>
-    </div>
-  );
+            {/* --- Footer (No cambia) --- */}
+            <footer className="text-center p-10 mt-12 bg-white border-t border-zinc-100">
+                <p className="text-zinc-500 text-base font-['Patrick_Hand']">
+                    {new Date().getFullYear()} Sun Self. Un movimiento por la calma.
+                </p>
+            </footer>
+        </div>
+    );
 }
