@@ -419,7 +419,7 @@ export default function Landing() {
                 <section id="impacto" className="mb-12 scroll-mt-20">
                     <h3 className="text-3xl font-bold text-center mb-4 font-['Patrick_Hand']">El Impacto Comprobado del Hábito</h3>
                     <p className="text-center text-zinc-600 mb-8 max-w-2xl mx-auto">
-                        El "journaling" consistente muestra mejoras medibles. Este gráfico se basa en los datos anónimos de los usuarios que prueban el micro-hábito en esta web.
+                        El "journaling" consistente muestra mejoras medibles.
                     </p>
                     
                     {/* El contador que pediste */}
