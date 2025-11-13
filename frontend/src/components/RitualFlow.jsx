@@ -15,13 +15,15 @@ export default function RitualFlow({ onFinish }) {
     const [step, setStep] = useState(1);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
-    const [ritualData, setRitualData] = useState({
+const [ritualData, setRitualData] = useState({
         mente: null,
         emocion: null,
         cuerpo: null,
         meta: null,
+        // --- ESTADO CORREGIDO ---
+        // 'consejos' inicia como null, reemplazando 'fraseDelDia'
+        consejos: null, 
         estadoGeneral: null,
-        fraseDelDia: null,
     });
 
     const advanceRitual = (stepData, nextStepOverride = null) => {
@@ -31,6 +33,7 @@ export default function RitualFlow({ onFinish }) {
         setStep(prev => (nextStepOverride !== null ? nextStepOverride : prev + 1));
     };
     
+// --- FUNCIÓN 'handleProcessAndSave' CORREGIDA ---
     const handleProcessAndSave = async (metaData) => {
         if (!ritualData.mente || !ritualData.emocion || !ritualData.cuerpo) {
             console.error("Intento de procesar el ritual con datos incompletos.", ritualData);
@@ -40,7 +43,7 @@ export default function RitualFlow({ onFinish }) {
 
         setIsProcessing(true);
         setError('');
-        setStep(6);
+        setStep(6); // Mostramos "Calculando..."
 
         const registroParaEnviar = {
             mente_estado: ritualData.mente.estado,
@@ -53,21 +56,34 @@ export default function RitualFlow({ onFinish }) {
         };
 
         try {
+            // --- LLAMADA ÚNICA ---
+            // 'api.saveRegistro' llama a POST /registros
+            // El backend (registros.js) hace todo (guarda, llama a IA, actualiza)
+            // y nos devuelve el registro YA ACTUALIZADO con los consejos.
             const response = await api.saveRegistro(registroParaEnviar);
-            const registroCompleto = response.data;
+            const registroCompleto = response.data; // Este objeto SÍ tiene los consejos
 
+            // --- EL MARTILLAZO ESTÁ AQUÍ ---
+            // Leemos los nuevos campos del 'registroCompleto'
             setRitualData(prev => ({
                 ...prev,
-                ...registroParaEnviar,
-                fraseDelDia: registroCompleto.frase_sunny,
+                ...registroParaEnviar, // Guardamos los inputs (mente, emocion, etc.)
+                consejos: {
+                    consejo_mente: registroCompleto.consejo_mente,
+                    consejo_emocion: registroCompleto.consejo_emocion,
+                    consejo_cuerpo: registroCompleto.consejo_cuerpo,
+                    frase_aliento: registroCompleto.frase_aliento
+                },
                 estadoGeneral: registroCompleto.estado_general,
             }));
             
-            setStep(7);
+            setStep(7); // Mostramos el Resumen
 
         } catch (err) {
             console.error("Error al guardar el ritual:", err);
             setError(err.response?.data?.error || "No se pudo guardar tu registro. Por favor, intenta de nuevo.");
+            // Mandamos al Step 7 igualmente para mostrar el error o un fallback
+            setRitualData(prev => ({ ...prev, ...registroParaEnviar })); // Guardamos al menos lo que tenemos
             setStep(7); 
         } finally {
             setIsProcessing(false);
@@ -75,15 +91,14 @@ export default function RitualFlow({ onFinish }) {
     };
 
     const renderStep = () => {
-        // --- 3. CAMBIO DE LÓGICA: Re-numeramos el switch ---
         switch (step) {
             case 1: return <Step1_Breathing onNextStep={() => advanceRitual(null, 2)} />;
-            case 2: return <Step2_Mind onNextStep={(data) => advanceRitual(data)} />; // va al 3
-            case 3: return <Step3_Emotion onNextStep={(data) => advanceRitual(data)} />; // va al 4
-            case 4: return <Step4_Body onNextStep={(data) => advanceRitual(data, 5)} />; // va al 5
-            case 5: return <Step5_Goal onFinish={handleProcessAndSave} />; // onFinish lo manda al 6
-            case 6: return <Step6_Calculating />; // Pantalla de carga
-            case 7: return <Step7_Summary ritualData={ritualData} onNextStep={onFinish} />; // El final
+            case 2: return <Step2_Mind onNextStep={(data) => advanceRitual(data)} />;
+            case 3: return <Step3_Emotion onNextStep={(data) => advanceRitual(data)} />;
+            case 4: return <Step4_Body onNextStep={(data) => advanceRitual(data, 5)} />;
+            case 5: return <Step5_Goal onFinish={handleProcessAndSave} />; // onFinish llama a nuestra nueva lógica
+            case 6: return <Step6_Calculating />;
+            case 7: return <Step7_Summary ritualData={ritualData} onNextStep={onFinish} />;
             default: return null;
         }
     };

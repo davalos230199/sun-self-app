@@ -201,6 +201,7 @@ router.post('/', async (req, res) => {
         const { id: profileId } = req.user;
         const { mente_estado, mente_comentario, emocion_estado, emocion_comentario, cuerpo_estado, cuerpo_comentario, meta_descripcion } = req.body;
 
+        // --- 1. Crear la Meta (Igual que antes) ---
         let metaPrincipalId = null;
         if (meta_descripcion && meta_descripcion.trim() !== '') {
             const { data: metaCreada, error: metaError } = await req.supabase
@@ -213,6 +214,7 @@ router.post('/', async (req, res) => {
             metaPrincipalId = metaCreada.id;
         }
 
+        // --- 2. Calcular Estado General (Igual que antes) ---
         const menteNum = parseInt(mente_estado, 10);
         const emocionNum = parseInt(emocion_estado, 10);
         const cuerpoNum = parseInt(cuerpo_estado, 10);
@@ -222,6 +224,8 @@ router.post('/', async (req, res) => {
         if (avg >= 66) estado_general = 'soleado';
         if (avg < 33) estado_general = 'lluvioso';
 
+        // --- 3. Guardar el Registro INICIAL ---
+        // (¡IMPORTANTE! Quitamos la columna 'frase_sunny')
         const { data: nuevoRegistro, error: registroError } = await req.supabase
             .from('registros')
             .insert({
@@ -234,33 +238,57 @@ router.post('/', async (req, res) => {
                 cuerpo_comentario: cuerpo_comentario,
                 estado_general: estado_general,
                 meta_principal_id: metaPrincipalId
+                // Las 4 columnas de consejos (consejo_mente, etc.) están vacías por ahora
             })
             .select()
             .single();
 
         if (registroError) throw registroError;
 
-        // La lógica de OpenAI no cambia, pero ahora no hay meta
-        const promptDeTarea = construirPromptDeRegistro(nuevoRegistro);
+
+        // --- 4. MARTILLAZO: La Nueva Lógica de IA ---
+        // (Usamos los datos que acabamos de guardar)
+        const promptDeTarea = construirPromptDeRegistro({
+             // Bug corregido: pasamos los nombres correctos al prompt
+            mente_estado: nuevoRegistro.mente_estado,
+            mente_comentario: nuevoRegistro.mente_comentario,
+            emocion_estado: nuevoRegistro.emocion_estado,
+            emocion_comentario: nuevoRegistro.emocion_comentario,
+            cuerpo_estado: nuevoRegistro.cuerpo_estado,
+            cuerpo_comentario: nuevoRegistro.cuerpo_comentario,
+            meta_descripcion: meta_descripcion // Pasamos la descripción de la meta
+        });
+        
         const completion = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
+            model: "gpt-4o", // O "gpt-3.5-turbo-1106"
             messages: [
                 { role: "system", content: PERSONALIDAD_SUNNY },
                 { role: "user", content: promptDeTarea }
             ],
-            max_tokens: 60,
+            response_format: { type: "json_object" }, // Forzamos JSON
+            max_tokens: 250,
         });
-        const fraseGenerada = completion.choices[0].message.content.trim();
+        
+        const respuestaJson = completion.choices[0].message.content;
+        const consejos = JSON.parse(respuestaJson); // { consejo_mente, ... }
 
+        // --- 5. ACTUALIZAR el registro con los consejos ---
+        // (Este es el "segundo guardado", ahora en las nuevas columnas)
         const { data: registroActualizado, error: updateError } = await req.supabase
             .from('registros')
-            .update({ frase_sunny: fraseGenerada })
+            .update({ 
+                consejo_mente: consejos.consejo_mente,
+                consejo_emocion: consejos.consejo_emocion,
+                consejo_cuerpo: consejos.consejo_cuerpo,
+                frase_aliento: consejos.frase_aliento
+            })
             .eq('id', nuevoRegistro.id)
             .select()
             .single();
         
         if (updateError) throw updateError;
         
+        // 6. Devolvemos el registro final y actualizado al frontend
         res.status(201).json(registroActualizado);
 
     } catch (err) {

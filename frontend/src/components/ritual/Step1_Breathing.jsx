@@ -42,7 +42,7 @@ export default function Step1_Breathing({ onNextStep }) {
             className="bg-white rounded-2xl shadow-xl p-8 text-center flex flex-col items-center w-full max-w-sm border-2 border-slate-200"
         >
             <div className="text-center">
-                <h2 className="font-['Patrick_Hand'] text-2xl text-slate-800">Primero, un respiro...</h2>
+                <h1 className="font-['Patrick_Hand'] text-3xl text-slate-800">Primero, un respiro...</h1>
                 <p className="text-slate-500 text-sm -mt-1 italic">Conecta con el momento presente.</p>
             </div>
             
@@ -52,7 +52,7 @@ export default function Step1_Breathing({ onNextStep }) {
                     <Lottie animationData={breathingAnimation} loop={true} />
                 </div>
 
-                <div className="h-12 flex items-center justify-center mt-4">
+                <div className="h-12 flex items-center justify-center mt-10">
                     {/* El texto ahora tiene un color más sobrio */}
                     <span className="font-['Patrick_Hand'] text-4xl text-slate-600 drop-shadow-sm w-32 text-center">{text}</span>
                 </div>
@@ -62,7 +62,7 @@ export default function Step1_Breathing({ onNextStep }) {
                 onClick={() => onNextStep({ timestamp_start: new Date() })}
                 disabled={isButtonDisabled}
                 // Botón con el nuevo estilo visual
-                className={`mt-4 font-bold text-lg px-8 py-3 w-full rounded-xl shadow-lg transition-all transform disabled:cursor-not-allowed ${isButtonDisabled ? 'bg-zinc-300 text-zinc-500' : 'bg-slate-700 text-white hover:bg-slate-800 hover:scale-105'}`}
+                className={` mt-2 font-bold text-lg px-8 py-3 w-full rounded-xl shadow-lg transition-all transform disabled:cursor-not-allowed ${isButtonDisabled ? 'bg-zinc-300 text-zinc-500' : 'bg-slate-700 text-white hover:bg-slate-800 hover:scale-105'}`}
             >
                 {isButtonDisabled ? `Respira... (${countdown}s)` : 'Continuar'}
             </button>

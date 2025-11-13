@@ -28,7 +28,7 @@ export default function DashboardCajas({ onEdit }) {
     const { registroDeHoy } = useDia(); 
     
     // Estado del acordeón para el SlideDeRegistro
-    const [isSlideExpanded, setIsSlideExpanded] = useState(false);
+    const [isSlideExpanded, setIsSlideExpanded] = useState(true);
 
     // Si no hay registro, mostramos la invitación
     if (!registroDeHoy) {

@@ -10,7 +10,7 @@ import MetaItem from './metas/MetaItem';
 
 // --- Componente Principal: El Checklist (Reconstruido) ---
 export default function ChecklistDeMetas() {
-    const [isExpanded, setIsExpanded] = useState(true);
+    const [isExpanded, setIsExpanded] = useState(false);
     const [expandedMetaId, setExpandedMetaId] = useState(null); // Para el 'MetaItem'
     const { registroDeHoy, metas } = useDia();
 
