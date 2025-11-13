@@ -6,7 +6,7 @@ import api from '../../services/api';
 import { useDia } from '../../contexts/DiaContext';
 
 // Este componente ahora es más complejo, maneja su propia lógica de edición
-export default function MetaItem({ meta, isExpanded, onExpand }) {
+export default function MetaItem({ meta, isExpanded, onExpand, variant = 'full' }) {
     const { metas, setMetas } = useDia();
     
     // Estado de edición
@@ -83,68 +83,92 @@ export default function MetaItem({ meta, isExpanded, onExpand }) {
     };
 
 
+    // 2. DEFINIMOS LOS ESTILOS DINÁMICOS BASADOS EN LA VARIANTE
+    const isCompact = variant === 'compact';
+
+    const styles = {
+        containerPadding: isCompact ? 'p-2' : 'p-4',
+        checkboxSize: isCompact ? 'w-6 h-6' : 'w-7 h-7',
+        checkboxIconSize: isCompact ? 16 : 18,
+        marginLeft: isCompact ? 'ml-3' : 'ml-4',
+        descFont: isCompact ? 'text-base' : 'text-lg',
+        timeFont: isCompact ? 'text-[11px]' : 'text-xs',
+        timeIconSize: isCompact ? 10 : 12,
+        timePickerWidth: isCompact ? 'w-20' : 'w-24',
+        editIconSize: isCompact ? 16 : 18
+    };
+
     return (
         <motion.div
             layout="position"
-            onClick={() => !isEditing && onExpand && onExpand(meta.id)} // Solo expande si NO está en modo edición
-            className={`relative flex items-center p-4 rounded-xl shadow-md transition-all duration-300 cursor-pointer ${bgColor}`}
+            onClick={() => !isEditing && onExpand && onExpand(meta.id)}
+            // --- 3. APLICAMOS EL PADDING DEL CONTENEDOR ---
+            className={`relative flex items-center rounded-xl shadow-md transition-all duration-300 cursor-pointer ${styles.containerPadding} ${bgColor}`}
             style={{ opacity: isPending ? 1 : 0.8 }}
         >
             <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl ${barraColor}`}></div>
+            
+            {/* --- 4. APLICAMOS TAMAÑO DE CHECKBOX --- */}
             <button
                 onClick={handleToggle}
-                disabled={isCompleted || isNotCompleted} // Deshabilitado si es true O false
-                className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all duration-300 
+                disabled={isCompleted || isNotCompleted}
+                className={`flex-shrink-0 ${styles.checkboxSize} rounded-lg border-2 flex items-center justify-center transition-all duration-300 
                     ${isCompleted ? 'bg-green-500 border-green-600' : ''}
                     ${isNotCompleted ? 'bg-red-200 border-red-400' : ''}
                     ${isPending ? 'bg-white border-zinc-300 hover:border-amber-500 cursor-pointer' : 'cursor-default'}
                 `}
             >
-                {isCompleted && <Check size={18} className="text-white" />}
-                {isNotCompleted && <X size={18} className="text-red-500" />}
+                {/* --- 5. APLICAMOS TAMAÑO DE ICONO DE CHECKBOX --- */}
+                {isCompleted && <Check size={styles.checkboxIconSize} className="text-white" />}
+                {isNotCompleted && <X size={styles.checkboxIconSize} className="text-red-500" />}
             </button>
 
-            <div className="flex-grow ml-4 flex justify-between items-center">
+             {/* --- 6. APLICAMOS MARGEN IZQUIERDO --- */}
+            <div className={`flex-grow ${styles.marginLeft} flex justify-between items-center`}>
                 {isEditing ? (
                     // MODO EDICIÓN:
                     <>
-                        <p className="font-['Patrick_Hand'] text-lg text-amber-800">{meta.descripcion}</p>
+                        {/* --- 7. APLICAMOS TAMAÑO DE FUENTE --- */}
+                        <p className={`font-['Patrick_Hand'] ${styles.descFont} text-amber-800`}>{meta.descripcion}</p>
                         <div className="flex items-center gap-2">
+                            {/* --- 8. APLICAMOS ANCHO DE TIMEPICKER --- */}
                             <TimePicker
                                 onChange={setEditingHora}
                                 value={editingHora}
-                                className="w-24 bg-white/70 rounded-lg"
+                                className={`${styles.timePickerWidth} bg-white/70 rounded-lg`}
                                 disableClock={true}
                                 clearIcon={null}
                                 format="HH:mm"
                             />
-                            <button onClick={handleSaveEdit} className="p-2 text-green-500 hover:text-green-700"><Check size={18} /></button>
-                            <button onClick={handleCancelEdit} className="p-2 text-red-400 hover:text-red-500"><X size={18} /></button>
+                            {/* --- 9. APLICAMOS TAMAÑO ICONOS DE EDICIÓN --- */}
+                            <button onClick={handleSaveEdit} className="p-2 text-green-500 hover:text-green-700"><Check size={styles.editIconSize} /></button>
+                            <button onClick={handleCancelEdit} className="p-2 text-red-400 hover:text-red-500"><X size={styles.editIconSize} /></button>
                         </div>
                     </>
                 ) : (
                     // MODO VISTA:
                     <>
                         <div>
-                            <p className={`font-['Patrick_Hand'] text-lg ${!isPending ? 'line-through italic text-zinc-500' : 'text-amber-800'}`}>
+                            {/* --- 10. APLICAMOS TAMAÑO DE FUENTE DE DESCRIPCIÓN --- */}
+                            <p className={`ml-14 font-['Patrick_Hand'] ${styles.descFont} ${!isPending ? 'line-through italic text-zinc-500' : 'text-amber-800'}`}>
                                 {meta.descripcion}
                             </p>
                             {meta.hora_objetivo && (
-                                <div className="flex items-center italic gap-1 text-xs text-zinc-400">
-                                    <Clock color='orange' size={12} />
+                                // --- 11. APLICAMOS TAMAÑO DE FUENTE Y DE ICONO DE HORA ---
+                                <div className={`flex items-center ml-24 italic gap-1 ${styles.timeFont} text-zinc-400`}>
+                                    <Clock color='orange' size={styles.timeIconSize} />
                                     <span>{meta.hora_objetivo.substring(0, 5)}hs</span>
                                 </div>
                             )}
                         </div>
                         <AnimatePresence>
-                            {/* --- LA CORRECCIÓN ESTÁ AQUÍ --- */}
-                            {/* Le permitimos mostrarse si está (pendiente O incompleta) */}
                             {isExpanded && (isPending || isNotCompleted) && (
                                 <motion.div
                                     initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
                                     className="flex items-center rounded-full"
                                 >
-                                    <button onClick={handleStartEdit}><Pencil color='orange' size={18}/></button>
+                                    {/* --- 12. APLICAMOS TAMAÑO ICONO DE LÁPIZ --- */}
+                                    <button onClick={handleStartEdit}><Pencil color='orange' size={styles.editIconSize}/></button>
                                 </motion.div>
                             )}
                         </AnimatePresence>

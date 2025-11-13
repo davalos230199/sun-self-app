@@ -51,8 +51,8 @@ const ConsejoAcordeon = ({ icon, title, consejo, comentario, colorClass }) => {
                     <img src={icon} alt={title} className="w-full h-full" />
                 </div>
                 <div className="flex-grow">
-                    <h4 className={`font-['Patrick_Hand'] text-base ${colorClass.text}`}>{title}</h4>
-                    <p className="text-sm text-zinc-700 -mt-1">"{consejo || '...'}"</p>
+                    <h4 className={`font-['Patrick_Hand'] text-center ${colorClass.text}`}>{title}</h4>
+                    <p className="text-sm text-zinc-700 text-center -mt-1">"{consejo || '...'}"</p>
                 </div>
                 <div className="flex-shrink-0 text-zinc-500">
                     {isNestedExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}

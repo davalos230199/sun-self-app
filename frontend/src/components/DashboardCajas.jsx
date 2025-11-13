@@ -14,7 +14,7 @@ import ChecklistDeMetas from './ChecklistDeMetas';
 const CajaLink = ({ to, children }) => (
     <Link 
         to={to}
-        className="aspect-square bg-white border border-zinc-200 rounded-2xl shadow-lg 
+        className="aspect-square bg-slate-200 border border-zinc-200 rounded-2xl shadow-lg 
                    flex flex-col items-center justify-center p-4 
                    text-zinc-700 hover:bg-zinc-50 transition-colors no-underline"
     >
@@ -58,7 +58,7 @@ export default function DashboardCajas({ onEdit }) {
 
             {/* 3. Ladrillos: Los Botones de Navegación */}
             {/* (Le damos 'pt-4' a la grilla para que no esté pegada) */}
-            <div className="flex-grow grid grid-cols-2 gap-4 pt-4">
+            <div className="flex-grow grid grid-cols-2  gap-4 pt-4">
                 <CajaLink to={`/app/journal`}>
                     <LayoutDashboard size={32} />
                     <span className="mt-2 font-['Patrick_Hand'] text-lg">Tablero</span>

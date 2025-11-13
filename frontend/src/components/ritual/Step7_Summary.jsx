@@ -73,36 +73,36 @@ export default function Step7_Summary({ ritualData, onNextStep }) {
                 <ul className="space-y-3 text-left">
                     {/* Consejo de Mente */}
                     <li className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-blue-100 rounded-full mt-1 p-1.5">
+                        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-blue-100 rounded-full mt-8">
                             {/* --- CAMBIO DE ICONO --- */}
                             <img src={brainIcon} alt="Mente" className="w-full h-full" />
                         </div>
                         <div>
-                            <h3 className="font-['Patrick_Hand'] text-lg text-blue-800">Mente</h3>
+                            <h3 className="font-['Patrick_Hand'] text-lg text-blue-800 text-center -ml-12">Mente</h3>
                             <p className="text-zinc-700 text-base -mt-4">"{consejoMente}"</p>
                         </div>
                     </li>
                     
                     {/* Consejo de Emoción */}
                     <li className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-pink-100 rounded-full mt-1 p-1.5">
+                        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-pink-100 rounded-full mt-8">
                             {/* --- CAMBIO DE ICONO --- */}
                             <img src={emotionIcon} alt="Emoción" className="w-full h-full" />
                         </div>
                         <div>
-                            <h3 className="font-['Patrick_Hand'] text-lg text-pink-800">Emoción</h3>
+                            <h3 className="font-['Patrick_Hand'] text-lg text-pink-800 text-center -ml-12">Emoción</h3>
                             <p className="text-zinc-700 text-base -mt-4">"{consejoEmocion}"</p>
                         </div>
                     </li>
 
                     {/* Consejo de Cuerpo */}
                     <li className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-green-100 rounded-full mt-1 p-1.5">
+                        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-green-100 rounded-full mt-8">
                              {/* --- CAMBIO DE ICONO --- */}
                             <img src={bodyIcon} alt="Cuerpo" className="w-full h-full" />
                         </div>
                         <div>
-                            <h3 className="font-['Patrick_Hand'] text-lg text-green-800">Cuerpo</h3>
+                            <h3 className="font-['Patrick_Hand'] text-lg text-green-800 text-center -ml-12">Cuerpo</h3>
                             <p className="text-zinc-700 text-base -mt-4">"{consejoCuerpo}"</p>
                         </div>
                     </li>
