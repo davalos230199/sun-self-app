@@ -78,7 +78,7 @@ export default function Step2_Mind({ onNextStep }) {
                         value={thought} 
                         onChange={(e) => setThought(e.target.value)} 
                         rows="2" 
-                        className="w-full bg-white/70 italic border border-zinc-300 rounded-lg p-2 text-zinc-800 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-400" 
+                        className="w-full -mb-6 bg-white/70 italic border border-zinc-300 rounded-lg p-2 text-zinc-800 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-400" 
                     />
                     <ClimaSlider 
                         value={mindState}

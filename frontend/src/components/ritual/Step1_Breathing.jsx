@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import Lottie from 'lottie-react'; // Cambiamos la importación para usar Lottie directamente
 import breathingAnimation from '../../assets/animations/breath.json';
 
-const EJERCICIO_DURATION_SEC = 5; // Un poco más de tiempo para conectar
+const EJERCICIO_DURATION_SEC = 10; // Un poco más de tiempo para conectar
 
 export default function Step1_Breathing({ onNextStep }) {
     const [text, setText] = useState('Inhala...');

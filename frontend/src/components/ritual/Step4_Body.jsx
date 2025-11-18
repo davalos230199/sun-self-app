@@ -60,18 +60,18 @@ export default function Step4_Body({ onNextStep }) {
             >
             {!timerFinished ? (
                 <div className="w-full flex flex-col items-center text-center">
-                    <p className="text-zinc-600 mb-4 italic">Siente tu cuerpo de pies a cabeza, sin juicio.</p>
+                    <p className="text-zinc-600 mb-4 italic">Siente todo tu cuerpo de pies a cabeza, sin juicio.</p>
                     <SunTimer duration={5} onComplete={() => setTimerFinished(true)} />
                 </div>
             ) : (
                 <div className="w-full flex flex-col items-center gap-4">
                     <p className="text-zinc-600 px-2 italic text-sm">"{consejo}"</p>
                     <textarea 
-                        placeholder="Una sensación física que destaque..." 
+                        placeholder="una sensación física que destaque..." 
                         value={sensation}
                         onChange={(e) => setSensation(e.target.value)}
                         rows="2" 
-                        className="w-full bg-white/70 italic border border-zinc-300 rounded-lg p-2 text-zinc-800 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-green-400" 
+                        className="w-full -mb-6 bg-white/70 italic border border-zinc-300 rounded-lg p-2 text-zinc-800 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-green-400" 
                     />
                     <ClimaSlider 
                         value={bodyState}

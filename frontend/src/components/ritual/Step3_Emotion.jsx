@@ -59,18 +59,18 @@ export default function Step3_Emotion({ onNextStep }) {
             >
             {!timerFinished ? (
                 <div className="w-full flex flex-col items-center text-center">
-                    <p className="text-zinc-600 mb-4 italic">Simplemente nombra la emoción que sientes, sin juicio.</p>
+                    <p className="text-zinc-600 mb-4 italic">Palpa tu pecho suavemente y siente.</p>
                     <SunTimer duration={5} onComplete={() => setTimerFinished(true)} />
                 </div>
             ) : (
                 <div className="w-full flex flex-col items-center gap-4">
                     <p className="text-zinc-600 px-2 italic text-sm">"{cita}"</p>
                     <textarea 
-                        placeholder="Una palabra o frase sobre este sentimiento..." 
+                        placeholder="nombra la emoción que predomina..." 
                         value={feeling} 
                         onChange={(e) => setFeeling(e.target.value)} 
                         rows="2" 
-                        className="w-full bg-white/70 italic border border-zinc-300 rounded-lg p-2 text-zinc-800 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-pink-400" 
+                        className="w-full -mb-6 bg-white/70 italic border border-zinc-300 rounded-lg p-2 text-zinc-800 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-pink-400" 
                     />
                     <ClimaSlider 
                         value={emotionState}

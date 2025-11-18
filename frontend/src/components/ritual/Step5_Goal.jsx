@@ -55,7 +55,7 @@ export default function Step5_Goal({ onFinish }) {
             <div className="w-full flex flex-col items-center gap-4 flex-grow justify-center">
                 <p className="text-zinc-600 px-2 italic text-sm">"{cita}"</p>
                 <textarea
-                    placeholder="Ej: Terminar ese informe importante..."
+                    placeholder="Ej: Hoy me enfocaré en mantener la calma y la concentración."
                     value={meta}
                     onChange={(e) => setMeta(e.target.value)}
                     rows="3"
