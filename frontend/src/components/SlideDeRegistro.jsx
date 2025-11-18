@@ -17,7 +17,6 @@ import emotionIcon from '../assets/icons/emotion.svg';
 import bodyIcon from '../assets/icons/body.svg';
 
 const ClimaIcon = ({ estadoGeneral }) => {
-// ... (sin cambios)
     const anim = estadoGeneral === 'soleado' 
         ? sunLoopAnimation 
         : estadoGeneral === 'lluvioso' 
@@ -52,7 +51,7 @@ const ConsejoAcordeon = ({ icon, title, consejo, comentario, colorClass }) => {
                 </div>
                 <div className="flex-grow">
                     <h4 className={`font-['Patrick_Hand'] text-center ${colorClass.text}`}>{title}</h4>
-                    <p className="text-sm text-zinc-700 text-center -mt-1">"{consejo || '...'}"</p>
+                    <p className="text-xs text-zinc-700 text-center -mt-1">"{consejo || '...'}"</p>
                 </div>
                 <div className="flex-shrink-0 text-zinc-500">
                     {isNestedExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
