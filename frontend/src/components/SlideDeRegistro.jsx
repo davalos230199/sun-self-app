@@ -174,12 +174,11 @@ export default function SlideDeRegistro({
                     {/* La Frase */}
                     {isDashboard ? (
                         <h2 className="text-lg text-center italic pl-2 font-['Patrick_Hand'] font-semibold text-zinc-800 break-words">
-                            {/* --- CAMBIO CLAVE: frase_aliento --- */}
                             {registro.frase_aliento || registro.frase_sunny}
                         </h2>
                     ) : (
                         <h2 className="text-sm font-['Patrick_Hand'] text-zinc-800 italic break-words">
-                            "{registro.frase_sunny}"
+                            "{registro.frase_aliento || registro.frase_sunny}"
                         </h2>
                     )}
                     
