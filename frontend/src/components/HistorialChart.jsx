@@ -43,16 +43,16 @@ export default function HistorialChart({ data, filter, visibility }) {
     }
 
     return (
-        <div className="relative w-full h-[350px]">
-                <div className="absolute top-0 left-0 w-8 h-full z-10">
+        <div className="relative w-full h-[300px]">
+            <div className="absolute top-0 left-2 w-8 h-full z-10">
                 {/* --- 2. Reemplazamos Lottie por <img> --- */}
                 <div className="absolute w-10 h-10" style={{ top: '12%', transform: 'translateY(-50%)' }} title="Soleado (83)">
                     <img src={sunIcon} alt="Soleado" />
                 </div>
-                <div className="absolute w-10 h-10" style={{ top: '45%', transform: 'translateY(-50%)' }} title="Nublado (50)">
+                <div className="absolute w-10 h-10" style={{ top: '41%', transform: 'translateY(-50%)' }} title="Nublado (50)">
                     <img src={cloudIcon} alt="Nublado" />
                 </div>
-                <div className="absolute w-10 h-10" style={{ top: '78%', transform: 'translateY(-50%)' }} title="Lluvioso (16)">
+                <div className="absolute w-10 h-10" style={{ top: '72%', transform: 'translateY(-50%)' }} title="Lluvioso (16)">
                     <img src={rainIcon} alt="Lluvioso" />
                 </div>
             </div>

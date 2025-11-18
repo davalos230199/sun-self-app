@@ -176,7 +176,7 @@ export default function SlideDeRegistro({
                             {registro.frase_aliento || registro.frase_sunny}
                         </h2>
                     ) : (
-                        <h2 className="text-sm font-['Patrick_Hand'] text-zinc-800 italic break-words">
+                        <h2 className="text-sm font-['Patrick_Hand'] text-zinc-800 italic font-semibold break-words">
                             "{registro.frase_aliento || registro.frase_sunny}"
                         </h2>
                     )}
