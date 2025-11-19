@@ -63,9 +63,14 @@ const getRegistroPorFecha = (fecha) => apiClient.get(`/registros/fecha/${fecha}`
 const getFraseHeader = (category) => apiClient.get(`/frases/random?category=${category}`);
 
 //HABITOS PIXELA
-  const getHabitos = () => apiClient.get('/habitos');
-  const crearHabito = (payload) => apiClient.post('/habitos/crear', payload);
-  const logHabito = (graphID) => apiClient.post(`/habitos/log/${graphID}`);
+const getHabitos = () => apiClient.get('/habitos');
+const crearHabito = (payload) => apiClient.post('/habitos/crear', payload);
+const logHabito = (graphID) => apiClient.post(`/habitos/log/${graphID}`);
+
+  // --- RUTAS PÚBLICAS (ANÓNIMAS - NUEVO) ---
+const saveRegistroAnonimo = (data) => apiClient.post('/anonimo/guardar', data);
+const sugerirMetaAnonimo = (data) => apiClient.post('/anonimo/sugerir', data);
+const getStatsAnonimas = () => apiClient.get('/anonimo/stats');
 
 // --- EXPORTACIÓN UNIFICADA (sin los endpoints de auth manual que ya no existen) ---
 const api = { 
@@ -103,6 +108,11 @@ const api = {
   getHabitos,
   crearHabito,
   logHabito,
+
+  // RUTAS ANÓNIMAS
+  saveRegistroAnonimo,
+  sugerirMetaAnonimo,
+  getStatsAnonimas,
 };
 
 export default api;

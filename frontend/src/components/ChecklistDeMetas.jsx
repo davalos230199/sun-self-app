@@ -112,7 +112,7 @@ export default function ChecklistDeMetas() {
                     <TrendingUp size={28} />
                 </div>
                 <div className="flex-grow mx-4 text-center">
-                    <h2 className="font-['Patrick_Hand'] uppercase text-2xl font-semibold text-green-800 break-words">
+                    <h2 className="font-['Patrick_Hand'] uppercase text-xl font-semibold text-green-800 break-words">
                         {metaPrincipal.descripcion}
                     </h2>
                 </div>

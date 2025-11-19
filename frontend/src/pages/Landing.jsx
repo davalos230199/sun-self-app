@@ -1,32 +1,26 @@
-// frontend/src/pages/Landing.jsx
-// Esta es AHORA la Landing Page principal.
-// Es el "Informe Interactivo" reconstruido en React.
-
-import React, { useState, useEffect } from 'react'; // <-- Importamos useEffect
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Lottie from 'lottie-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { ArrowDown } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { ArrowDown, Brain, Heart, Shield, X, Sun, Sparkles } from 'lucide-react';
 
-// Importamos las animaciones que vamos a usar
+// --- Importaciones de Animaciones ---
+// Asegúrate de que estas rutas coincidan con tu estructura de carpetas
 import sunLoopAnimation from '../assets/animations/sun-loop.json';
 import cloudLoopAnimation from '../assets/animations/cloud-loop.json';
 import rainLoopAnimation from '../assets/animations/rain-loop.json';
 import sunRevealAnimation from '../assets/animations/sun-reveal.json';
 import cloudRevealAnimation from '../assets/animations/cloud-reveal.json';
 import rainRevealAnimation from '../assets/animations/rain-reveal.json';
+import brainLoopAnimation from '../assets/animations/brain-loop.json'; 
+import goalLoopAnimation from '../assets/animations/goal-loop.json';
 
-// --- CORRECCIÓN: Importamos los 'reveal' y 'loop' correctos para "El Hábito" ---
-import brainRevealAnimation from '../assets/animations/brain-loop.json';
-import goalRevealAnimation from '../assets/animations/goal-loop.json';
-
-// Importamos el Ladrillo InfoSlide y los iconos
+// --- Componentes ---
 import InfoSlide from '../components/InfoSlide.jsx';
-import { Brain, Heart, Shield } from 'lucide-react';
+import RitualFlow from '../components/RitualFlow.jsx'; 
 
-
-// --- Sub-componente: Botón de Estado (Sin cambios) ---
+// --- Sub-componente: Botón de Estado ---
 const StateButton = ({ lottieData, state, activeState, onSelect, 'aria-label': ariaLabel }) => {
     const isActive = activeState === state;
     let borderColor = 'border-transparent';
@@ -58,7 +52,7 @@ const StateButton = ({ lottieData, state, activeState, onSelect, 'aria-label': a
     );
 };
 
-// --- Sub-componente: Descripción del Estado (Sin cambios) ---
+// --- Sub-componente: Descripción del Estado ---
 const StateDescription = ({ state, target, text, subtext }) => {
     let bgColor = '';
     let textColor = '';
@@ -77,9 +71,10 @@ const StateDescription = ({ state, target, text, subtext }) => {
         subtextColor = 'text-gray-700';
     }
     return (
-        <AnimatePresence>
+        <AnimatePresence mode='wait'>
             {state === target && (
                 <motion.div
+                    key={target}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
@@ -93,16 +88,15 @@ const StateDescription = ({ state, target, text, subtext }) => {
     );
 };
 
-// --- Datos simulados para el gráfico (Sin cambios) ---
+// --- Datos simulados para el gráfico ---
 const chartData = [
-    { name: 'Día 1-7', 'Estado General': 4.5, 'Metas Completadas': 3 },
-    { name: 'Día 8-14', 'Estado General': 5.8, 'Metas Completadas': 5 },
-    { name: 'Día 15-21', 'Estado General': 7.2, 'Metas Completadas': 6 },
-    { name: 'Día 22-23', 'Estado General': 8.1, 'Metas Completadas': 8 },
+    { name: 'Semana 1', 'Estado General': 4.5, 'Metas': 3 },
+    { name: 'Semana 2', 'Estado General': 5.8, 'Metas': 5 },
+    { name: 'Semana 3', 'Estado General': 7.2, 'Metas': 6 },
+    { name: 'Semana 4', 'Estado General': 8.5, 'Metas': 8 },
 ];
 
-// --- MARTILLAZO 2: Sub-componente para la Animación Secuencial del Hero ---
-// --- MARTILLAZO: Hero "Épico" Secuencial (Lógica de Step6 + Timer) ---
+// --- Animación Secuencial del Hero ---
 const animMap = {
     sun: { reveal: sunRevealAnimation, loop: sunLoopAnimation },
     cloud: { reveal: cloudRevealAnimation, loop: cloudLoopAnimation },
@@ -111,44 +105,36 @@ const animMap = {
 const states = ['sun', 'cloud', 'rain'];
 
 const HeroAnimationSequence = () => {
-    const [stateIndex, setStateIndex] = useState(0); // 0=sun, 1=cloud, 2=rain
+    const [stateIndex, setStateIndex] = useState(0);
     const [currentAnim, setCurrentAnim] = useState(animMap.sun.reveal);
     const [isLoop, setIsLoop] = useState(false);
-
     const currentStateKey = states[stateIndex];
 
     const handleComplete = () => {
-        // Si el "reveal" terminó...
         if (!isLoop) {
-            // 1. Ponemos el "loop"
             setCurrentAnim(animMap[currentStateKey].loop);
             setIsLoop(true);
-            
-            // 2. Seteamos el timer de 5 segundos para el *próximo* estado
             const timer = setTimeout(() => {
                 const nextIndex = (stateIndex + 1) % states.length;
                 const nextStateKey = states[nextIndex];
-                
-                // 3. Cambiamos al "reveal" del próximo estado
                 setStateIndex(nextIndex);
                 setCurrentAnim(animMap[nextStateKey].reveal);
                 setIsLoop(false);
-            }, 5000); // 5 segundos de loop
-
+            }, 5000);
             return () => clearTimeout(timer);
         }
     };
 
     return (
-        <div className="absolute inset-0 z-0 flex items-center justify-center opacity-40 overflow-hidden">
-            <AnimatePresence>
+        <div className="absolute inset-0 z-0 flex items-center justify-center opacity-40 overflow-hidden pointer-events-none">
+            <AnimatePresence mode='wait'>
                 <motion.div
-                    key={currentStateKey} // La key (sun, cloud, rain) fuerza el fade
+                    key={currentStateKey}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 1.5 }}
-                    className="absolute w-[130%] h-[130%]" // "Bien grande"
+                    className="absolute w-[130%] h-[130%]"
                 >
                     <Lottie
                         animationData={currentAnim}
@@ -162,307 +148,384 @@ const HeroAnimationSequence = () => {
     );
 };
 
-// --- Página Principal de la LANDING ---
+// --- COMPONENTE PRINCIPAL: LANDING ---
 export default function Landing() {
-    
-    // Estados (sin cambios)
     const [mindState, setMindState] = useState('soleado');
     const [emotionState, setEmotionState] = useState('soleado');
     const [bodyState, setBodyState] = useState('soleado');
     const [expandedBenefit, setExpandedBenefit] = useState(null);
+    
+    // Estado para controlar el modal del Ritual Demo
+    const [showDemoRitual, setShowDemoRitual] = useState(false);
+
     const handleBenefitToggle = (id) => {
         setExpandedBenefit(prevId => (prevId === id ? null : id));
     };
     
-    // Lógica de Scroll Suave (sin cambios)
     const scrollTo = (id) => {
         const element = document.getElementById(id);
         if (element) {
-            element.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     };
 
+    // Handler para cuando termina el ritual en modo demo
+    const handleFinishDemo = (meta) => {
+        // Al ser demo y anónimo, cuando termina simplemente cerramos el modal
+        // Los datos ya se habrán enviado al backend anónimo gracias a RitualFlow mode="anon"
+        console.log("Ritual anónimo finalizado.");
+        setShowDemoRitual(false);
+    };
+
     return (
-        <div className="bg-white min-h-screen text-zinc-800">
+        <div className="bg-white min-h-screen text-zinc-800 relative overflow-x-hidden">
             
-            {/* --- Header (MARTILLAZO 1: Layout Corregido) --- */}
-            <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
+            {/* --- BOTÓN FLOTANTE (FAB) - SOL PULSANTE --- */}
+            <motion.button
+                initial={{ scale: 0, rotate: 180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                whileHover={{ scale: 1.1, rotate: 45 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setShowDemoRitual(true)}
+                className="fixed bottom-6 right-6 z-40 bg-amber-400 text-white p-4 rounded-full shadow-2xl border-4 border-white flex items-center justify-center group ring-4 ring-amber-100/50"
+                title="Probar Micro-Hábito"
+            >
+                <div className="absolute inset-0 bg-amber-300 rounded-full animate-ping opacity-20"></div>
+                <Sun size={32} className="text-white relative z-10 fill-amber-100" strokeWidth={2.5} />
+                
+                {/* Tooltip flotante */}
+                <span className="absolute right-full mr-4 bg-zinc-800 text-white text-sm font-['Patrick_Hand'] px-4 py-2 rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0 shadow-lg">
+                    ¡Haz un Check-in Rápido!
+                </span>
+            </motion.button>
+
+            {/* --- MODAL DEL RITUAL DEMO --- */}
+            <AnimatePresence>
+                {showDemoRitual && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 bg-white/60 backdrop-blur-lg flex items-center justify-center p-4"
+                    >
+                        {/* Botón Cerrar */}
+                        <button 
+                            onClick={() => setShowDemoRitual(false)}
+                            className="absolute top-6 right-6 p-2 bg-white rounded-full shadow-lg text-zinc-400 hover:text-red-500 hover:scale-110 transition-all z-50 border border-zinc-100"
+                        >
+                            <X size={24} />
+                        </button>
+                        
+                        {/* Contenedor del Ritual */}
+                        <div className="w-full max-w-lg relative">
+                            <RitualFlow 
+                                mode="anon" // <-- MODO ANÓNIMO ACTIVADO
+                                onFinish={handleFinishDemo} 
+                            />
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* --- HEADER --- */}
+            <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md shadow-sm transition-all duration-300">
                 <nav className="max-w-7xl mx-auto flex justify-between items-center p-4">
-                    
-                    {/* --- Grupo Izquierdo (Título + Navegación) --- */}
                     <div className="flex items-center space-x-8">
-                        <Link to="/" className="flex-shrink-0 flex items-center space-x-2 no-underline">
-                            <span className="font-['Patrick_Hand'] text-3xl font-bold text-orange-600">
+                        <Link to="/" className="flex-shrink-0 flex items-center space-x-2 no-underline group">
+                            <Sun className="text-orange-500 group-hover:rotate-45 transition-transform duration-500" size={28} />
+                            <span className="font-['Patrick_Hand'] text-3xl font-bold text-zinc-800 group-hover:text-orange-600 transition-colors">
                                 Sun Self
                             </span>
                         </Link>
                         
-                        <div className="hidden md:flex items-center space-x-4">
-                            <button onClick={() => scrollTo('estado')} className="font-['Patrick_Hand'] text-lg text-zinc-600 hover:text-orange-600">Tu Estado</button>
-                            <button onClick={() => scrollTo('beneficios')} className="font-['Patrick_Hand'] text-lg text-zinc-600 hover:text-orange-600">Beneficios</button>
-                            <button onClick={() => scrollTo('como')} className="font-['Patrick_Hand'] text-lg text-zinc-600 hover:text-orange-600">El Hábito</button>
-                            <button onClick={() => scrollTo('impacto')} className="font-['Patrick_Hand'] text-lg text-zinc-600 hover:text-orange-600">Impacto</button>
+                        <div className="hidden md:flex items-center space-x-6">
+                            {['Tu Estado', 'Beneficios', 'El Hábito', 'Impacto'].map((item, index) => {
+                                const ids = ['estado', 'beneficios', 'como', 'impacto'];
+                                return (
+                                    <button 
+                                        key={item}
+                                        onClick={() => scrollTo(ids[index])} 
+                                        className="font-['Patrick_Hand'] text-lg text-zinc-500 hover:text-orange-500 transition-colors"
+                                    >
+                                        {item}
+                                    </button>
+                                )
+                            })}
                         </div>
                     </div>
-
-                    {/* --- Grupo Derecho (Acciones) --- */}
                     <div className="flex items-center space-x-4">
-                        <Link 
-                            to="/filosofia" 
-                            className="font-['Patrick_Hand'] text-lg text-zinc-600 hover:text-orange-600"
-                        >
-                            Noticias
-                        </Link>
+                        <Link to="/filosofia" className="hidden sm:block font-['Patrick_Hand'] text-lg text-zinc-500 hover:text-orange-500 transition-colors">Noticias</Link>
                         <Link 
                             to="/login"
-                            className="bg-orange-500 text-white font-['Patrick_Hand'] text-lg px-6 py-2 rounded-full hover:bg-orange-600 transition-colors"
+                            className="bg-zinc-900 text-white font-['Patrick_Hand'] text-lg px-6 py-2 rounded-full hover:bg-zinc-800 hover:scale-105 transition-all shadow-md"
                         >
-                            Ingresar a la App
+                            Ingresar
                         </Link>
                     </div>
                 </nav>
             </header>
 
-            <main className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
+            <main className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl relative z-10">
                 
-                {/* --- "HERO ÉPICO" (MARTILLAZO 2: Animación Secuencial) --- */}
-                <section className="h-screen flex flex-col items-center justify-center text-center relative -mt-20">
-                    
-                    {/* NUEVO Fondo Secuencial Épico */}
+                {/* --- HERO SECTION --- */}
+                <section className="min-h-[90vh] flex flex-col items-center justify-center text-center relative -mt-20">
                     <HeroAnimationSequence />
-
-                    {/* Contenido del Hero (en primer plano) */}
-                    <div className="relative z-10">
-                        <motion.h2 
-                            className="text-5xl md:text-7xl font-bold mb-4 font-['Patrick_Hand']"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5 }}
+                    <div className="relative z-10 px-4 mt-10">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.8 }}
                         >
-                            ¿Cómo estás... <span className="text-orange-600">realmente</span>?
-                        </motion.h2>
+                             <h2 className="text-5xl md:text-8xl font-bold mb-6 font-['Patrick_Hand'] text-zinc-800 drop-shadow-sm leading-tight">
+                                ¿Cómo estás... <br className="hidden md:block"/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">realmente</span>?
+                            </h2>
+                        </motion.div>
+                       
                         <motion.p 
-                            className="text-xl text-zinc-600 max-w-3xl mx-auto"
+                            className="text-xl md:text-2xl text-zinc-600 max-w-2xl mx-auto font-light leading-relaxed mb-10"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.1 }}
+                            transition={{ duration: 0.7, delay: 0.2 }}
                         >
-                            En el caos de la vida diaria, es fácil desconectarse de uno mismo. La auto-observación es el primer paso para recuperar el control.
+                            En el caos de la vida diaria, es fácil desconectarse. <br className="hidden md:block"/> 
+                            <strong>Sun Self</strong> es tu micro-habito diario de calma y estrategia.
                         </motion.p>
+                        
+                        <motion.button
+                             initial={{ opacity: 0, y: 20 }}
+                             animate={{ opacity: 1, y: 0 }}
+                             transition={{ delay: 0.5 }}
+                             onClick={() => setShowDemoRitual(true)}
+                             className="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-['Patrick_Hand'] text-2xl px-10 py-4 rounded-full hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 shadow-lg flex items-center gap-3 mx-auto"
+                        >
+                            <Sparkles size={24} className="text-amber-200" />
+                            Hacer un Check-in Ahora
+                        </motion.button>
                     </div>
 
-                    {/* Flecha de Scroll Down */}
                     <motion.div
                         className="absolute bottom-10 z-10"
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 1, duration: 1 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1, y: [0, 10, 0] }}
+                        transition={{ delay: 1.5, duration: 2, repeat: Infinity }}
                     >
-                        <ArrowDown size={32} className="text-zinc-400 animate-bounce" />
+                        <ArrowDown size={32} className="text-zinc-300" />
                     </motion.div>
                 </section>
 
-                {/* --- Interactive State Section (Sin cambios) --- */}
-                <section id="estado" className="mb-20 scroll-mt-20">
-                    <h3 className="text-3xl font-bold text-center mb-4 font-['Patrick_Hand']">Identifica tu "Clima" Interno</h3>
-                    <p className="text-center text-zinc-600 mb-8 max-w-2xl mx-auto">
-                        Aprender a vernos implica reconocer nuestro estado sin juicio. ¿Cuál es tu clima hoy? Haz clic en un estado para ver qué significa.
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* --- ESTADOS INTERACTIVOS --- */}
+                <section id="estado" className="mb-32 scroll-mt-24">
+                    <div className="text-center mb-16">
+                        <h3 className="text-4xl font-bold mb-4 font-['Patrick_Hand'] text-zinc-800">Tu "Clima" Interno</h3>
+                        <p className="text-zinc-500 text-lg max-w-2xl mx-auto">
+                            Antes de actuar, observa. Haz clic para explorar los estados.
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {/* Card: Mente */}
                         <motion.div 
-                            className="bg-blue-50 p-6 rounded-2xl shadow-lg"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.2 }}
+                            className="bg-white/60 backdrop-blur-sm border border-blue-100 p-8 rounded-[2rem] shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1"
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
                         >
-                            <h4 className="text-2xl font-bold text-center mb-4 font-['Patrick_Hand']">Mente</h4>
-                            <div className="flex justify-around mb-4 gap-1 -ml-3">
-                                <StateButton lottieData={sunLoopAnimation} state="soleado" activeState={mindState} onSelect={setMindState} aria-label="Mente Soleada" />
-                                <StateButton lottieData={cloudLoopAnimation} state="nublado" activeState={mindState} onSelect={setMindState} aria-label="Mente Nublada" />
-                                <StateButton lottieData={rainLoopAnimation} state="lluvioso" activeState={mindState} onSelect={setMindState} aria-label="Mente Lluviosa" />
+                            <h4 className="text-3xl font-bold text-center mb-8 font-['Patrick_Hand'] text-blue-600">Mente</h4>
+                            <div className="flex justify-center mb-8 gap-2">
+                                <StateButton lottieData={sunLoopAnimation} state="soleado" activeState={mindState} onSelect={setMindState} />
+                                <StateButton lottieData={cloudLoopAnimation} state="nublado" activeState={mindState} onSelect={setMindState} />
+                                <StateButton lottieData={rainLoopAnimation} state="lluvioso" activeState={mindState} onSelect={setMindState} />
                             </div>
-                            <div className="h-[100px] relative">
-                                <StateDescription state={mindState} target="soleado" text="Mente Despejada" subtext="Tus pensamientos son claros, estás enfocado y optimista." />
-                                <StateDescription state={mindState} target="nublado" text="Mente Nublada" subtext="Te sientes disperso, con niebla mental o indecisión." />
-                                <StateDescription state={mindState} target="lluvioso" text="Mente Lluviosa" subtext="Pensamientos negativos, rumiación o sensación de agobio." />
+                            <div className="h-[80px] relative">
+                                <StateDescription state={mindState} target="soleado" text="Despejada" subtext="Pensamientos claros, enfoque y optimismo." />
+                                <StateDescription state={mindState} target="nublado" text="Nublada" subtext="Dispersión, niebla mental o indecisión." />
+                                <StateDescription state={mindState} target="lluvioso" text="Lluviosa" subtext="Rumiación, negatividad o agobio." />
                             </div>
                         </motion.div>
 
                         {/* Card: Emoción */}
                         <motion.div 
-                            className="bg-pink-50 p-6 rounded-2xl shadow-lg"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.3 }}
+                            className="bg-white/60 backdrop-blur-sm border border-pink-100 p-8 rounded-[2rem] shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1"
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.1 }}
                         >
-                            <h4 className="text-2xl font-bold text-center mb-4 font-['Patrick_Hand']">Emoción</h4>
-                            <div className="flex justify-around mb-4 gap-1 -ml-3">
-                                <StateButton lottieData={sunLoopAnimation} state="soleado" activeState={emotionState} onSelect={setEmotionState} aria-label="Emoción Alegre" />
-                                <StateButton lottieData={cloudLoopAnimation} state="nublado" activeState={emotionState} onSelect={setEmotionState} aria-label="Emoción Apática" />
-                                <StateButton lottieData={rainLoopAnimation} state="lluvioso" activeState={emotionState} onSelect={setEmotionState} aria-label="Emoción Difícil" />
+                            <h4 className="text-3xl font-bold text-center mb-8 font-['Patrick_Hand'] text-pink-600">Emoción</h4>
+                            <div className="flex justify-center mb-8 gap-2">
+                                <StateButton lottieData={sunLoopAnimation} state="soleado" activeState={emotionState} onSelect={setEmotionState} />
+                                <StateButton lottieData={cloudLoopAnimation} state="nublado" activeState={emotionState} onSelect={setEmotionState} />
+                                <StateButton lottieData={rainLoopAnimation} state="lluvioso" activeState={emotionState} onSelect={setEmotionState} />
                             </div>
-                             <div className="h-[100px] relative">
-                                <StateDescription state={emotionState} target="soleado" text="Emoción Alegre" subtext="Sientes gratitud, alegría, paz o amor." />
-                                <StateDescription state={emotionState} target="nublado" text="Emoción Apática" subtext="Te sientes plano, apático, aburrido o desconectado." />
-                                <StateDescription state={emotionState} target="lluvioso" text="Emoción Difícil" subtext="Experimentas tristeza, enojo, miedo o ansiedad." />
+                             <div className="h-[80px] relative">
+                                <StateDescription state={emotionState} target="soleado" text="Alegre" subtext="Gratitud, paz o amor." />
+                                <StateDescription state={emotionState} target="nublado" text="Apática" subtext="Aburrimiento, desconexión o plano." />
+                                <StateDescription state={emotionState} target="lluvioso" text="Difícil" subtext="Tristeza, enojo, miedo o ansiedad." />
                             </div>
                         </motion.div>
 
                         {/* Card: Cuerpo */}
                         <motion.div 
-                            className="bg-green-50 p-6 rounded-2xl shadow-lg"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.4 }}
+                            className="bg-white/60 backdrop-blur-sm border border-green-100 p-8 rounded-[2rem] shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1"
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.2 }}
                         >
-                            <h4 className="text-2xl font-bold text-center mb-4 font-['Patrick_Hand']">Cuerpo</h4>
-                            <div className="flex justify-around mb-4 gap-1 -ml-3">
-                                <StateButton lottieData={sunLoopAnimation} state="soleado" activeState={bodyState} onSelect={setBodyState} aria-label="Cuerpo Energético" />
-                                <StateButton lottieData={cloudLoopAnimation} state="nublado" activeState={bodyState} onSelect={setBodyState} aria-label="Cuerpo Cansado" />
-                                <StateButton lottieData={rainLoopAnimation} state="lluvioso" activeState={bodyState} onSelect={setBodyState} aria-label="Cuerpo Adolorido" />
+                            <h4 className="text-3xl font-bold text-center mb-8 font-['Patrick_Hand'] text-green-600">Cuerpo</h4>
+                            <div className="flex justify-center mb-8 gap-2">
+                                <StateButton lottieData={sunLoopAnimation} state="soleado" activeState={bodyState} onSelect={setBodyState} />
+                                <StateButton lottieData={cloudLoopAnimation} state="nublado" activeState={bodyState} onSelect={setBodyState} />
+                                <StateButton lottieData={rainLoopAnimation} state="lluvioso" activeState={bodyState} onSelect={setBodyState} />
                             </div>
-                             <div className="h-[100px] relative">
-                                <StateDescription state={bodyState} target="soleado" text="Cuerpo Energético" subtext="Te sientes con energía, vitalidad y sin dolor." />
-                                <StateDescription state={bodyState} target="nublado" text="Cuerpo Cansado" subtext="Fatiga, baja energía o sensación de pesadez." />
-                                <StateDescription state={bodyState} target="lluvioso" text="Cuerpo Adolorido" subtext="Dolor, tensión muscular, malestar o enfermedad." />
+                             <div className="h-[80px] relative">
+                                <StateDescription state={bodyState} target="soleado" text="Energético" subtext="Vitalidad y fuerza." />
+                                <StateDescription state={bodyState} target="nublado" text="Cansado" subtext="Fatiga o pesadez." />
+                                <StateDescription state={bodyState} target="lluvioso" text="Adolorido" subtext="Tensión, dolor o malestar." />
                             </div>
                         </motion.div>
                     </div>
                 </section>
 
-                {/* --- SECCIÓN Beneficios (Sin cambios) --- */}
-                <section id="beneficios" className="mb-20 scroll-mt-20">
-                    <h3 className="text-3xl font-bold text-center mb-4 font-['Patrick_Hand']">El Micro-Hábito de Escribir</h3>
-                    <p className="text-center text-zinc-600 mb-8 max-w-2xl mx-auto">
-                        El simple acto de "Journaling" tiene beneficios comprobados. No se trata de escribir bonito, se trata de procesar. Explora los beneficios clave.
-                    </p>
-                    <div className="space-y-3">
-                        <InfoSlide
-                            icon={Brain}
-                            title="Beneficios Mentales: Claridad y Enfoque"
-                            isExpanded={expandedBenefit === 'mental'}
-                            onToggle={() => handleBenefitToggle('mental')}
-                        >
-                            <p>El mecanismo clave es la <strong>Externalización Cognitiva</strong>. La rumiación y la preocupación residen en tu "Memoria Operativa", un sistema de capacidad limitada. Al "descargar" esos pensamientos en la app, liberas esos recursos.</p>
-                            <p className="mt-2">Este espacio liberado te permite organizar prioridades, resolver problemas de manera más efectiva y aumentar tu capacidad de concentración, evitando que los pensamientos negativos den vueltas en bucle.</p>
-                        </InfoSlide>
-                        <InfoSlide
-                            icon={Heart}
-                            title="Beneficios Emocionales: Regulación y Autoconciencia"
-                            isExpanded={expandedBenefit === 'emocional'}
-                            onToggle={() => handleBenefitToggle('emocional')}
-                        >
-                            <p>El simple acto de nombrar una emoción (<strong>Etiquetado de Afectos</strong>) activa tu corteza prefrontal (el "freno") y calma tu amígdala (el "acelerador"). Esto te da un espacio vital entre el impulso y la acción.</p>
-                            <p className="mt-2">Escribir te permite procesar eventos difíciles y construir una <strong>Narrativa Coherente</strong>. Dejas de ser una víctima de tu emoción y te conviertes en el observador, construyendo resiliencia.</p>
-                        </InfoSlide>
-                        <InfoSlide
-                            icon={Shield}
-                            title="Beneficios Físicos: Reducción del Estrés Fisiológico"
-                            isExpanded={expandedBenefit === 'fisico'}
-                            onToggle={() => handleBenefitToggle('fisico')}
-                        >
-                            <p>Suprimir pensamientos y sentimientos es un <strong>trabajo fisiológico</strong> arduo que consume la energía de tu cuerpo (Teoría de la Inhibición). Este estrés crónico debilita tu sistema inmunológico.</p>
-                            <p className="mt-2">Al escribir, reduces esa "carga de inhibición". Tu cuerpo deja de gastar energía en "contener" el estrés y puede reasignar esa energía a tareas vitales, como fortalecer tu sistema inmune (reduciendo el cortisol) e incluso acelerar la curación física.</p>
-                        </InfoSlide>
+                {/* --- BENEFICIOS --- */}
+                <section id="beneficios" className="mb-32 scroll-mt-24">
+                    <div className="flex flex-col md:flex-row items-center gap-16">
+                        <div className="w-full md:w-1/2">
+                             <h3 className="text-4xl font-bold mb-6 font-['Patrick_Hand'] text-zinc-800">Ciencia, no Magia</h3>
+                             <p className="text-zinc-600 text-lg mb-8 leading-relaxed">
+                                El acto de externalizar tus pensamientos libera memoria operativa y reduce la carga fisiológica del estrés. Es como limpiar el caché de tu mente.
+                             </p>
+                             <div className="space-y-4">
+                                <InfoSlide
+                                    icon={Brain}
+                                    title="Claridad Mental"
+                                    isExpanded={expandedBenefit === 'mental'}
+                                    onToggle={() => handleBenefitToggle('mental')}
+                                >
+                                    <p>Libera tu "RAM" mental. Al descargar pensamientos en bucle, recuperas capacidad para resolver problemas reales.</p>
+                                </InfoSlide>
+                                <InfoSlide
+                                    icon={Heart}
+                                    title="Regulación Emocional"
+                                    isExpanded={expandedBenefit === 'emocional'}
+                                    onToggle={() => handleBenefitToggle('emocional')}
+                                >
+                                    <p>Nombrar una emoción ("Etiquetado de Afectos") calma la amígdala y activa tu corteza prefrontal.</p>
+                                </InfoSlide>
+                                <InfoSlide
+                                    icon={Shield}
+                                    title="Salud Física"
+                                    isExpanded={expandedBenefit === 'fisico'}
+                                    onToggle={() => handleBenefitToggle('fisico')}
+                                >
+                                    <p>Reduces el costo energético de "contener" emociones, mejorando tu sistema inmune.</p>
+                                </InfoSlide>
+                             </div>
+                        </div>
+                        <div className="w-full md:w-1/2 flex justify-center">
+                            <div className="bg-orange-50 rounded-full w-80 h-80 flex items-center justify-center relative">
+                                <div className="absolute inset-0 rounded-full border-2 border-dashed border-orange-200 animate-spin-slow"></div>
+                                <div className="absolute inset-4 rounded-full border border-orange-100"></div>
+                                <Brain size={120} className="text-orange-400 drop-shadow-sm" />
+                            </div>
+                        </div>
                     </div>
                 </section>
 
-                
-                {/* --- SECCIÓN El Hábito (Sin cambios) --- */}
-                <section id="como" className="mb-20 scroll-mt-20">
-                    <h3 className="text-3xl font-bold text-center mb-4 font-['Patrick_Hand']">El Micro-Hábito: Un Proceso de 2 Pasos</h3>
-                    <p className="text-center text-zinc-600 mb-8 max-w-2xl mx-auto">
-                        El bienestar no es solo "verse", es también preguntarse: "¿Qué hacemos con ello?". El micro-hábito de Sun Self consiste en esta simple y poderosa secuencia diaria.
-                    </p>
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
+                {/* --- EL HÁBITO --- */}
+                <section id="como" className="mb-32 scroll-mt-24 text-center">
+                    <h3 className="text-4xl font-bold mb-12 font-['Patrick_Hand'] text-zinc-800">El Método de 2 Pasos</h3>
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-10 relative">
+                        {/* Línea conectora */}
+                        <div className="hidden md:block absolute top-1/2 left-1/4 right-1/4 h-1 bg-gradient-to-r from-orange-100 to-amber-100 -z-10 border-t-2 border-dashed border-orange-200"></div>
+
                         {/* Step 1 */}
-                        <div className="bg-white p-6 rounded-2xl shadow-lg text-center w-full md:w-1/2 flex flex-col items-center">
-                            <div className="w-24 h-24">
-                                <Lottie animationData={brainRevealAnimation} loop={true} />
+                        <div className="bg-white p-10 rounded-[2.5rem] shadow-xl max-w-sm w-full relative group hover:-translate-y-2 transition-transform duration-300 border border-zinc-50">
+                            <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center absolute -top-7 left-1/2 -translate-x-1/2 text-orange-500 font-bold text-2xl border-4 border-orange-100 shadow-sm">1</div>
+                            <div className="w-32 h-32 mx-auto mb-6">
+                                <Lottie animationData={brainLoopAnimation} loop={true} />
                             </div>
-                            <h4 className="text-2xl font-bold my-2 font-['Patrick_Hand']">Paso 1: Verse</h4>
-                            <p className="text-zinc-600">
-                                Observar y registrar con sinceridad tu estado mental, emocional y físico. Sin juicios.
-                            </p>
+                            <h4 className="text-2xl font-bold mb-3 font-['Patrick_Hand'] text-zinc-800">Verse</h4>
+                            <p className="text-zinc-500 leading-relaxed">Registra tu estado con honestidad radical. Sin juicios, solo datos.</p>
                         </div>
-                        {/* Arrow */}
-                        <span className="text-5xl font-light text-orange-400 transform rotate-90 md:rotate-0" role="img" aria-hidden="true">
-                            &rarr;
-                        </span>
+
                         {/* Step 2 */}
-                        <div className="bg-white p-6 rounded-2xl shadow-lg text-center w-full md:w-1/2 flex flex-col items-center">
-                            <div className="w-24 h-24">
-                                <Lottie animationData={goalRevealAnimation} loop={true} />
+                        <div className="bg-white p-10 rounded-[2.5rem] shadow-xl max-w-sm w-full relative group hover:-translate-y-2 transition-transform duration-300 border border-zinc-50">
+                            <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center absolute -top-7 left-1/2 -translate-x-1/2 text-amber-500 font-bold text-2xl border-4 border-amber-100 shadow-sm">2</div>
+                            <div className="w-32 h-32 mx-auto mb-6">
+                                <Lottie animationData={goalLoopAnimation} loop={true} />
                             </div>
-                            <h4 className="text-2xl font-bold my-2 font-['Patrick_Hand']">Paso 2: Actuar</h4>
-                            <p className="text-zinc-600">
-                                Definir una meta del día. Una acción pequeña e intencional basada en lo que has observado.
-                            </p>
+                            <h4 className="text-2xl font-bold mb-3 font-['Patrick_Hand'] text-zinc-800">Actuar</h4>
+                            <p className="text-zinc-500 leading-relaxed">Define una estrategia táctica. Convierte la observación en intención.</p>
                         </div>
                     </div>
-                    {/* CTA "Probar" */}
-                    <div className="mt-12 text-center">
+                    
+                    <div className="mt-20">
                         <button
-                            className="bg-orange-500 text-white font-['Patrick_Hand'] text-xl px-8 py-3 rounded-full hover:bg-orange-600 transition-colors shadow-lg hover:shadow-xl transform hover:scale-105"
+                            onClick={() => setShowDemoRitual(true)}
+                            className="bg-zinc-800 text-white font-['Patrick_Hand'] text-xl px-12 py-5 rounded-full hover:bg-zinc-700 transition-all shadow-xl hover:shadow-2xl transform hover:scale-105 flex items-center justify-center gap-3 mx-auto"
                         >
-                            Probar el Micro-Hábito
+                            <Sparkles size={22} className="text-amber-300" />
+                            Probar (Sin Registro)
                         </button>
                     </div>
                 </section>
 
+                {/* --- IMPACTO --- */}
+                <section id="impacto" className="mb-20 scroll-mt-24">
+                     <div className="bg-gradient-to-br from-orange-50 via-amber-50 to-white rounded-[3rem] p-8 md:p-16 shadow-inner border border-orange-100/50">
+                        <h3 className="text-4xl font-bold text-center mb-4 font-['Patrick_Hand'] text-zinc-800">Progreso Visible</h3>
+                        <p className="text-center text-zinc-600 mb-12 max-w-2xl mx-auto text-lg">
+                            Lo que se mide, mejora. Visualiza tu evolución.
+                        </p>
+                        
+                        <div className="flex flex-col lg:flex-row items-center justify-center gap-12">
+                            {/* Contador "Vivo" */}
+                            <div className="bg-white p-10 rounded-[2rem] shadow-xl text-center w-full max-w-xs transform rotate-[-2deg] hover:rotate-0 transition-transform duration-300 border border-zinc-50 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <Sun size={80} className="text-orange-500" />
+                                </div>
+                                <span className="block text-7xl font-black text-orange-500 font-['Patrick_Hand'] mb-2 tracking-tighter">23</span>
+                                <span className="text-zinc-400 text-xs uppercase tracking-widest font-bold">Rituales Probados</span>
+                                <div className="w-full h-2 bg-zinc-100 mt-6 rounded-full overflow-hidden">
+                                    <div className="w-2/3 h-full bg-gradient-to-r from-orange-400 to-amber-400 rounded-full"></div>
+                                </div>
+                                <p className="text-xs text-zinc-400 mt-2 text-left font-mono">Meta semanal: 46%</p>
+                            </div>
 
-                {/* --- SECCIÓN Impacto (MARTILLAZO 2: Giro 5 con Recharts) --- */}
-                <section id="impacto" className="mb-12 scroll-mt-20">
-                    <h3 className="text-3xl font-bold text-center mb-4 font-['Patrick_Hand']">El Impacto Comprobado del Hábito</h3>
-                    <p className="text-center text-zinc-600 mb-8 max-w-2xl mx-auto">
-                        El "journaling" consistente muestra mejoras medibles.
-                    </p>
-                    
-                    {/* El contador que pediste */}
-                    <div className="text-center mb-8">
-                        <span className="text-4xl font-bold text-orange-600 font-['Patrick_Hand']">
-                            23
-                        </span>
-                        <span className="text-xl text-zinc-600 ml-2">
-                            Micro-Hábitos probados
-                        </span>
-                    </div>
-
-                    <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-lg">
-                        <h4 className="text-lg font-bold text-zinc-800 text-center mb-4 font-['Patrick_Hand']">
-                            Progreso Promedio (Datos de Prueba)
-                        </h4>
-                        {/* Contenedor del Gráfico (Recharts) */}
-                        <div style={{ width: '100%', height: 350 }}>
-                            <ResponsiveContainer>
-                                <BarChart
-                                    data={chartData}
-                                    margin={{ top: 5, right: 20, left: -20, bottom: 5 }}
-                                >
-                                    <XAxis dataKey="name" stroke="#6b7280" />
-                                    <YAxis stroke="#6b7280" domain={[0, 10]} />
-                                    <Tooltip 
-                                        cursor={{ fill: '#fef3c7' }} 
-                                        contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', borderColor: '#fde68a' }} 
-                                    />
-                                    <Bar dataKey="Estado General" fill="#f97316" radius={[4, 4, 0, 0]} />
-                                    <Bar dataKey="Metas Completadas" fill="#fbbf24" radius={[4, 4, 0, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
+                            {/* Gráfico */}
+                            <div className="bg-white p-8 rounded-[2rem] shadow-xl w-full max-w-xl h-[400px] border border-zinc-50">
+                                <h4 className="text-lg font-bold text-zinc-800 mb-8 font-['Patrick_Hand'] flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                                    Tu Tendencia de Bienestar
+                                </h4>
+                                <ResponsiveContainer width="100%" height="85%">
+                                    <BarChart data={chartData} barSize={24}>
+                                        <XAxis dataKey="name" stroke="#a1a1aa" fontSize={12} tickLine={false} axisLine={false} dy={10} />
+                                        <YAxis stroke="#a1a1aa" fontSize={12} tickLine={false} axisLine={false} dx={-10} />
+                                        <Tooltip 
+                                            cursor={{ fill: '#fff7ed', radius: 8 }} 
+                                            contentStyle={{ backgroundColor: '#fff', borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.15)', padding: '12px' }} 
+                                            itemStyle={{ fontSize: '14px', fontWeight: 600 }}
+                                        />
+                                        <Bar dataKey="Estado General" stackId="a" radius={[0, 0, 6, 6]}>
+                                            {chartData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={['#fed7aa', '#fdba74', '#fb923c', '#ea580c'][index]} />
+                                            ))}
+                                        </Bar>
+                                        <Bar dataKey="Metas" stackId="a" fill="#fcd34d" radius={[6, 6, 0, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
                         </div>
-                    </div>
+                     </div>
                 </section>
-            
+
             </main>
 
-            {/* --- Footer (Sin cambios) --- */}
-            <footer className="text-center p-10 mt-12 bg-white border-t border-zinc-100">
-                <p className="text-zinc-500 text-base font-['Patrick_Hand']">
-                    {new Date().getFullYear()} Sun Self. Un movimiento por la calma.
+            {/* --- FOOTER --- */}
+            <footer className="text-center p-12 bg-white border-t border-zinc-100 relative z-10">
+                <p className="text-zinc-400 text-sm font-['Patrick_Hand']">
+                    &copy; {new Date().getFullYear()} Sun Self. Construido con calma para mentes inquietas.
                 </p>
             </footer>
 

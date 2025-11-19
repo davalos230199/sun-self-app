@@ -49,6 +49,8 @@ const fetchArticlesRoutes = require('./routes/fetchArticles.js');
 const frasesRoutes = require('./routes/frases');
 const habitosRouter = require('./routes/habitos');
 
+const anonimoRouter = require('./routes/anonimo');
+
 
 app.use('/api/sunny', sunnyRoutes);
 app.use('/api/muro', muroRoutes);
@@ -59,6 +61,8 @@ app.use('/api/sugerir-meta', sugerirMetaRouter);
 app.use('/api/diario', diarioRoutes);
 app.use('/api/frases', frasesRoutes);
 app.use('/api/habitos', habitosRouter);
+
+app.use('/api/anonimo', anonimoRouter);
 
 // =================================================================
 // 4. INICIO DEL SERVIDOR

@@ -1,5 +1,3 @@
-// Archivo: frontend/src/components/RitualFlow.jsx
-
 import React, { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import api from '../services/api'; 
@@ -7,21 +5,21 @@ import Step1_Breathing from './ritual/Step1_Breathing';
 import Step2_Mind from './ritual/Step2_Mind';
 import Step3_Emotion from './ritual/Step3_Emotion';
 import Step4_Body from './ritual/Step4_Body';
-import Step5_Goal from './ritual/Step5_Goal'; // Correcto
-import Step6_Calculating from './ritual/Step6_Calculating'; // Lo renombramos para claridad
+import Step5_Goal from './ritual/Step5_Goal'; 
+import Step6_Calculating from './ritual/Step6_Calculating'; 
 import Step7_Summary from './ritual/Step7_Summary';
 
-export default function RitualFlow({ onFinish }) { 
+// Aceptamos la prop 'mode' ('user' por defecto, o 'anon' para la landing)
+export default function RitualFlow({ onFinish, mode = 'user' }) { 
     const [step, setStep] = useState(1);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
-const [ritualData, setRitualData] = useState({
+    
+    const [ritualData, setRitualData] = useState({
         mente: null,
         emocion: null,
         cuerpo: null,
         meta: null,
-        // --- ESTADO CORREGIDO ---
-        // 'consejos' inicia como null, reemplazando 'fraseDelDia'
         consejos: null, 
         estadoGeneral: null,
     });
@@ -33,8 +31,8 @@ const [ritualData, setRitualData] = useState({
         setStep(prev => (nextStepOverride !== null ? nextStepOverride : prev + 1));
     };
     
-// --- FUNCIÓN 'handleProcessAndSave' CORREGIDA ---
     const handleProcessAndSave = async (metaData) => {
+        // Validación: Aseguramos que los pasos anteriores existen
         if (!ritualData.mente || !ritualData.emocion || !ritualData.cuerpo) {
             console.error("Intento de procesar el ritual con datos incompletos.", ritualData);
             setError("Faltan datos de los pasos anteriores. Por favor, reinicia el ritual.");
@@ -43,8 +41,9 @@ const [ritualData, setRitualData] = useState({
 
         setIsProcessing(true);
         setError('');
-        setStep(6); // Mostramos "Calculando..."
+        setStep(6); // Mostramos pantalla "Calculando..."
 
+        // Preparamos el objeto plano para enviar al backend
         const registroParaEnviar = {
             mente_estado: ritualData.mente.estado,
             mente_comentario: ritualData.mente.comentario,
@@ -56,15 +55,21 @@ const [ritualData, setRitualData] = useState({
         };
 
         try {
-            // --- LLAMADA ÚNICA ---
-            // 'api.saveRegistro' llama a POST /registros
-            // El backend (registros.js) hace todo (guarda, llama a IA, actualiza)
-            // y nos devuelve el registro YA ACTUALIZADO con los consejos.
-            const response = await api.saveRegistro(registroParaEnviar);
-            const registroCompleto = response.data; // Este objeto SÍ tiene los consejos
+            let response;
+            
+            // --- BIFURCACIÓN CLAVE: ¿Usuario o Anónimo? ---
+            if (mode === 'anon') {
+                // Ruta Pública (Landing) - No requiere Auth
+                response = await api.saveRegistroAnonimo(registroParaEnviar);
+            } else {
+                // Ruta Privada (App) - Requiere Auth
+                response = await api.saveRegistro(registroParaEnviar);
+            }
 
-            // --- EL MARTILLAZO ESTÁ AQUÍ ---
-            // Leemos los nuevos campos del 'registroCompleto'
+            // En ambos casos, el backend devuelve el registro procesado con la IA en .data
+            const registroCompleto = response.data; 
+
+            // Actualizamos el estado local con la respuesta de Sunny (Consejos)
             setRitualData(prev => ({
                 ...prev,
                 ...registroParaEnviar, // Guardamos los inputs (mente, emocion, etc.)
@@ -74,17 +79,17 @@ const [ritualData, setRitualData] = useState({
                     consejo_cuerpo: registroCompleto.consejo_cuerpo,
                     frase_aliento: registroCompleto.frase_aliento
                 },
-                estadoGeneral: registroCompleto.estado_general,
+                // En modo anónimo quizás no venga 'estado_general' calculado igual, usamos fallback
+                estadoGeneral: registroCompleto.estado_general || 'soleado',
             }));
             
-            setStep(7); // Mostramos el Resumen
+            setStep(7); // Éxito -> Vamos al Resumen
 
         } catch (err) {
             console.error("Error al guardar el ritual:", err);
-            setError(err.response?.data?.error || "No se pudo guardar tu registro. Por favor, intenta de nuevo.");
-            // Mandamos al Step 7 igualmente para mostrar el error o un fallback
-            setRitualData(prev => ({ ...prev, ...registroParaEnviar })); // Guardamos al menos lo que tenemos
-            setStep(7); 
+            setError(err.response?.data?.error || "No se pudo conectar con Sunny. Por favor, intenta de nuevo.");
+            // Mandamos al Step 5 (Meta) para que no pierda lo escrito y pueda reintentar
+            setStep(5); 
         } finally {
             setIsProcessing(false);
         }
@@ -96,8 +101,8 @@ const [ritualData, setRitualData] = useState({
             case 2: return <Step2_Mind onNextStep={(data) => advanceRitual(data)} />;
             case 3: return <Step3_Emotion onNextStep={(data) => advanceRitual(data)} />;
             case 4: return <Step4_Body onNextStep={(data) => advanceRitual(data, 5)} />;
-            // CAMBIO AQUI: Pasamos 'ritualData' como prop
-            case 5: return <Step5_Goal onFinish={handleProcessAndSave} ritualData={ritualData} />; // onFinish llama a nuestra nueva lógica
+            // IMPORTANTE: Pasamos 'mode' al Step 5 para que sepa si usar la sugerencia anónima o normal
+            case 5: return <Step5_Goal onFinish={handleProcessAndSave} ritualData={ritualData} mode={mode} />; 
             case 6: return <Step6_Calculating />;
             case 7: return <Step7_Summary ritualData={ritualData} onNextStep={onFinish} />;
             default: return null;
@@ -106,7 +111,7 @@ const [ritualData, setRitualData] = useState({
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            {error && <p className="absolute top-5 text-red-500 bg-white p-2 rounded-md">{error}</p>}
+            {error && <p className="absolute top-5 text-red-500 bg-white p-2 rounded-md shadow-lg z-50">{error}</p>}
             <AnimatePresence mode="wait">
                 {renderStep()}
             </AnimatePresence>
