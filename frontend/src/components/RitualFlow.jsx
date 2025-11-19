@@ -96,7 +96,8 @@ const [ritualData, setRitualData] = useState({
             case 2: return <Step2_Mind onNextStep={(data) => advanceRitual(data)} />;
             case 3: return <Step3_Emotion onNextStep={(data) => advanceRitual(data)} />;
             case 4: return <Step4_Body onNextStep={(data) => advanceRitual(data, 5)} />;
-            case 5: return <Step5_Goal onFinish={handleProcessAndSave} />; // onFinish llama a nuestra nueva lógica
+            // CAMBIO AQUI: Pasamos 'ritualData' como prop
+            case 5: return <Step5_Goal onFinish={handleProcessAndSave} ritualData={ritualData} />; // onFinish llama a nuestra nueva lógica
             case 6: return <Step6_Calculating />;
             case 7: return <Step7_Summary ritualData={ritualData} onNextStep={onFinish} />;
             default: return null;

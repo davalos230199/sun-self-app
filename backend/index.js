@@ -40,6 +40,7 @@ app.get('/health', (req, res) => {
 
 // --- CONEXIÓN A LOS DEPARTAMENTOS (ARCHIVOS DE RUTAS) ---
 const registrosRoutes = require('./routes/registros');
+const sugerirMetaRouter = require('./routes/sugerirMeta'); // <-- ¡Añadir esta línea!
 const diarioRoutes = require('./routes/diario');
 const sunnyRoutes = require('./routes/sunny');
 const metasRouter = require('./routes/metas');
@@ -54,6 +55,7 @@ app.use('/api/muro', muroRoutes);
 app.use('/api/metas', metasRouter);
 app.use('/api/fetch-articles', fetchArticlesRoutes);
 app.use('/api/registros', registrosRoutes);
+app.use('/api/sugerir-meta', sugerirMetaRouter);
 app.use('/api/diario', diarioRoutes);
 app.use('/api/frases', frasesRoutes);
 app.use('/api/habitos', habitosRouter);
