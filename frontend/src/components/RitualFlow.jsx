@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { X } from 'lucide-react';
 import api from '../services/api'; 
 import Step1_Breathing from './ritual/Step1_Breathing';
 import Step2_Mind from './ritual/Step2_Mind';
@@ -14,6 +16,7 @@ export default function RitualFlow({ onFinish, mode = 'user' }) {
     const [step, setStep] = useState(1);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
+    const navigate = useNavigate();
     
     const [ritualData, setRitualData] = useState({
         mente: null,
@@ -23,6 +26,24 @@ export default function RitualFlow({ onFinish, mode = 'user' }) {
         consejos: null, 
         estadoGeneral: null,
     });
+
+    // Función para la salida de emergencia
+    const handleExit = () => {
+        // Si estamos en medio de una carga, quizás queramos prevenir, 
+        // pero por pragmatismo permitimos salir siempre.
+        if (mode === 'anon') {
+            // En la Landing, simplemente cerramos el modal o recargamos/vamos al inicio
+            // Si onFinish se usa para cerrar el modal en la Landing, lo llamamos.
+            if (onFinish) {
+                onFinish();
+            } else {
+                navigate('/');
+            }
+        } else {
+            // En la App, volvemos al Home/Dashboard
+            navigate('/home');
+        }
+    };
 
     const advanceRitual = (stepData, nextStepOverride = null) => {
         if (stepData) {
@@ -111,7 +132,18 @@ export default function RitualFlow({ onFinish, mode = 'user' }) {
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            {error && <p className="absolute top-5 text-red-500 bg-white p-2 rounded-md shadow-lg z-50">{error}</p>}
+            
+            {/* --- BOTÓN DE SALIDA DE EMERGENCIA (X) --- */}
+            <button 
+                onClick={handleExit}
+                className="absolute top-6 right-6 z-[60] p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all backdrop-blur-md border border-white/10 shadow-sm"
+                title="Salir del Micro-Hábito"
+            >
+                <X size={24} />
+            </button>
+
+            {error && <p className="absolute top-5 text-red-500 bg-white p-2 rounded-md shadow-lg z-50 font-medium">{error}</p>}
+            
             <AnimatePresence mode="wait">
                 {renderStep()}
             </AnimatePresence>

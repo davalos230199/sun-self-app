@@ -70,7 +70,8 @@ const logHabito = (graphID) => apiClient.post(`/habitos/log/${graphID}`);
   // --- RUTAS PÚBLICAS (ANÓNIMAS - NUEVO) ---
 const saveRegistroAnonimo = (data) => apiClient.post('/anonimo/guardar', data);
 const sugerirMetaAnonimo = (data) => apiClient.post('/anonimo/sugerir', data);
-const getStatsAnonimas = () => apiClient.get('/anonimo/stats');
+const getStatsGlobales = () => apiClient.get('/anonimo/stats');
+
 
 // --- EXPORTACIÓN UNIFICADA (sin los endpoints de auth manual que ya no existen) ---
 const api = { 
@@ -112,7 +113,7 @@ const api = {
   // RUTAS ANÓNIMAS
   saveRegistroAnonimo,
   sugerirMetaAnonimo,
-  getStatsAnonimas,
+  getStatsGlobales,
 };
 
 export default api;
