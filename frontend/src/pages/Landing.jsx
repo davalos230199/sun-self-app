@@ -55,7 +55,52 @@ const StateDescription = ({ state, target, text, subtext }) => {
     );
 };
 
-const HeroAnimationSequence = () => <div className="absolute inset-0 z-0 opacity-40 overflow-hidden pointer-events-none"><Lottie animationData={sunRevealAnimation} loop={true} className="w-full h-full"/></div>;
+// --- Animación Secuencial del Hero ---
+const animMap = {
+    sun: { reveal: sunRevealAnimation, loop: sunLoopAnimation },
+    cloud: { reveal: cloudRevealAnimation, loop: cloudLoopAnimation },
+    rain: { reveal: rainRevealAnimation, loop: rainLoopAnimation },
+};
+const states = ['sun', 'cloud', 'rain'];
+
+const HeroAnimationSequence = () => {
+    const [stateIndex, setStateIndex] = useState(0);
+    const [currentAnim, setCurrentAnim] = useState(animMap.sun.reveal);
+    const [isLoop, setIsLoop] = useState(false);
+    const currentStateKey = states[stateIndex];
+
+    const handleComplete = () => {
+        if (!isLoop) {
+            setCurrentAnim(animMap[currentStateKey].loop);
+            setIsLoop(true);
+            const timer = setTimeout(() => {
+                const nextIndex = (stateIndex + 1) % states.length;
+                const nextStateKey = states[nextIndex];
+                setStateIndex(nextIndex);
+                setCurrentAnim(animMap[nextStateKey].reveal);
+                setIsLoop(false);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    };
+
+    return (
+        <div className="absolute inset-0 z-0 flex items-center justify-center opacity-40 overflow-hidden pointer-events-none">
+            <AnimatePresence mode='wait'>
+                <motion.div
+                    key={currentStateKey}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1.5 }}
+                    className="absolute w-[130%] h-[130%]"
+                >
+                    <Lottie animationData={currentAnim} loop={isLoop} onComplete={handleComplete} className="w-full h-full" />
+                </motion.div>
+            </AnimatePresence>
+        </div>
+    );
+};
 
 const ScienceCard = ({ icon: Icon, title, highlight, description, colorClass }) => (
     <div className="bg-white p-8 rounded-[2rem] shadow-lg border border-zinc-100 hover:shadow-xl transition-shadow">
@@ -101,7 +146,7 @@ const AppShowcase = () => {
                             <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center shrink-0 text-green-600 font-bold text-xl font-['Patrick_Hand']">3</div>
                             <div>
                                 <h4 className="text-xl font-bold text-zinc-800 mb-2">Sunny (IA Privada)</h4>
-                                <p className="text-zinc-600 leading-relaxed">Un asistente entrenado en psicología que analiza tu entrada y te devuelve pasos claros para avanzar en tu día.</p>
+                                <p className="text-zinc-600 leading-relaxed">Un asistente entrenado en psicología que analiza tu entrada y te devuelve una "pregunta poderosa".</p>
                             </div>
                         </div>
                     </div>
@@ -328,7 +373,7 @@ export default function Landing() {
                             <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center absolute -top-7 left-1/2 -translate-x-1/2 text-orange-500 font-bold text-2xl border-4 border-orange-100 shadow-sm">1</div>
                             <div className="w-32 h-32 mx-auto mb-6"><Lottie animationData={brainLoopAnimation} loop={true} /></div>
                             <h4 className="text-2xl font-bold mb-3 font-['Patrick_Hand'] text-zinc-800">Verse</h4>
-                            <p className="text-zinc-500 leading-relaxed">Registra tu estado con honestidad. <br /> Sin juicios, solo datos.</p>
+                            <p className="text-zinc-500 leading-relaxed">Registra tu estado con honestidad radical. Sin juicios, solo datos.</p>
                         </div>
                         <div className="bg-white p-10 rounded-[2.5rem] shadow-xl max-w-sm w-full relative group hover:-translate-y-2 transition-transform duration-300 border border-zinc-50">
                             <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center absolute -top-7 left-1/2 -translate-x-1/2 text-amber-500 font-bold text-2xl border-4 border-amber-100 shadow-sm">2</div>
